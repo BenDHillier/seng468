@@ -9,9 +9,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDateTime;
 
+/**
+ * Class for a BuyRepository table entry.
+ */
 @Entity
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class BuyEntity {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
@@ -19,8 +22,7 @@ public class BuyEntity {
 
     private String userId;
 
-    @Builder.Default
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime timestamp;
 
     private String stockSymbol;
 
