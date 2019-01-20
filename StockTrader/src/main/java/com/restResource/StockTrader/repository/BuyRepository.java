@@ -1,12 +1,18 @@
 package com.restResource.StockTrader.repository;
 
-import com.restResource.StockTrader.entity.BuyEntity;
+import com.restResource.StockTrader.entity.PendingBuy;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-public interface BuyRepository extends Repository<BuyEntity, Integer> {
-    BuyEntity save(BuyEntity buyEntity);
+public interface BuyRepository extends Repository<PendingBuy, Integer> {
+    PendingBuy save(PendingBuy pendingBuy);
 
-    Optional<BuyEntity> findById(Integer integer);
+    Optional<PendingBuy> findById(Integer integer);
+
+    @Query("FROM PendingBuy WHERE user_id = userId AND timestamp = (SELECT  MAX(timestamp) FROM PendingBuy)")
+    Optional<PendingBuy> findBuyToCommitForUserId(@Param("userId") String userId);
 }
