@@ -29,6 +29,8 @@ public class BuyController {
             // TODO: send fail response
         }
 
+        // TODO: Confirm user has enough funds and set aside funds.
+
         BuyEntity buyEntity = BuyEntity.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)
@@ -36,9 +38,8 @@ public class BuyController {
 
         buyRepository.save(buyEntity);
 
-        int quote = quoteService.getQuote(stockSymbol, userId);
         // TODO: Add 60 second timer to check that buy was completed.
-        return quote;
+        return quoteService.getQuote(stockSymbol, userId);
 
     }
 }
