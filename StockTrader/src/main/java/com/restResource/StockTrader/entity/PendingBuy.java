@@ -23,6 +23,7 @@ public class PendingBuy {
     Integer id;
 
     Integer price;
+    Integer amount;
     String stockSymbol;
     String userId;
     LocalDateTime timestamp;

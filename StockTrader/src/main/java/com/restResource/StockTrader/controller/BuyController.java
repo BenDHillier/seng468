@@ -1,7 +1,10 @@
 package com.restResource.StockTrader.controller;
 
+import com.restResource.StockTrader.entity.Investment;
+import com.restResource.StockTrader.entity.InvestmentId;
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
+import com.restResource.StockTrader.repository.InvestmentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
@@ -18,9 +21,12 @@ public class BuyController {
 
     private BuyRepository buyRepository;
 
-    public BuyController(QuoteService quoteService, BuyRepository buyRepository) {
+    private InvestmentRepository investmentRepository;
+
+    public BuyController(QuoteService quoteService, BuyRepository buyRepository, InvestmentRepository investmentRepository) {
         this.buyRepository = buyRepository;
         this.quoteService = quoteService;
+        this.investmentRepository = investmentRepository;
     }
 
     @PostMapping(path = "/create")
@@ -39,9 +45,15 @@ public class BuyController {
 
         Quote quote = quoteService.getQuote(stockSymbol, userId);
 
+        if (quote.getPrice() > amount) {
+            // TODO: may want to handle this differently.
+            throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
+        }
+
         PendingBuy pendingBuy = PendingBuy.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)
+                .amount(amount)
                 .timestamp(quote.getTimestamp())
                 .price(quote.getPrice())
                 .build();
@@ -54,23 +66,29 @@ public class BuyController {
     @PostMapping(path = "/commit")
     public @ResponseBody
     HttpStatus commitBuy(@RequestParam String userId) {
-        PendingBuy pendingBuyToCommit =
-                buyRepository
-                        .findBuyToCommitForUserId(userId)
-                        .orElseThrow(() -> new IllegalStateException(
-                                "There was nothing to commit."));
+        PendingBuy pendingBuy = getMostRecentPendingBuy(userId);
 
-        if (pendingBuyToCommit
-                .getTimestamp()
-                .isBefore(LocalDateTime.now().minusMinutes(1))) {
-            throw new IllegalStateException(
-                    "The most recent buy has already expired.");
-        }
+        InvestmentId investmentId = InvestmentId.builder()
+                .owner(userId)
+                .stockSymbol(pendingBuy.getStockSymbol())
+                .build();
 
-        // TODO: figure out some way to prevent multiple commits using the same buy.
-        // Maybe try to delete the PendingBuy and if it succeeds then it is yours.
+        int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
 
-        // TODO: update StockRepository to reflect the change.
+        Investment investment = investmentRepository
+                .findById(investmentId)
+                .orElse(Investment
+                        .builder()
+                        .investmentId(investmentId)
+                        .amount(0)
+                        .build());
+        investment.setAmount(investment.getAmount() + amountToBuy);
+        investmentRepository.save(investment);
+
+        int remainingFundsFromBuy =
+                pendingBuy.getAmount() - (pendingBuy.getPrice() * amountToBuy);
+        //TODO: add remainingFundsFromBuy back to users account.
+
         return HttpStatus.OK;
     }
 
@@ -78,5 +96,33 @@ public class BuyController {
     public @ResponseBody
     int cancelBuy(@RequestParam String userId) {
         return -1;
+    }
+
+    // TODO: change from exceptions to something else.
+    // I think that it'd be best to return a failed http status code with a message.
+    private PendingBuy getMostRecentPendingBuy(String userId) {
+        while (true) {
+            PendingBuy pendingBuy =
+                    buyRepository
+                            .findMostRecentForUserId(userId)
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "There was nothing to commit."));
+
+            if (pendingBuy
+                    .getTimestamp()
+                    .isBefore(LocalDateTime.now().minusMinutes(1))) {
+                throw new IllegalStateException(
+                        "The most recent buy has already expired.");
+            }
+
+            // If delete fails, then the pendingBuy has already been claimed and
+            // we need to get the next most recent pendingBuy.
+            try {
+                buyRepository.deleteById(pendingBuy.getId());
+            } catch (Exception e) {
+                continue;
+            }
+            return pendingBuy;
+        }
     }
 }

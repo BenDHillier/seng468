@@ -12,6 +12,8 @@ public class MockQuoteService implements QuoteService {
         return Quote.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)
+                .price(50)
+                .key("abcdefg")
                 .timestamp(LocalDateTime.now())
                 .build();
     }
