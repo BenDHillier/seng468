@@ -20,7 +20,8 @@ public class AddController {
         this.accountRepository = accountRepository;
     }
 
-    @PostMapping(value = "/add")
+    //@PostMapping(value = "/add")
+    @PutMapping(value = "/add")
     public @ResponseBody
     HttpStatus addToAccountBalance(@RequestParam String userId,
                                    @RequestParam int amount) {
@@ -29,7 +30,6 @@ public class AddController {
                     "The amount parameter must be greater than zero.");
         }
         else {
-
             Account account = Account.builder()
             .amount(amount)
             .userId(userId)
