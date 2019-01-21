@@ -27,4 +27,8 @@ public class PendingBuy {
     String stockSymbol;
     String userId;
     LocalDateTime timestamp;
+
+    public boolean isExpired() {
+        return timestamp.isBefore(LocalDateTime.now().minusMinutes(1));
+    }
 }

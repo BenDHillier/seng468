@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
 
-import java.time.LocalDateTime;
-
 
 @RestController
 @RequestMapping(value = "/buy")
@@ -66,7 +64,7 @@ public class BuyController {
     @PostMapping(path = "/commit")
     public @ResponseBody
     HttpStatus commitBuy(@RequestParam String userId) {
-        PendingBuy pendingBuy = getMostRecentPendingBuy(userId);
+        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
         InvestmentId investmentId = InvestmentId.builder()
                 .owner(userId)
@@ -87,32 +85,35 @@ public class BuyController {
 
         int remainingFundsFromBuy =
                 pendingBuy.getAmount() - (pendingBuy.getPrice() * amountToBuy);
-        //TODO: add remainingFundsFromBuy back to users account.
+        // TODO: add remainingFundsFromBuy back to users account. This is not
+        // necessary if the amount set aside is rounded down in createBuy.
 
         return HttpStatus.OK;
     }
 
     @PostMapping(path = "/cancel")
     public @ResponseBody
-    int cancelBuy(@RequestParam String userId) {
-        return -1;
+    HttpStatus cancelBuy(@RequestParam String userId) {
+        claimMostRecentPendingBuy(userId);
+
+        return HttpStatus.OK;
     }
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingBuy getMostRecentPendingBuy(String userId) {
+    private PendingBuy claimMostRecentPendingBuy(String userId) {
         while (true) {
             PendingBuy pendingBuy =
                     buyRepository
                             .findMostRecentForUserId(userId)
                             .orElseThrow(() -> new IllegalStateException(
-                                    "There was nothing to commit."));
+                                    "There was no valid buy."));
 
-            if (pendingBuy
-                    .getTimestamp()
-                    .isBefore(LocalDateTime.now().minusMinutes(1))) {
+            if (pendingBuy.isExpired()) {
+                // TODO: May want to remove the expired entry from the DB if
+                // this is not going to be handled by something else.
                 throw new IllegalStateException(
-                        "The most recent buy has already expired.");
+                        "There was no valid buy.");
             }
 
             // If delete fails, then the pendingBuy has already been claimed and
