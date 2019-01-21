@@ -36,7 +36,7 @@ public class BuyController {
 
         if (amount <= 0) {
             throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
+                    "The stockCount parameter must be greater than zero.");
         }
 
         // TODO: Confirm user has enough funds and set aside funds.
@@ -45,7 +45,7 @@ public class BuyController {
 
         if (quote.getPrice() > amount) {
             // TODO: may want to handle this differently.
-            throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
+            throw new IllegalArgumentException("The stockCount parameter must be greater than the quote price");
         }
 
         PendingBuy pendingBuy = PendingBuy.builder()
@@ -73,7 +73,7 @@ public class BuyController {
         int remainingFundsFromBuy =
                 pendingBuy.getAmount() - (pendingBuy.getPrice() * amountToBuy);
         // TODO: add remainingFundsFromBuy back to users account. This is not
-        // necessary if the amount set aside is rounded down in createBuy.
+        // necessary if the stockCount set aside is rounded down in createBuy.
 
         return HttpStatus.OK;
     }

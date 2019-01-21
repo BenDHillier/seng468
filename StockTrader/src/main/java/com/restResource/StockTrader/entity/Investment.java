@@ -16,5 +16,5 @@ import javax.persistence.Entity;
 public class Investment {
     @EmbeddedId
     InvestmentId investmentId;
-    Integer amount;
+    Integer stockCount;
 }
