@@ -25,25 +25,30 @@ public class AddController {
     public @ResponseBody
     HttpStatus addToAccountBalance(@RequestParam String userId,
                                    @RequestParam int amount) {
-        if( amount <= 0 ) {
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
-        }
-        else {
-            Account account = Account.builder()
-            .amount(amount)
-            .userId(userId)
-            .build();
+        try {
+            if( amount <= 0 ) {
+                throw new IllegalArgumentException(
+                        "The ADD amount parameter must be greater than zero");
+            }
+            else {
+                Account account = Account.builder()
+                        .amount(amount)
+                        .userId(userId)
+                        .build();
 
-            //TODO: This will just keep saving new accounts, so only want to do this if accnt not !exists
-            accountRepository.save(account);
+                //TODO: This will just keep saving new accounts, so only want to do this if accnt not !exists
+                accountRepository.save(account);
 
-            //TODO: This is what we want, but it seems to expect a result set, so throws an error
-            //side note: it still updates the table but that error is annoying
+                //TODO: This is what we want, but it seems to expect a result set, so throws an error
+                //side note: it still updates the table but that error is annoying
 //            accountRepository.updateAccountBalance(account.getUserId(), account.getAmount())
 //                    .orElseThrow(() -> new IllegalStateException(
 //                    "User account not updated."));
+            }
+            return HttpStatus.OK;
+        } catch( Exception e ) {
+            System.out.println("Exception in AddController: " + e.toString());
+            return HttpStatus.BAD_REQUEST;
         }
-        return HttpStatus.OK;
     }
 }
