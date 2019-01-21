@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
  * Class for a SellRepository table entry.
  */
 @Builder(toBuilder = true)
-@Data
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PendingSell {
