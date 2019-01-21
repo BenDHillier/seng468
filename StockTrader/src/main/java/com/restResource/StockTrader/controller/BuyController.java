@@ -36,7 +36,7 @@ public class BuyController {
 
         if (amount <= 0) {
             throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
+                    "The stockCount parameter must be greater than zero.");
         }
 
         // TODO: Confirm user has enough funds and set aside funds.
@@ -45,7 +45,7 @@ public class BuyController {
 
         if (quote.getPrice() > amount) {
             // TODO: may want to handle this differently.
-            throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
+            throw new IllegalArgumentException("The stockCount parameter must be greater than the quote price");
         }
 
         PendingBuy pendingBuy = PendingBuy.builder()
@@ -65,7 +65,6 @@ public class BuyController {
     public @ResponseBody
     HttpStatus commitBuy(@RequestParam String userId) {
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
-
         InvestmentId investmentId = InvestmentId.builder()
                 .owner(userId)
                 .stockSymbol(pendingBuy.getStockSymbol())
@@ -78,15 +77,15 @@ public class BuyController {
                 .orElse(Investment
                         .builder()
                         .investmentId(investmentId)
-                        .amount(0)
+                        .stockCount(0)
                         .build());
-        investment.setAmount(investment.getAmount() + amountToBuy);
+        investment.setStockCount(investment.getStockCount() + amountToBuy);
         investmentRepository.save(investment);
 
         int remainingFundsFromBuy =
                 pendingBuy.getAmount() - (pendingBuy.getPrice() * amountToBuy);
         // TODO: add remainingFundsFromBuy back to users account. This is not
-        // necessary if the amount set aside is rounded down in createBuy.
+        // necessary if the stockCount set aside is rounded down in createBuy.
 
         return HttpStatus.OK;
     }
