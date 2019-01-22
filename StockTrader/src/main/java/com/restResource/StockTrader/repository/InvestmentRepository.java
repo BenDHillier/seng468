@@ -13,7 +13,7 @@ public interface InvestmentRepository extends CrudRepository<Investment, Investm
     @Query(value =
             "INSERT INTO investment VALUES (?1, ?2, ?3) " +
             "ON CONFLICT (owner, stock_symbol) DO UPDATE " +
-            "SET amount = investment.amount + ?3",
+            "SET stock_count = investment.stock_count + ?3",
             nativeQuery = true)
     void insertOrIncrement(String owner, String stockSymbol, Integer amount);
 }
