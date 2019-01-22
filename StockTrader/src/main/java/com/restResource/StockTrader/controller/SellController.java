@@ -86,24 +86,10 @@ public class SellController {
     HttpStatus cancelSell(@RequestParam String userId) {
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
-        // Add stocks back to InvestmentsRepository
-        InvestmentId investmentId = InvestmentId.builder()
-                .owner(userId)
-                .stockSymbol(pendingSell.getStockSymbol())
-                .build();
-
-        Investment investment = investmentRepository
-                .findById(investmentId)
-                .orElse(Investment.builder()
-                        .investmentId(investmentId)
-                        .stockCount(0)
-                        .build());
-
-        investmentRepository.save(
-                investment.toBuilder()
-                        .stockCount(investment.getStockCount() +
-                                pendingSell.getStockCount())
-                        .build());
+        investmentRepository.insertOrIncrement(
+                userId,
+                pendingSell.getStockSymbol(),
+                pendingSell.getStockCount());
 
         return HttpStatus.OK;
     }
