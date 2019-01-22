@@ -1,7 +1,9 @@
 package com.restResource.StockTrader.controller;
 import com.restResource.StockTrader.entity.Account;
 import com.restResource.StockTrader.repository.AccountRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 /*
@@ -20,7 +22,6 @@ public class AddController {
         this.accountRepository = accountRepository;
     }
 
-    //@PostMapping(value = "/add")
     @PutMapping(value = "/add")
     public @ResponseBody
     HttpStatus addToAccountBalance(@RequestParam String userId,
@@ -31,22 +32,15 @@ public class AddController {
                         "The ADD amount parameter must be greater than zero");
             }
             else {
-                Account account = Account.builder()
-                        .amount(amount)
-                        .userId(userId)
-                        .build();
-
-                //TODO: This will just keep saving new accounts, so only want to do this if accnt not !exists
-                accountRepository.save(account);
 
                 //TODO: This is what we want, but it seems to expect a result set, so throws an error
                 //side note: it still updates the table but that error is annoying
-//            accountRepository.updateAccountBalance(account.getUserId(), account.getAmount())
+            accountRepository.updateAccountBalance(userId, amount);
 //                    .orElseThrow(() -> new IllegalStateException(
 //                    "User account not updated."));
             }
             return HttpStatus.OK;
-        } catch( Exception e ) {
+        } catch( IllegalArgumentException e ) {
             System.out.println("Exception in AddController: " + e.toString());
             return HttpStatus.BAD_REQUEST;
         }
