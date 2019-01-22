@@ -66,22 +66,9 @@ public class BuyController {
     HttpStatus commitBuy(@RequestParam String userId) {
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
-        InvestmentId investmentId = InvestmentId.builder()
-                .owner(userId)
-                .stockSymbol(pendingBuy.getStockSymbol())
-                .build();
-
         int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
 
-        Investment investment = investmentRepository
-                .findById(investmentId)
-                .orElse(Investment
-                        .builder()
-                        .investmentId(investmentId)
-                        .amount(0)
-                        .build());
-        investment.setAmount(investment.getAmount() + amountToBuy);
-        investmentRepository.save(investment);
+        investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
 
         int remainingFundsFromBuy =
                 pendingBuy.getAmount() - (pendingBuy.getPrice() * amountToBuy);
