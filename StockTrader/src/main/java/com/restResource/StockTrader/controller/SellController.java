@@ -36,7 +36,7 @@ public class SellController {
 
         if (amount <= 0) {
             throw new IllegalArgumentException(
-                    "The stockCount parameter must be greater than zero.");
+                    "The amount parameter must be greater than zero.");
         }
 
         Quote quote = quoteService.getQuote(stockSymbol, userId);
