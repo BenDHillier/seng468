@@ -15,8 +15,7 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-    //@GeneratedValue(strategy= GenerationType.AUTO)
     Integer amount;
-    @Id
+    @Id //sets the pkey to userId
     String userId;
 }
