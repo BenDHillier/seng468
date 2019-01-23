@@ -1,7 +1,5 @@
 package com.restResource.StockTrader.controller;
 
-import com.restResource.StockTrader.entity.Investment;
-import com.restResource.StockTrader.entity.InvestmentId;
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.repository.InvestmentRepository;

@@ -22,8 +22,12 @@ public class PendingSell {
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer id;
 
-    Integer price;
+    Integer stockCount;
     String stockSymbol;
     String userId;
     LocalDateTime timestamp;
+
+    public boolean isExpired() {
+        return timestamp.isBefore(LocalDateTime.now().minusMinutes(1));
+    }
 }
