@@ -17,13 +17,13 @@ public class AddController {
     HttpStatus addToAccountBalance(@RequestParam String userId,
                                    @RequestParam int amount) {
         try {
-//            if( amount <= 0 ) {
-//                throw new IllegalArgumentException(
-//                        "The ADD amount parameter must be greater than zero");
-//            }
-//            else {
+            if( amount <= 0 ) {
+                throw new IllegalArgumentException(
+                        "The ADD amount parameter must be greater than zero");
+            }
+            else {
                 accountRepository.updateAccountBalance(userId, amount);
-//            }
+            }
             return HttpStatus.OK;
         } catch( IllegalArgumentException e ) {
             System.out.println("Exception in AddController: " + e.toString());
