@@ -23,6 +23,7 @@ public class PendingSell {
     Integer id;
 
     Integer stockCount;
+    Integer stockPrice;
     String stockSymbol;
     String userId;
     LocalDateTime timestamp;

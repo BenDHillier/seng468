@@ -4,6 +4,7 @@ import com.restResource.StockTrader.entity.Investment;
 import com.restResource.StockTrader.entity.InvestmentId;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.PendingSell;
+import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.repository.SellRepository;
 import com.restResource.StockTrader.service.QuoteService;
@@ -21,10 +22,18 @@ public class SellController {
 
     private InvestmentRepository investmentRepository;
 
-    public SellController(QuoteService quoteService, SellRepository sellRepository, InvestmentRepository investmentRepository) {
+    private AccountRepository accountRepository;
+
+    public SellController(
+            QuoteService quoteService,
+            SellRepository sellRepository,
+            InvestmentRepository investmentRepository,
+            AccountRepository accountRepository) {
+
         this.quoteService = quoteService;
         this.sellRepository = sellRepository;
         this.investmentRepository = investmentRepository;
+        this.accountRepository = accountRepository;
     }
 
     @PostMapping("/create")
@@ -52,18 +61,16 @@ public class SellController {
         int stockCount = Math.min(
                 amount / quote.getPrice(), 
                 investment.getStockCount());
-        
+
         // Set aside stocks to avoid duplicate sells.
-        investmentRepository.save(
-                investment.toBuilder()
-                        .stockCount(investment.getStockCount() - stockCount)
-                        .build());
+        investmentRepository.removeStocks(userId, stockCount);
 
         PendingSell pendingSell = PendingSell.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)
                 .timestamp(quote.getTimestamp())
                 .stockCount(stockCount)
+                .stockPrice(quote.getPrice())
                 .build();
 
         sellRepository.save(pendingSell);
@@ -76,7 +83,9 @@ public class SellController {
     HttpStatus commitSell(@RequestParam String userId) {
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
-        // TODO: update user account to add funds.
+        accountRepository.updateAccountBalance(
+                userId,
+                pendingSell.getStockPrice() * pendingSell.getStockCount());
 
         return HttpStatus.OK;
     }

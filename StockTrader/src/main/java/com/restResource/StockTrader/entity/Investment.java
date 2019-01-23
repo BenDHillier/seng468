@@ -17,6 +17,6 @@ import javax.validation.constraints.Min;
 public class Investment {
     @EmbeddedId
     InvestmentId investmentId;
-    @Min(value = 1)
+    @Min(value = 0)
     Integer stockCount;
 }

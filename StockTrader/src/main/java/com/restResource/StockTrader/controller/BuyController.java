@@ -56,9 +56,12 @@ public class BuyController {
         // Removes any excess amount not needed to purchase the maximum number of stocks.
         Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
 
+        // Removing more funds then is available will violate the amount >= 0
+        // constraint which will throw an exception.
         try {
             accountRepository.removeFunds(userId, roundedAmount);
         } catch (Exception e) {
+            // TODO: may want to handle this differently.
             throw new IllegalStateException("You do not have enough funds.");
         }
 
