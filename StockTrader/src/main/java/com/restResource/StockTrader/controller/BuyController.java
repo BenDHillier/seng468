@@ -2,6 +2,7 @@ package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
+import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,18 @@ public class BuyController {
 
     private InvestmentRepository investmentRepository;
 
-    public BuyController(QuoteService quoteService, BuyRepository buyRepository, InvestmentRepository investmentRepository) {
+    private AccountRepository accountRepository;
+
+    public BuyController(
+            QuoteService quoteService,
+            BuyRepository buyRepository,
+            InvestmentRepository investmentRepository,
+            AccountRepository accountRepository) {
+
         this.buyRepository = buyRepository;
         this.quoteService = quoteService;
         this.investmentRepository = investmentRepository;
+        this.accountRepository = accountRepository;
     }
 
     @PostMapping(path = "/create")
@@ -37,8 +46,6 @@ public class BuyController {
                     "The amount parameter must be greater than zero.");
         }
 
-        // TODO: Confirm user has enough funds and set aside funds.
-
         Quote quote = quoteService.getQuote(stockSymbol, userId);
 
         if (quote.getPrice() > amount) {
@@ -46,10 +53,19 @@ public class BuyController {
             throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
         }
 
+        // Removes any excess amount not needed to purchase the maximum number of stocks.
+        Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
+
+        try {
+            accountRepository.removeFunds(userId, roundedAmount);
+        } catch (Exception e) {
+            throw new IllegalStateException("You do not have enough funds.");
+        }
+
         PendingBuy pendingBuy = PendingBuy.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)
-                .amount(amount)
+                .amount(roundedAmount)
                 .timestamp(quote.getTimestamp())
                 .price(quote.getPrice())
                 .build();
@@ -68,18 +84,15 @@ public class BuyController {
 
         investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
 
-        int remainingFundsFromBuy =
-                pendingBuy.getAmount() - (pendingBuy.getPrice() * amountToBuy);
-        // TODO: add remainingFundsFromBuy back to users account. This is not
-        // necessary if the amount set aside is rounded down in createBuy.
-
         return HttpStatus.OK;
     }
 
     @PostMapping(path = "/cancel")
     public @ResponseBody
     HttpStatus cancelBuy(@RequestParam String userId) {
-        claimMostRecentPendingBuy(userId);
+        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
+
+        accountRepository.updateAccountBalance(userId, pendingBuy.getAmount());
 
         return HttpStatus.OK;
     }
