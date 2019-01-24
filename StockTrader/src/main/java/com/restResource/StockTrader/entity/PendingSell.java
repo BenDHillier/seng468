@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 
@@ -22,7 +23,9 @@ public class PendingSell {
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer id;
 
+    @Min(value = 0)
     Integer stockCount;
+    Integer stockPrice;
     String stockSymbol;
     String userId;
     LocalDateTime timestamp;

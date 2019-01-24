@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 
@@ -23,6 +24,7 @@ public class PendingBuy {
     Integer id;
 
     Integer price;
+    @Min(value = 0)
     Integer amount;
     String stockSymbol;
     String userId;

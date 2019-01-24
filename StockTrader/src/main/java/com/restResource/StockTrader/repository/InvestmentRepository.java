@@ -16,4 +16,12 @@ public interface InvestmentRepository extends CrudRepository<Investment, Investm
             "SET stock_count = investment.stock_count + ?3",
             nativeQuery = true)
     void insertOrIncrement(String owner, String stockSymbol, Integer amount);
+
+    // Need separate method for decreaseing stockCount since the attempted insert
+    // violates the minimum stockCount of 0 constraint.
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE investment SET stock_count = stock_count - ?2 WHERE owner = ?1",
+            nativeQuery = true)
+    void removeStocks(String owner, Integer stockCount);
 }

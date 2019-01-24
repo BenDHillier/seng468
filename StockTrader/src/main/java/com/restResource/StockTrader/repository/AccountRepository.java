@@ -15,4 +15,14 @@ public interface AccountRepository extends CrudRepository<Account, String> {
                     "SET amount = account.amount + ?2 ",
         nativeQuery = true)
     void updateAccountBalance(String userId, Integer amount);
+
+
+    // Need separate method for removing funds since the attempted insert
+    // violates the minimum amount of 0 constraint.
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE account SET amount = amount - ?2 WHERE user_id = ?1",
+            nativeQuery = true)
+    void removeFunds(String userId, Integer amount);
+
 }
