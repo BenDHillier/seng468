@@ -59,7 +59,12 @@ public class BuyController {
         // Removing more funds then is available will violate the amount >= 0
         // constraint which will throw an exception.
         try {
-            accountRepository.removeFunds(userId, roundedAmount);
+            Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount);
+            if (updatedEntriesCount != 1) {
+                throw new IllegalStateException(
+                        "Error removing funds from account. Expected 1 account to be updated but " +
+                                updatedEntriesCount + " accounts were updated");
+            }
         } catch (Exception e) {
             // TODO: may want to handle this differently.
             throw new IllegalStateException("You do not have enough funds.");

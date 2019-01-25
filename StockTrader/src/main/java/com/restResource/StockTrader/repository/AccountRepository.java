@@ -23,6 +23,6 @@ public interface AccountRepository extends CrudRepository<Account, String> {
     @Transactional
     @Query(value = "UPDATE account SET amount = amount - ?2 WHERE user_id = ?1",
             nativeQuery = true)
-    void removeFunds(String userId, Integer amount);
+    Integer removeFunds(String userId, Integer amount);
 
 }
