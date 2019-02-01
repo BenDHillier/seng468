@@ -1,5 +1,6 @@
 package com.restResource.StockTrader.entity.logging;
 
+import com.restResource.StockTrader.entity.CommandType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +20,10 @@ import java.time.LocalDateTime;
 public class UserCommandLog {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    Integer id;
+    Integer transactionNum;
     LocalDateTime timestamp;
     String server;
-    String command;
+    CommandType command;
     String username;
     String stockSymbol;
     String filename;

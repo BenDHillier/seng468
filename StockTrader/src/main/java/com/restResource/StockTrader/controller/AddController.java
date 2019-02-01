@@ -1,4 +1,5 @@
 package com.restResource.StockTrader.controller;
+import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.service.LoggingService;
@@ -23,7 +24,12 @@ public class AddController {
     HttpStatus addToAccountBalance(@RequestParam String userId,
                                    @RequestParam int amount) {
 
-        loggingService.logUserCommand(UserCommandLog.builder().username(userId).funds(amount).command("ADD").build());
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .funds(amount)
+                        .command(CommandType.ADD)
+                        .build());
 
         try {
             if( amount <= 0 ) {
