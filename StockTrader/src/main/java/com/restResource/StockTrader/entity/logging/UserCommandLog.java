@@ -6,10 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
@@ -23,6 +20,7 @@ public class UserCommandLog {
     Integer transactionNum;
     LocalDateTime timestamp;
     String server;
+    @Enumerated(EnumType.STRING)
     CommandType command;
     String username;
     String stockSymbol;
