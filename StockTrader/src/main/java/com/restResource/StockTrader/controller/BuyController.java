@@ -1,9 +1,12 @@
 package com.restResource.StockTrader.controller;
 
+import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
+import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
+import com.restResource.StockTrader.service.LoggingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
@@ -22,16 +25,20 @@ public class BuyController {
 
     private AccountRepository accountRepository;
 
+    private LoggingService loggingService;
+
     public BuyController(
             QuoteService quoteService,
             BuyRepository buyRepository,
             InvestmentRepository investmentRepository,
+            LoggingService loggingService,
             AccountRepository accountRepository) {
 
         this.buyRepository = buyRepository;
         this.quoteService = quoteService;
         this.investmentRepository = investmentRepository;
         this.accountRepository = accountRepository;
+        this.loggingService = loggingService;
     }
 
     @PostMapping(path = "/create")
@@ -40,6 +47,14 @@ public class BuyController {
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int amount) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .stockSymbol(stockSymbol)
+                        .funds(amount)
+                        .command(CommandType.BUY)
+                        .build());
 
         if (amount <= 0) {
             throw new IllegalArgumentException(
@@ -86,6 +101,13 @@ public class BuyController {
     @PostMapping(path = "/commit")
     public @ResponseBody
     HttpStatus commitBuy(@RequestParam String userId) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .command(CommandType.COMMIT_BUY)
+                        .build());
+
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
         int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
@@ -98,6 +120,13 @@ public class BuyController {
     @PostMapping(path = "/cancel")
     public @ResponseBody
     HttpStatus cancelBuy(@RequestParam String userId) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .command(CommandType.CANCEL_BUY)
+                        .build());
+
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
         accountRepository.updateAccountBalance(userId, pendingBuy.getAmount());

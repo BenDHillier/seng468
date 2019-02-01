@@ -1,5 +1,8 @@
 package com.restResource.StockTrader.controller;
+import com.restResource.StockTrader.entity.CommandType;
+import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.LoggingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -9,14 +12,25 @@ public class AddController {
 
     private AccountRepository accountRepository;
 
-    public AddController(AccountRepository accountRepository) {
+    private LoggingService loggingService;
+
+    public AddController(AccountRepository accountRepository, LoggingService loggingService) {
         this.accountRepository = accountRepository;
+        this.loggingService = loggingService;
     }
 
     @PutMapping(value = "/add")
     public @ResponseBody
     HttpStatus addToAccountBalance(@RequestParam String userId,
                                    @RequestParam int amount) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .funds(amount)
+                        .command(CommandType.ADD)
+                        .build());
+
         try {
             if( amount <= 0 ) {
                 throw new IllegalArgumentException(

@@ -1,12 +1,11 @@
 package com.restResource.StockTrader.controller;
 
-import com.restResource.StockTrader.entity.Investment;
-import com.restResource.StockTrader.entity.InvestmentId;
-import com.restResource.StockTrader.entity.Quote;
-import com.restResource.StockTrader.entity.PendingSell;
+import com.restResource.StockTrader.entity.*;
+import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.repository.SellRepository;
+import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.QuoteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,13 +23,17 @@ public class SellController {
 
     private AccountRepository accountRepository;
 
+    private LoggingService loggingService;
+
     public SellController(
             QuoteService quoteService,
             SellRepository sellRepository,
             InvestmentRepository investmentRepository,
+            LoggingService loggingService,
             AccountRepository accountRepository) {
 
         this.quoteService = quoteService;
+        this.loggingService = loggingService;
         this.sellRepository = sellRepository;
         this.investmentRepository = investmentRepository;
         this.accountRepository = accountRepository;
@@ -42,6 +45,14 @@ public class SellController {
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int amount) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .stockSymbol(stockSymbol)
+                        .funds(amount)
+                        .command(CommandType.SELL)
+                        .build());
 
         if (amount <= 0) {
             throw new IllegalArgumentException(
@@ -81,6 +92,13 @@ public class SellController {
     @PostMapping("/commit")
     public @ResponseBody
     HttpStatus commitSell(@RequestParam String userId) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .command(CommandType.COMMIT_SELL)
+                        .build());
+
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
         accountRepository.updateAccountBalance(
@@ -93,6 +111,13 @@ public class SellController {
     @PostMapping("/cancel")
     public @ResponseBody
     HttpStatus cancelSell(@RequestParam String userId) {
+
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .username(userId)
+                        .command(CommandType.CANCEL_SELL)
+                        .build());
+
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
         investmentRepository.insertOrIncrement(
