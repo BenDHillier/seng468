@@ -1,3 +1,4 @@
+-- TODO: properly config application.properties so I don't have to drop tables.
 DROP TABLE IF EXISTS pending_buy;
 DROP TABLE IF EXISTS pending_sell;
 DROP TABLE IF EXISTS investment;
@@ -60,10 +61,11 @@ DECLARE
     action varchar;
     funds integer;
 BEGIN
+    -- For inserts (ie. new accounts), treat previous amount as 0.
      IF (OLD IS NULL) THEN
         OLD.amount = 0;
      END IF;
-     IF (OLD.amount < NEW.amount OR OLD IS NULL) THEN
+     IF (OLD.amount < NEW.amount) THEN
         action = ''add'';
         funds = New.amount - OLD.amount;
       ELSIF (OLD.amount > NEW.amount) THEN
@@ -81,4 +83,5 @@ END;
 CREATE TRIGGER log_account_transaction AFTER INSERT OR UPDATE ON account
     FOR EACH ROW EXECUTE PROCEDURE log_account_transaction();
 
-CREATE TEMP SEQUENCE hibernate_sequence START 1;
+DROP SEQUENCE IF EXISTS hibernate_sequence;
+CREATE SEQUENCE hibernate_sequence START 1;
