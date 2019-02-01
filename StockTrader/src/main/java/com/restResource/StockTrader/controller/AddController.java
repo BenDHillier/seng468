@@ -1,8 +1,10 @@
 package com.restResource.StockTrader.controller;
+import com.restResource.StockTrader.bean.UserCommandLogs;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.service.LoggingService;
+import com.restResource.StockTrader.service.UserCommandLogToXMLService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,12 @@ public class AddController {
 
     private LoggingService loggingService;
 
-    public AddController(AccountRepository accountRepository, LoggingService loggingService) {
+    private UserCommandLogToXMLService userCommandLogToXMLService;
+
+    public AddController(AccountRepository accountRepository, LoggingService loggingService, UserCommandLogToXMLService userCommandLogToXMLService) {
         this.accountRepository = accountRepository;
         this.loggingService = loggingService;
+        this.userCommandLogToXMLService = userCommandLogToXMLService;
     }
 
     @PutMapping(value = "/add")
@@ -44,5 +49,11 @@ public class AddController {
             System.out.println("Exception in AddController: " + e.toString());
             return HttpStatus.BAD_REQUEST;
         }
+    }
+
+    @RequestMapping(value = "/dumplog", produces=MediaType.APPLICATION_XML_VALUE)
+    public @ResponseBody
+    UserCommandLogs findUserCommandLogs() {
+        return userCommandLogToXMLService.findAll();
     }
 }
