@@ -11,7 +11,7 @@ public interface InvestmentRepository extends CrudRepository<Investment, Investm
     @Modifying
     @Transactional
     @Query(value =
-            "INSERT INTO investment VALUES (?1, ?2, ?3) " +
+            "INSERT INTO investment (owner, stock_symbol, stock_count) VALUES (?1, ?2, ?3) " +
             "ON CONFLICT (owner, stock_symbol) DO UPDATE " +
             "SET stock_count = investment.stock_count + ?3",
             nativeQuery = true)

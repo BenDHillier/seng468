@@ -16,7 +16,6 @@ import javax.validation.constraints.Min;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-    @Min(value = 0)
     Integer amount;
     @Id //sets the pkey to userId
     String userId;
