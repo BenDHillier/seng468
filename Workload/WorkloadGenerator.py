@@ -36,7 +36,7 @@ class WorkloadGenerator:
             params = split_line[1:]
             print("sending: " + command + " with params {}".format(params))
             self.handleCommand(command,params)
-            #time.sleep(.250)
+            time.sleep(.250)
 
     def handleCommand(self,cmd,params):
         if( cmd == "ADD"):

@@ -2,6 +2,7 @@ package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
+import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.QuoteService;
@@ -41,7 +42,15 @@ public class QuoteController {
             Quote quote = quoteService.getQuote(stockSymbol, userId);
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( IllegalArgumentException e ) {
-            System.out.println("Exception in QuoteController: " + e.toString());
+            //System.out.println("Exception in QuoteController: " + e.toString());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command("QUOTE")
+                            .errorMessage("Unexpected error during QUOTE request")
+                            .stockSymbol(stockSymbol)
+                            .userName(userId)
+                            .build()
+            );
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }

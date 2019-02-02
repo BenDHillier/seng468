@@ -1,6 +1,7 @@
 package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.*;
+import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
@@ -45,47 +46,57 @@ public class SellController {
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int amount) {
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .funds(amount)
-                        .command(CommandType.SELL)
-                        .build());
-
-        if (amount <= 0) {
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
-        }
-
         Quote quote = quoteService.getQuote(stockSymbol, userId);
+        try {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .command(CommandType.SELL)
+                            .build());
 
-        Investment investment = investmentRepository.findById(
-                InvestmentId.builder()
-                        .owner(userId)
-                        .stockSymbol(stockSymbol)
-                        .build())
-                .orElseThrow(() -> new IllegalStateException(
-                                "No investments owned of specified stock"));
-        // If stockCount is higher then number of stocks owned, then just sell all.
-        int stockCount = Math.min(
-                amount / quote.getPrice(), 
-                investment.getStockCount());
+            if (amount <= 0) {
+                throw new IllegalArgumentException(
+                        "The amount parameter must be greater than zero.");
+            }
 
-        // Set aside stocks to avoid duplicate sells.
-        investmentRepository.removeStocks(userId, stockCount);
+            Investment investment = investmentRepository.findById(
+                    InvestmentId.builder()
+                            .owner(userId)
+                            .stockSymbol(stockSymbol)
+                            .build())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No investments owned of specified stock"));
+            // If stockCount is higher then number of stocks owned, then just sell all.
+            int stockCount = Math.min(
+                    amount / quote.getPrice(),
+                    investment.getStockCount());
 
-        PendingSell pendingSell = PendingSell.builder()
-                .userId(userId)
-                .stockSymbol(stockSymbol)
-                .timestamp(quote.getTimestamp())
-                .stockCount(stockCount)
-                .stockPrice(quote.getPrice())
-                .build();
+            // Set aside stocks to avoid duplicate sells.
+            investmentRepository.removeStocks(userId, stockCount);
 
-        sellRepository.save(pendingSell);
+            PendingSell pendingSell = PendingSell.builder()
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .timestamp(quote.getTimestamp())
+                    .stockCount(stockCount)
+                    .stockPrice(quote.getPrice())
+                    .build();
 
+            sellRepository.save(pendingSell);
+
+
+        } catch( Exception e ) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command("SELL")
+                            .errorMessage(e.getMessage())
+                            .funds(amount)
+                            .stockSymbol(stockSymbol)
+                            .userName(userId)
+                            .build());
+        }
         return quote;
     }
 
@@ -149,6 +160,12 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command("SELL")
+                                .errorMessage(e.getMessage())
+                                .userName(userId)
+                                .build());
                 continue;
             }
             return pendingSell;

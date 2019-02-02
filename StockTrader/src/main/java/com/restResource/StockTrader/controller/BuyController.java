@@ -3,6 +3,7 @@ package com.restResource.StockTrader.controller;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
+import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
@@ -81,8 +82,17 @@ public class BuyController {
                                 updatedEntriesCount + " accounts were updated");
             }
         } catch (Exception e) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command("BUY")
+                            .errorMessage(e.getMessage())
+                            .funds(amount)
+                            .stockSymbol(stockSymbol)
+                            .userName(userId)
+                            .build());
+
             // TODO: may want to handle this differently.
-            throw new IllegalStateException("You do not have enough funds.");
+            //throw new IllegalStateException("You do not have enough funds.");
         }
 
         PendingBuy pendingBuy = PendingBuy.builder()
@@ -156,6 +166,13 @@ public class BuyController {
             try {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
+                // TODO: Verify that the error here is caused by CANCEL_BUY
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command("CANCEL_BUY")
+                                .errorMessage(e.getMessage())
+                                .userName(userId)
+                                .build());
                 continue;
             }
             return pendingBuy;
