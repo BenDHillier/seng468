@@ -6,15 +6,11 @@ import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
-import com.restResource.StockTrader.service.BuyService;
 import com.restResource.StockTrader.service.LoggingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 
 @RestController
@@ -31,22 +27,18 @@ public class BuyController {
 
     private LoggingService loggingService;
 
-    private BuyService buyService;
-
     public BuyController(
             QuoteService quoteService,
             BuyRepository buyRepository,
             InvestmentRepository investmentRepository,
             LoggingService loggingService,
-            AccountRepository accountRepository,
-            BuyService buyService) {
+            AccountRepository accountRepository) {
 
         this.buyRepository = buyRepository;
         this.quoteService = quoteService;
         this.investmentRepository = investmentRepository;
         this.accountRepository = accountRepository;
         this.loggingService = loggingService;
-        this.buyService = buyService;
     }
 
     @PostMapping(path = "/create")
@@ -69,20 +61,9 @@ public class BuyController {
                     "The amount parameter must be greater than zero.");
         }
 
-        CompletableFuture<Quote> quotePromise = buyService.getQuote(stockSymbol, userId);
-        Quote quote;
+        Quote quote = quoteService.getQuote(stockSymbol, userId);
 
-        try {
-            quote = quotePromise.get();
-        } catch (InterruptedException e) {
-            throw new IllegalStateException("failed to connect to collect quote: " + e.toString());
-        } catch (ExecutionException e) {
-            throw new IllegalStateException("failed to connect to execute quote: " + e.toString());
-        }
-
-        //Quote quote = quoteService.getQuote(stockSymbol, userId);
-
-        if (quote != null && quote.getPrice() > amount) {
+        if (quote.getPrice() > amount) {
             // TODO: may want to handle this differently.
             throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
         }

@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS investment;
 DROP TABLE IF EXISTS account;
 DROP TABLE IF EXISTS account_transaction_log;
 DROP TABLE IF EXISTS user_command_log;
+DROP TABLE IF EXISTS buy_trigger;
 
 CREATE TABLE pending_buy (
     id integer PRIMARY KEY,
@@ -36,6 +37,16 @@ CREATE TABLE account (
     amount integer CHECK (amount >= 0)
 );
 
+CREATE TABLE buy_trigger (
+  --id SERIAL PRIMARY KEY,
+  stock_amount integer CHECK (stock_amount >= 0),
+  stock_cost integer,
+  timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
+  user_id varchar(255),
+  stock_symbol varchar(255),
+  PRIMARY KEY (user_id, stock_symbol)
+);
+
 CREATE TABLE account_transaction_log (
     action varchar,
     funds integer,
@@ -59,18 +70,21 @@ CREATE TABLE user_command_log (
 CREATE OR REPLACE FUNCTION log_account_transaction() RETURNS trigger AS '
 DECLARE
     action varchar;
+    old_amount integer;
     funds integer;
 BEGIN
     -- For inserts (ie. new accounts), treat previous amount as 0.
-     IF (OLD IS NULL) THEN
-        OLD.amount = 0;
+     IF (TG_OP = ''INSERT'') THEN
+        old_amount = 0;
+     ELSE
+        old_amount = OLD.amount;
      END IF;
-     IF (OLD.amount < NEW.amount) THEN
+     IF (old_amount < NEW.amount) THEN
         action = ''add'';
-        funds = New.amount - OLD.amount;
-      ELSIF (OLD.amount > NEW.amount) THEN
+        funds = New.amount - old_amount;
+      ELSIF (old_amount > NEW.amount) THEN
         action = ''remove'';
-        funds = OLD.amount - NEW.amount;
+        funds = old_amount - NEW.amount;
       ELSE
         RETURN NULL;
       END IF;
