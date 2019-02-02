@@ -157,6 +157,12 @@ public class BuyController {
             if (pendingBuy.isExpired()) {
                 // TODO: May want to remove the expired entry from the DB if
                 // this is not going to be handled by something else.
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command("CANCEL_BUY")
+                                .errorMessage("There was no valid buy.")
+                                .userName(userId)
+                                .build());
                 throw new IllegalStateException(
                         "There was no valid buy.");
             }
