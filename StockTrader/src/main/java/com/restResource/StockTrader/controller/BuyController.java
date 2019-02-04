@@ -49,13 +49,13 @@ public class BuyController {
             @RequestParam String stockSymbol,
             @RequestParam int amount) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .funds(amount)
-                        .command(CommandType.BUY)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .username(userId)
+//                        .stockSymbol(stockSymbol)
+//                        .funds(amount)
+//                        .command(CommandType.BUY)
+//                        .build());
 
         if (amount <= 0) {
             throw new IllegalArgumentException(
@@ -82,14 +82,14 @@ public class BuyController {
                                 updatedEntriesCount + " accounts were updated");
             }
         } catch (Exception e) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command("BUY")
-                            .errorMessage(e.getMessage())
-                            .funds(amount)
-                            .stockSymbol(stockSymbol)
-                            .userName(userId)
-                            .build());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command("BUY")
+//                            .errorMessage(e.getMessage())
+//                            .funds(amount)
+//                            .stockSymbol(stockSymbol)
+//                            .userName(userId)
+//                            .build());
 
             // TODO: may want to handle this differently.
             //throw new IllegalStateException("You do not have enough funds.");
@@ -112,11 +112,11 @@ public class BuyController {
     public @ResponseBody
     HttpStatus commitBuy(@RequestParam String userId) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .command(CommandType.COMMIT_BUY)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .username(userId)
+//                        .command(CommandType.COMMIT_BUY)
+//                        .build());
 
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
@@ -131,11 +131,11 @@ public class BuyController {
     public @ResponseBody
     HttpStatus cancelBuy(@RequestParam String userId) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .command(CommandType.CANCEL_BUY)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .username(userId)
+//                        .command(CommandType.CANCEL_BUY)
+//                        .build());
 
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
@@ -157,12 +157,12 @@ public class BuyController {
             if (pendingBuy.isExpired()) {
                 // TODO: May want to remove the expired entry from the DB if
                 // this is not going to be handled by something else.
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command("CANCEL_BUY")
-                                .errorMessage("There was no valid buy.")
-                                .userName(userId)
-                                .build());
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command("CANCEL_BUY")
+//                                .errorMessage("There was no valid buy.")
+//                                .userName(userId)
+//                                .build());
                 throw new IllegalStateException(
                         "There was no valid buy.");
             }
@@ -173,12 +173,12 @@ public class BuyController {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
                 // TODO: Verify that the error here is caused by CANCEL_BUY
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command("CANCEL_BUY")
-                                .errorMessage(e.getMessage())
-                                .userName(userId)
-                                .build());
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command("CANCEL_BUY")
+//                                .errorMessage(e.getMessage())
+//                                .userName(userId)
+//                                .build());
                 continue;
             }
             return pendingBuy;

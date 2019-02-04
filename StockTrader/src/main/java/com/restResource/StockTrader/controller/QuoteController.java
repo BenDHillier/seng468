@@ -31,26 +31,25 @@ public class QuoteController {
     ResponseEntity<Quote> getQuotePrice(@RequestParam String stockSymbol,
                                  @RequestParam String userId) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .stockSymbol(stockSymbol)
-                        .username(userId)
-                        .command(CommandType.QUOTE)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .stockSymbol(stockSymbol)
+//                        .username(userId)
+//                        .command(CommandType.QUOTE)
+//                        .build());
 
         try {
             Quote quote = quoteService.getQuote(stockSymbol, userId);
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( IllegalArgumentException e ) {
             //System.out.println("Exception in QuoteController: " + e.toString());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command("QUOTE")
-                            .errorMessage("Unexpected error during QUOTE request")
-                            .stockSymbol(stockSymbol)
-                            .userName(userId)
-                            .build()
-            );
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command("QUOTE")
+//                            .errorMessage("Unexpected error during QUOTE request")
+//                            .stockSymbol(stockSymbol)
+//                            .userName(userId)
+//                            .build());
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }

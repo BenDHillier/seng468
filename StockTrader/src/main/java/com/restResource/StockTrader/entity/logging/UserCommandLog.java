@@ -1,37 +1,28 @@
 package com.restResource.StockTrader.entity.logging;
-
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.restResource.StockTrader.entity.CommandType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
-@Builder(toBuilder = true)
+
 @Entity
 @Data
+@Getter
 @NoArgsConstructor
-@AllArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
 public class UserCommandLog {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer transactionNum;
-    @JacksonXmlProperty
-    LocalDateTime timestamp;
-    @JacksonXmlProperty
+    Long timestamp;
     String server;
-    @JacksonXmlProperty
     @Enumerated(EnumType.STRING)
     CommandType command;
-    @JacksonXmlProperty
     String username;
-    @JacksonXmlProperty
     String stockSymbol;
-    @JacksonXmlProperty
     String filename;
-    @JacksonXmlProperty
     Integer funds;
+
+
 }

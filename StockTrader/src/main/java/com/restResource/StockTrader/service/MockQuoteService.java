@@ -14,17 +14,17 @@ public class MockQuoteService implements QuoteService {
     }
     @Override
     public Quote getQuote(String stockSymbol, String userId) {
-        loggingService.logQuoteServer(
-                QuoteServerLog.builder()
-                .server("MOCK_QS1")
-                .timestamp(System.currentTimeMillis())
-                .cryptokey("hd19dg29fj1772nd10")
-                .price(50)
-                .quoteServerTime(System.currentTimeMillis())
-                .stockSymbol(stockSymbol)
-                .userName(userId)
-                .build()
-        );
+//        loggingService.logQuoteServer(
+//                QuoteServerLog.builder()
+//                .server("MOCK_QS1")
+//                .timestamp(System.currentTimeMillis())
+//                .cryptokey("hd19dg29fj1772nd10")
+//                .price(50)
+//                .quoteServerTime(System.currentTimeMillis())
+//                .stockSymbol(stockSymbol)
+//                .userName(userId)
+//                .build()
+//        );
 
         return Quote.builder()
                 .userId(userId)

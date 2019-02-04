@@ -48,13 +48,13 @@ public class SellController {
             @RequestParam int amount) {
         Quote quote = quoteService.getQuote(stockSymbol, userId);
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .command(CommandType.SELL)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .funds(amount)
+//                            .command(CommandType.SELL)
+//                            .build());
 
             if (amount <= 0) {
                 throw new IllegalArgumentException(
@@ -88,14 +88,14 @@ public class SellController {
 
 
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command("SELL")
-                            .errorMessage(e.getMessage())
-                            .funds(amount)
-                            .stockSymbol(stockSymbol)
-                            .userName(userId)
-                            .build());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command("SELL")
+//                            .errorMessage(e.getMessage())
+//                            .funds(amount)
+//                            .stockSymbol(stockSymbol)
+//                            .userName(userId)
+//                            .build());
         }
         return quote;
     }
@@ -104,11 +104,11 @@ public class SellController {
     public @ResponseBody
     HttpStatus commitSell(@RequestParam String userId) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .command(CommandType.COMMIT_SELL)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .username(userId)
+//                        .command(CommandType.COMMIT_SELL)
+//                        .build());
 
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
@@ -123,11 +123,11 @@ public class SellController {
     public @ResponseBody
     HttpStatus cancelSell(@RequestParam String userId) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .command(CommandType.CANCEL_SELL)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .username(userId)
+//                        .command(CommandType.CANCEL_SELL)
+//                        .build());
 
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
@@ -160,12 +160,12 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command("SELL")
-                                .errorMessage(e.getMessage())
-                                .userName(userId)
-                                .build());
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command("SELL")
+//                                .errorMessage(e.getMessage())
+//                                .userName(userId)
+//                                .build());
                 continue;
             }
             return pendingSell;
