@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping(value = "/buyTrigger")
@@ -61,11 +64,12 @@ public class BuyTriggerController {
                 .stock_symbol(stockSymbol)
                 .stock_amount(stockAmount)
                 .timestamp(LocalDateTime.now())
-                .build();;
+                .build();
         buyTriggerRepository.save(buyTrigger);
 
         //buyTriggerRepository.setBuyTriggerAmount(userId, stockSymbol, stockAmount);
-
+        Optional<BuyTrigger> test = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+        System.out.println(test.toString());
         buyTriggerService.start(userId, stockSymbol);
 
         return HttpStatus.OK;

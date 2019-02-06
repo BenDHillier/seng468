@@ -4,9 +4,12 @@ import com.restResource.StockTrader.entity.BuyTrigger;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, String> {
     @Modifying
@@ -29,7 +32,7 @@ public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, String>
     void setBuyTriggerCost(String userId, String stockSymbol, Integer cost);
 
     @Query(value=
-            "Select * from buy_trigger where user_id = ?1 and stock_symbol=?2",
+            "Select * from buy_trigger where user_id = ?1 and stock_symbol=?2 ",
             nativeQuery = true)
     Optional<BuyTrigger> findByUserIdAndStockSymbol(String userId, String stockSymbol);
 }
