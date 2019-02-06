@@ -1,43 +1,38 @@
 package com.restResource.StockTrader.entity.logging;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.restResource.StockTrader.entity.CommandType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.xml.bind.annotation.*;
 
-//@Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "errorEvent")
-public class ErrorEventLog {
+@XmlRootElement(name = "systemEvent")
+public class SystemEventLog {
     @XmlTransient
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer transactionNum;
     @XmlElement
-    Long timestamp;
-    @XmlElement
-    String server;
-    @XmlElement
     CommandType command;
     @XmlElement
-    String userName;
+    String username;
     @XmlElement
-    String stockSymbol;
+    String stockStymbol;
+    @XmlElement
+    String filename;
     @XmlElement
     Integer funds;
     @XmlElement
-    String errorMessage;
+    Long timestamp;
     @XmlElement
-    String fileName;
+    String server;
 }

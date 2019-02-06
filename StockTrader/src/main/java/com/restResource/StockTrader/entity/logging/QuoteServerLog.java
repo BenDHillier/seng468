@@ -13,28 +13,32 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
-@Builder(toBuilder = true)
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "quoteServer")
 public class QuoteServerLog {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer transactionNum;
-    @JacksonXmlProperty
+    @XmlElement
     Long timestamp;
-    @JacksonXmlProperty
+    @XmlElement
     Long quoteServerTime;
-    @JacksonXmlProperty
+    @XmlElement
     String userName;
-    @JacksonXmlProperty
+    @XmlElement
     String stockSymbol;
-    @JacksonXmlProperty
+    @XmlElement
     Integer price;
-    @JacksonXmlProperty
+    @XmlElement
     String cryptokey;
-    @JacksonXmlProperty
+    @XmlElement
     String server;
 }

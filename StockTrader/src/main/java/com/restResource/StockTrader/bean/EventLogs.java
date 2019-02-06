@@ -14,6 +14,17 @@ import lombok.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class EventLogs {
 
+
+    @Getter
+    @Setter
+    @XmlElement(name="userCommand")
+    private List<EventLog> userCommandList = new ArrayList<>();
+
+    @Getter
+    @Setter
+    @XmlElement(name="quoteServer")
+    private List<EventLog> quoteServerLogList = new ArrayList<>();
+
     @Getter
     @Setter
     @XmlElement(name="accountTransaction")
@@ -21,8 +32,20 @@ public class EventLogs {
 
     @Getter
     @Setter
-    @XmlElement(name="userCommand")
-    private List<EventLog> userCommandList = new ArrayList<>();
+    @XmlElement(name="systemEvent")
+    private List<EventLog> systemEventLogList = new ArrayList<>();
 
+    @Getter
+    @Setter
+    @XmlElement(name="errorEvent")
+    private List<EventLog> errorEventLogList = new ArrayList<>();
 
+    @Getter
+    @Setter
+    @XmlElement(name="debugEvent")
+    private List<EventLog> debugEventLogList = new ArrayList<>();
+
+    @Getter
+    @Setter
+    private List<EventLog> everyLogList = new ArrayList<>();
 }

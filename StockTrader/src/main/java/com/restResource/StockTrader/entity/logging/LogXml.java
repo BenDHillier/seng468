@@ -1,25 +1,24 @@
 package com.restResource.StockTrader.entity.logging;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Builder(toBuilder = true)
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountTransactionLog {
-    @Id
+public class LogXml {
     @GeneratedValue(strategy= GenerationType.AUTO)
-    Integer transactionNum;
-    String action;
-    Integer funds;
-    LocalDateTime timestamp;
-    String username;
+    @Id
+    Integer id;
+    String xmlLogEntry;
+    String userId;
 }

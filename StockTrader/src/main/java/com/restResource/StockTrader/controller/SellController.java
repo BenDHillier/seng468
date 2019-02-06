@@ -48,15 +48,11 @@ public class SellController {
             @RequestParam int amount) {
         Quote quote = quoteService.getQuote(stockSymbol, userId);
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .funds(amount)
-//                            .command(CommandType.SELL)
-//                            .build());
+            //loggingService.logUserCommand(CommandType.SELL,userId,stockSymbol,null,amount);
+            loggingService.logUserCommand(CommandType.SELL,userId,stockSymbol,null,null);
 
             if (amount <= 0) {
+                loggingService.logErrorEvent(CommandType.SELL,userId,stockSymbol,null,amount,"The amount parameter must be greater than zero.");
                 throw new IllegalArgumentException(
                         "The amount parameter must be greater than zero.");
             }
@@ -88,14 +84,7 @@ public class SellController {
 
 
         } catch( Exception e ) {
-//            loggingService.logErrorEvent(
-//                    ErrorEventLog.builder()
-//                            .command("SELL")
-//                            .errorMessage(e.getMessage())
-//                            .funds(amount)
-//                            .stockSymbol(stockSymbol)
-//                            .userName(userId)
-//                            .build());
+            loggingService.logErrorEvent(CommandType.SELL,userId,null,null,null,"Error in sell controller");
         }
         return quote;
     }
@@ -104,13 +93,8 @@ public class SellController {
     public @ResponseBody
     HttpStatus commitSell(@RequestParam String userId) {
 
-//        loggingService.logUserCommand(
-//                UserCommandLog.builder()
-//                        .username(userId)
-//                        .command(CommandType.COMMIT_SELL)
-//                        .build());
-
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
+        loggingService.logUserCommand(CommandType.COMMIT_SELL,userId,pendingSell.getStockSymbol(),null,pendingSell.getStockPrice());
 
         accountRepository.updateAccountBalance(
                 userId,
@@ -123,13 +107,9 @@ public class SellController {
     public @ResponseBody
     HttpStatus cancelSell(@RequestParam String userId) {
 
-//        loggingService.logUserCommand(
-//                UserCommandLog.builder()
-//                        .username(userId)
-//                        .command(CommandType.CANCEL_SELL)
-//                        .build());
 
         PendingSell pendingSell = claimMostRecentPendingSell(userId);
+        loggingService.logUserCommand(CommandType.CANCEL_SELL,userId,pendingSell.getStockSymbol(),null,pendingSell.getStockPrice());
 
         investmentRepository.insertOrIncrement(
                 userId,
@@ -160,12 +140,7 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
-//                loggingService.logErrorEvent(
-//                        ErrorEventLog.builder()
-//                                .command("SELL")
-//                                .errorMessage(e.getMessage())
-//                                .userName(userId)
-//                                .build());
+                loggingService.logErrorEvent(null,userId,null,null,null,"Error in claimMostRecentPendingSell");
                 continue;
             }
             return pendingSell;

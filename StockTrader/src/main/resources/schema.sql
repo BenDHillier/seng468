@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS user_command_log;
 DROP TABLE IF EXISTS quote_server_log;
 DROP TABLE IF EXISTS error_event_log;
 DROP TABLE IF EXISTS event_log;
+DROP TABLE IF EXISTS log_xml;
 
 CREATE TABLE pending_buy (
     id integer PRIMARY KEY,
@@ -43,7 +44,7 @@ CREATE TABLE account_transaction_log (
     transaction_num SERIAL PRIMARY KEY,
     action varchar(255),
     funds integer,
-    timestamp timestamp,
+    timestamp bigint,
     username varchar(255)
 );
 
@@ -118,6 +119,13 @@ CREATE TABLE event_log (
     username varchar(255)
 );
 
+CREATE TABLE log_xml (
+    id SERIAL PRIMARY KEY,
+    xml_log_entry varchar,
+    user_id varchar(255)
+
+);
+
 
 
 CREATE OR REPLACE FUNCTION log_account_transaction() RETURNS trigger AS '
@@ -141,8 +149,12 @@ BEGIN
       ELSE
         RETURN NULL;
       END IF;
-      INSERT INTO event_log (action, funds, username, logtype, transaction_num)
-      VALUES (action, funds, NEW.user_id, ''accountTransaction'', nextval(''hibernate_sequence''));
+      WITH temp (action,funds,timestamp,username) AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id))
+      INSERT INTO log_xml (id, xml_log_entry,user_id) 
+      VALUES(
+                (select nextval(''hibernate_sequence'')),
+                (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username)) from temp),
+                (select temp.username from temp));
       RETURN NULL;
 END;
 ' LANGUAGE plpgsql;

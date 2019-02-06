@@ -10,5 +10,5 @@ public interface EventLogRepository extends CrudRepository<EventLog, Integer> {
     @Query(value =
             "SELECT * FROM event_log WHERE logtype = ?1",
             nativeQuery = true)
-    EventLog findAllWithLogtype(String logtype);
+    Iterable<EventLog> findAllWithLogtype(String logtype);
 }

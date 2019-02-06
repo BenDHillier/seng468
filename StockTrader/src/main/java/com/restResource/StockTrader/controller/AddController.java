@@ -5,6 +5,7 @@ import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.EventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
+//import com.restResource.StockTrader.repository.logging.UserCommandLogRepository;
 import com.restResource.StockTrader.service.JaxbMarshallingService;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.UserCommandLogToXMLService;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class AddController {
 
     private AccountRepository accountRepository;
+
+    //private UserCommandLogRepository userCommandLogRepository;
 
     private LoggingService loggingService;
 
@@ -36,13 +39,8 @@ public class AddController {
     HttpStatus addToAccountBalance(@RequestParam String userId,
                                    @RequestParam int amount) {
 
-    loggingService.logEvent(
-            EventLog.builder()
-                    .logtype("userCommand")
-                    .username(userId)
-                    .funds(amount)
-                    .command(CommandType.ADD)
-                    .build());
+        loggingService.logUserCommand(CommandType.ADD, userId, null, null, amount);
+        loggingService.logDebugEvent(CommandType.ADD,userId,null,null,amount,"Trying to add funds to this guys account");
 
         try {
             if (amount <= 0) {
@@ -54,14 +52,7 @@ public class AddController {
             return HttpStatus.OK;
         } catch (Exception e) {
             System.out.println("Exception in AddController: " + e.toString());
-            loggingService.logEvent(
-                    EventLog.builder()
-                            .logtype("errorEvent")
-                            .command(CommandType.ADD)
-                            .username(userId)
-                            .funds(amount)
-                            .errorMessage("Amount added must be <= 0")
-                            .build());
+            loggingService.logErrorEvent(CommandType.ADD,userId,null,null,amount,"Amount added must be lteq 0");
             return HttpStatus.BAD_REQUEST;
         }
     }

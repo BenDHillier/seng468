@@ -1,5 +1,6 @@
 package com.restResource.StockTrader.service;
 
+import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.QuoteServerLog;
 import org.springframework.stereotype.Service;
@@ -14,18 +15,9 @@ public class MockQuoteService implements QuoteService {
     }
     @Override
     public Quote getQuote(String stockSymbol, String userId) {
-//        loggingService.logQuoteServer(
-//                QuoteServerLog.builder()
-//                .server("MOCK_QS1")
-//                .timestamp(System.currentTimeMillis())
-//                .cryptokey("hd19dg29fj1772nd10")
-//                .price(50)
-//                .quoteServerTime(System.currentTimeMillis())
-//                .stockSymbol(stockSymbol)
-//                .userName(userId)
-//                .build()
-//        );
 
+        loggingService.logQuoteServer(50,stockSymbol,userId,System.currentTimeMillis(),"hd19dg29fj1772nd10");
+        loggingService.logSystemEvent(CommandType.QUOTE,userId,stockSymbol,null,null);
         return Quote.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)

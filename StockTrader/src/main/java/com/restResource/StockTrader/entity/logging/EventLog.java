@@ -29,8 +29,6 @@ public class EventLog {
     Long quoteServerTime;
     String server;
     String stockSymbol;;
-    //@XmlTransient
-//    @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     @Id
     Integer transactionNum;

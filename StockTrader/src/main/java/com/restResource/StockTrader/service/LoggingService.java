@@ -1,64 +1,173 @@
 package com.restResource.StockTrader.service;
 
-import com.restResource.StockTrader.entity.logging.ErrorEventLog;
-import com.restResource.StockTrader.entity.logging.EventLog;
-import com.restResource.StockTrader.entity.logging.QuoteServerLog;
-import com.restResource.StockTrader.entity.logging.UserCommandLog;
-import com.restResource.StockTrader.repository.logging.ErrorEventLogRepository;
-import com.restResource.StockTrader.repository.logging.EventLogRepository;
-import com.restResource.StockTrader.repository.logging.QuoteServerLogRepository;
-import com.restResource.StockTrader.repository.logging.UserCommandLogRepository;
+import com.restResource.StockTrader.entity.CommandType;
+import com.restResource.StockTrader.entity.logging.*;
+import com.restResource.StockTrader.repository.logging.*;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import java.io.StringWriter;
 
 @Service
 public class LoggingService {
 
-//    private UserCommandLogRepository userCommandLogRepository;
-//    private QuoteServerLogRepository quoteServerLogRepository;
-//    private ErrorEventLogRepository errorEventLogRepository;
     private EventLogRepository eventLogRepository;
+    private LogXmlRepository logXmlRepository;
+    private JAXBContext jaxbContext;
+    private Marshaller marshaller;
 
     public LoggingService(
-//                          UserCommandLogRepository userCommandLogRepository,
-//                          QuoteServerLogRepository quoteServerLogRepository,
-//                          ErrorEventLogRepository errorEventLogRepository,
+                          LogXmlRepository logXmlRepository,
                           EventLogRepository eventLogRepository) {
-//        this.userCommandLogRepository = userCommandLogRepository;
-//        this.quoteServerLogRepository = quoteServerLogRepository;
-//        this.errorEventLogRepository = errorEventLogRepository;
+        this.logXmlRepository = logXmlRepository;
         this.eventLogRepository = eventLogRepository;
-    }
+        try {
+            this.jaxbContext = JAXBContext.newInstance(UserCommandLog.class,QuoteServerLog.class,SystemEventLog.class,ErrorEventLog.class,DebugEventLog.class);
+            this.marshaller = jaxbContext.createMarshaller();
+            // TODO: make this false which will save space in database
+            this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            this.marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+        } catch( Exception e ) {
+            e.printStackTrace();
+        }
 
-//    public void logUserCommand(UserCommandLog log) {
-//        userCommandLogRepository.save(
-//                log.toBuilder()
-//                        .server("TS1")
-//                        .timestamp(System.currentTimeMillis())
-//                        .build());
-//    }
-//
-//    public void logQuoteServer(QuoteServerLog log) {
-//        quoteServerLogRepository.save(
-//                log.toBuilder()
-//                .build());
-//    }
-//
-//    public void logErrorEvent(ErrorEventLog log) {
-//        errorEventLogRepository.save(
-//                log.toBuilder()
-//                        .timestamp(System.currentTimeMillis())
-//                        .server("TS1")
-//                        .build());
-//    }
+    }
 
     public void logEvent(EventLog log) {
         eventLogRepository.save(
                 log.toBuilder()
-                .timestamp(System.currentTimeMillis())
-                .server("TS1")
-                .build()
+                        .timestamp(System.currentTimeMillis())
+                        .server("TS1")
+                        .build()
         );
+    }
+
+    public void xmlLogEvent(LogXml log) {
+        logXmlRepository.save(
+                log.toBuilder().build());
+    }
+
+    public void logUserCommand(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
+        UserCommandLog user = new UserCommandLog();
+        user.setCommand(command);
+        user.setUsername(username);
+        user.setStockSymbol(stockSymbol);
+        user.setFilename(filename);
+        user.setFunds(funds);
+        user.setTimestamp(System.currentTimeMillis());
+        user.setServer("TS1");
+
+        StringWriter writer = new StringWriter();
+
+        try {
+            marshaller.marshal(user,writer);
+            xmlLogEvent(
+                    LogXml.builder()
+                            .userId(username)
+                            .xmlLogEntry(writer.toString())
+                            .build()
+            );
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logQuoteServer(Integer price, String stockSymbol, String username, Long quoteServerTime, String cryptokey) {
+        QuoteServerLog quoteServerLog = new QuoteServerLog();
+        quoteServerLog.setPrice(price);
+        quoteServerLog.setStockSymbol(stockSymbol);
+        quoteServerLog.setQuoteServerTime(quoteServerTime);
+        quoteServerLog.setCryptokey(cryptokey);
+        quoteServerLog.setTimestamp(System.currentTimeMillis());
+        quoteServerLog.setServer("TS1");
+
+        StringWriter writer = new StringWriter();
+
+        try {
+            marshaller.marshal(quoteServerLog,writer);
+            xmlLogEvent(
+                    LogXml.builder()
+                            .userId(username)
+                            .xmlLogEntry(writer.toString())
+                            .build()
+            );
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logSystemEvent(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
+
+        SystemEventLog systemEventLog = new SystemEventLog();
+        systemEventLog.setCommand(command);
+        systemEventLog.setUsername(username);
+        systemEventLog.setStockStymbol(stockSymbol);
+        systemEventLog.setFilename(filename);
+        systemEventLog.setFunds(funds);
+        systemEventLog.setServer("TS1");
+        systemEventLog.setTimestamp(System.currentTimeMillis());
+
+        StringWriter writer = new StringWriter();
+
+        try {
+            marshaller.marshal(systemEventLog,writer);
+            xmlLogEvent(
+                    LogXml.builder()
+                            .userId(username)
+                            .xmlLogEntry(writer.toString())
+                            .build()
+            );
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logErrorEvent(CommandType command, String username, String stockSymbol, String filename, Integer funds, String errorMessage) {
+        ErrorEventLog errorEventLog = new ErrorEventLog();
+        errorEventLog.setTimestamp(System.currentTimeMillis());
+        errorEventLog.setServer("TS1");
+        errorEventLog.setCommand(command);
+        errorEventLog.setUserName(username);
+        errorEventLog.setStockSymbol(stockSymbol);
+        errorEventLog.setFileName(filename);
+        errorEventLog.setFunds(funds);
+        errorEventLog.setErrorMessage(errorMessage);
+        StringWriter writer = new StringWriter();
+        try {
+            marshaller.marshal(errorEventLog,writer);
+            xmlLogEvent(
+                    LogXml.builder()
+                            .userId(username)
+                            .xmlLogEntry(writer.toString())
+                            .build()
+            );
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logDebugEvent(CommandType command, String username, String stockSymbol, String filename, Integer funds, String debugMessage) {
+        DebugEventLog debugEventLog = new DebugEventLog();
+        debugEventLog.setTimestamp(System.currentTimeMillis());
+        debugEventLog.setServer("TS1");
+        debugEventLog.setCommand(command);
+        debugEventLog.setUserName(username);
+        debugEventLog.setStockSymbol(stockSymbol);
+        debugEventLog.setFileName(filename);
+        debugEventLog.setFunds(funds);
+        debugEventLog.setDebugMessage(debugMessage);
+        StringWriter writer = new StringWriter();
+        try {
+            marshaller.marshal(debugEventLog,writer);
+            xmlLogEvent(
+                    LogXml.builder()
+                            .userId(username)
+                            .xmlLogEntry(writer.toString())
+                            .build()
+            );
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }
