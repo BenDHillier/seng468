@@ -15,16 +15,14 @@ import java.io.StringWriter;
 @Service
 public class LoggingService {
 
-    private EventLogRepository eventLogRepository;
     private LogXmlRepository logXmlRepository;
     private JAXBContext jaxbContext;
     private Marshaller marshaller;
 
     public LoggingService(
-                          LogXmlRepository logXmlRepository,
-                          EventLogRepository eventLogRepository) {
+                          LogXmlRepository logXmlRepository
+    ) {
         this.logXmlRepository = logXmlRepository;
-        this.eventLogRepository = eventLogRepository;
         try {
             this.jaxbContext = JAXBContext.newInstance(UserCommandLog.class,QuoteServerLog.class,SystemEventLog.class,ErrorEventLog.class,DebugEventLog.class);
             this.marshaller = jaxbContext.createMarshaller();
@@ -37,31 +35,10 @@ public class LoggingService {
 
     }
 
-    public void logEvent(EventLog log) {
-        eventLogRepository.save(
-                log.toBuilder()
-                        .timestamp(System.currentTimeMillis())
-                        .server("TS1")
-                        .build()
-        );
-    }
-
     public void xmlLogEvent(LogXml log) {
         logXmlRepository.save(
                 log.toBuilder().build());
     }
-
-//    public void altLogUserCommand(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
-//        logEvent(
-//                EventLog.builder()
-//                .command(command)
-//                        .username(username)
-//                        .stockSymbol(stockSymbol)
-//                        .filename(filename)
-//                        .funds(funds)
-//                        .build()
-//        );
-//    }
 
     public void logUserCommand(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
         UserCommandLog user = new UserCommandLog();
@@ -202,6 +179,26 @@ public class LoggingService {
         } catch(Exception e) {
             System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
             logErrorEvent(CommandType.DUMPLOG,null,null,filename,null,e.getMessage());
+        }
+        return null;
+    }
+
+    public File dumpUserLogToXmlFile(String filename, String userId) {
+        try {
+            Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
+            FileWriter writer = new FileWriter("./"+filename);
+            writer.write("<log>");
+            for(String s : logFragments) {
+                writer.write(s);
+            }
+            writer.write("</log>");
+            File file = new File("./"+filename);
+            writer.close();
+            return file;
+
+        } catch(Exception e) {
+            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
+            logErrorEvent(CommandType.DUMPLOG,userId,null,filename,null,e.getMessage());
         }
         return null;
     }

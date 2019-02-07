@@ -25,19 +25,12 @@ import java.io.FileInputStream;
 public class AddController {
 
     private AccountRepository accountRepository;
-
-    //private UserCommandLogRepository userCommandLogRepository;
-
     private LoggingService loggingService;
 
-    //private UserCommandLogToXMLService userCommandLogToXMLService;
-    private JaxbMarshallingService jaxbMarshallingService;
-
-    public AddController(AccountRepository accountRepository, LoggingService loggingService, JaxbMarshallingService jaxbMarshallingService) {
+    public AddController(AccountRepository accountRepository,
+                         LoggingService loggingService) {
         this.accountRepository = accountRepository;
         this.loggingService = loggingService;
-        //this.userCommandLogToXMLService = userCommandLogToXMLService;
-        this.jaxbMarshallingService = jaxbMarshallingService;
     }
 
     @PutMapping(value = "/add")
@@ -47,8 +40,6 @@ public class AddController {
 
         loggingService.logUserCommand(CommandType.ADD, userId, null, null, amount);
         loggingService.logDebugEvent(CommandType.ADD,userId,null,null,amount,"Trying to add funds to this guys account");
-        //loggingService.altLogUserCommand(CommandType.ADD,userId,null,null,amount);
-
         try {
             if (amount <= 0) {
                 throw new IllegalArgumentException(
@@ -62,52 +53,5 @@ public class AddController {
             loggingService.logErrorEvent(CommandType.ADD,userId,null,null,amount,"Amount added must be lteq 0");
             return HttpStatus.BAD_REQUEST;
         }
-    }
-
-//    // TODO: move dumplog into its own controller
-//    @RequestMapping(value = "/dumplog", produces = MediaType.APPLICATION_XML_VALUE)
-//    public @ResponseBody
-//    ResponseEntity<UserCommandLogs> findUserCommandLogs(@RequestParam String filename) {
-//        loggingService.logUserCommand(
-//                UserCommandLog.builder()
-//                        .command(CommandType.DUMPLOG)
-//                        .username("NULL")
-//                        .filename(filename)
-//                        .build());
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-//        headers.add("Pragma", "no-cache");
-//        headers.add("Expires", "0");
-//        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .contentType(MediaType.APPLICATION_XML)
-//                .body(userCommandLogToXMLService.findAll());
-//    }
-
-    @RequestMapping(value = "/printlogs")
-    public void printAllLogs() {
-        System.out.println("Attempting to print logs based on call to \"printAllLogs()\"");
-        loggingService.dumpLogToXmlFile("./logs.xml");
-    }
-
-    @RequestMapping(value="/dumplog")
-    public ResponseEntity<Resource> dumpLogs(@RequestParam String filename) {
-        try {
-            loggingService.dumpLogToXmlFile(filename);
-            File f = new File(filename);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
-            InputStreamResource resource;
-            resource = new InputStreamResource(new FileInputStream(f));
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentType(MediaType.APPLICATION_XML)
-                    .contentLength(f.length())
-                    .body(resource);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

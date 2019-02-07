@@ -12,7 +12,7 @@ public interface LogXmlRepository extends CrudRepository<LogXml,Integer> {
     @Query(value =
             "SELECT xml_log_entry FROM log_xml WHERE user_id = ?1",
             nativeQuery = true)
-    Iterable<LogXml> findAllLogsForUser(String userId);
+    Iterable<String> findAllLogsForUser(String userId);
 
     @Query(value =
             "SELECT xml_log_entry FROM log_xml",

@@ -100,13 +100,6 @@ public class BuyController {
     public @ResponseBody
     HttpStatus commitBuy(@RequestParam String userId) {
 
-//        loggingService.logUserCommand(
-//                UserCommandLog.builder()
-//                        .username(userId)
-//                        .command(CommandType.COMMIT_BUY)
-//                        .build());
-
-
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
         int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
