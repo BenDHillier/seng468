@@ -150,11 +150,11 @@ BEGIN
         RETURN NULL;
       END IF;
       WITH temp (action,funds,timestamp,username) AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id))
-      INSERT INTO log_xml (id, xml_log_entry,user_id) 
+      INSERT INTO log_xml (id, xml_log_entry,user_id)
       VALUES(
-                (select nextval(''hibernate_sequence'')),
-                (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username)) from temp),
-                (select temp.username from temp));
+        (select nextval(''hibernate_sequence'')),
+        (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username)) from temp),
+        (select temp.username from temp));
       RETURN NULL;
 END;
 ' LANGUAGE plpgsql;

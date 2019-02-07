@@ -97,9 +97,9 @@ public class JaxbMarshallingService {
 //            Marshaller marshaller = jaxbContext.createMarshaller();
 //            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 //            marshaller.marshal(eventLogs, System.out);
-            for(LogXml log : logXmlRepository.findAllLogs()) {
-                System.out.println(log.toString());
-            }
+//            for(LogXml log : logXmlRepository.findAllLogs()) {
+//                System.out.println(log.toString());
+//            }
 
         } catch( Exception e ) {
             e.printStackTrace();

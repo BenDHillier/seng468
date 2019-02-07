@@ -9,11 +9,17 @@ import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.service.JaxbMarshallingService;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.UserCommandLogToXMLService;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.xml.ws.Response;
+import java.io.File;
+import java.io.FileInputStream;
 
 @RestController
 public class AddController {
@@ -41,6 +47,7 @@ public class AddController {
 
         loggingService.logUserCommand(CommandType.ADD, userId, null, null, amount);
         loggingService.logDebugEvent(CommandType.ADD,userId,null,null,amount,"Trying to add funds to this guys account");
+        //loggingService.altLogUserCommand(CommandType.ADD,userId,null,null,amount);
 
         try {
             if (amount <= 0) {
@@ -78,9 +85,29 @@ public class AddController {
 //                .body(userCommandLogToXMLService.findAll());
 //    }
 
-    @RequestMapping(value = "/dumplog")
+    @RequestMapping(value = "/printlogs")
     public void printAllLogs() {
         System.out.println("Attempting to print logs based on call to \"printAllLogs()\"");
-        jaxbMarshallingService.dumpEventLogs();
+        loggingService.dumpLogToXmlFile("./logs.xml");
+    }
+
+    @RequestMapping(value="/dumplog")
+    public ResponseEntity<Resource> dumpLogs(@RequestParam String filename) {
+        try {
+            loggingService.dumpLogToXmlFile(filename);
+            File f = new File(filename);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+            InputStreamResource resource;
+            resource = new InputStreamResource(new FileInputStream(f));
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_XML)
+                    .contentLength(f.length())
+                    .body(resource);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

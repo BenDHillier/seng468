@@ -5,15 +5,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.xml.bind.annotation.XmlElement;
+
 @Repository
 public interface LogXmlRepository extends CrudRepository<LogXml,Integer> {
     @Query(value =
-            "SELECT xml_log_entry FROM event_log WHERE user_id = ?1",
+            "SELECT xml_log_entry FROM log_xml WHERE user_id = ?1",
             nativeQuery = true)
     Iterable<LogXml> findAllLogsForUser(String userId);
 
     @Query(value =
-            "SELECT xml_log_entry FROM event_log",
+            "SELECT xml_log_entry FROM log_xml",
             nativeQuery = true)
-    Iterable<LogXml> findAllLogs();
+    Iterable<String> findAllLogs();
 }

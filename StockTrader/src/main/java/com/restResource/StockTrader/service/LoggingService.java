@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlElement;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.StringWriter;
 
 @Service
@@ -26,7 +29,7 @@ public class LoggingService {
             this.jaxbContext = JAXBContext.newInstance(UserCommandLog.class,QuoteServerLog.class,SystemEventLog.class,ErrorEventLog.class,DebugEventLog.class);
             this.marshaller = jaxbContext.createMarshaller();
             // TODO: make this false which will save space in database
-            this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
             this.marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
         } catch( Exception e ) {
             e.printStackTrace();
@@ -47,6 +50,18 @@ public class LoggingService {
         logXmlRepository.save(
                 log.toBuilder().build());
     }
+
+//    public void altLogUserCommand(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
+//        logEvent(
+//                EventLog.builder()
+//                .command(command)
+//                        .username(username)
+//                        .stockSymbol(stockSymbol)
+//                        .filename(filename)
+//                        .funds(funds)
+//                        .build()
+//        );
+//    }
 
     public void logUserCommand(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
         UserCommandLog user = new UserCommandLog();
@@ -169,5 +184,25 @@ public class LoggingService {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public File dumpLogToXmlFile(String filename) {
+        try {
+            Iterable<String> logFragments = logXmlRepository.findAllLogs();
+            FileWriter writer = new FileWriter("./"+filename);
+            writer.write("<log>");
+            for(String s : logFragments) {
+                writer.write(s);
+            }
+            writer.write("</log>");
+            File file = new File("./"+filename);
+            writer.close();
+            return file;
+
+        } catch(Exception e) {
+            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
+            logErrorEvent(CommandType.DUMPLOG,null,null,filename,null,e.getMessage());
+        }
+        return null;
     }
 }

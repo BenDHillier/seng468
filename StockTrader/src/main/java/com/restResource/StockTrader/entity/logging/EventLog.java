@@ -8,6 +8,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 
+/* TODO: This class isn't used at the moment, but it could become useful if we end up optimizing xml
+* */
+
 @Builder(toBuilder = true)
 @Entity
 @Data
@@ -35,20 +38,3 @@ public class EventLog {
     Long timestamp;
     String username;
 }
-
-//@Entity
-//@Data
-//@Getter
-//@NoArgsConstructor
-//@XmlAccessorType(XmlAccessType.FIELD)
-//public class EventLog extends Log{
-//
-//    //All have timestamp, server, transactionNum, username,
-//
-//    private String command;
-//    @Builder(toBuilder = true)
-//    public EventLog(String command, Long timestamp, String logtype, String server, Integer transactionNum) {
-//        super(transactionNum,timestamp,logtype);
-//        this.command = command;
-//    }
-//}
