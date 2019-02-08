@@ -51,7 +51,8 @@ CREATE TABLE log_xml (
 );
 
 
-
+-- FIX ME need to make accountTransaction log transaction_num flow with the parent command
+-- (ie buy, add, sell, commit_sell, etc)
 CREATE OR REPLACE FUNCTION log_account_transaction() RETURNS trigger AS '
 DECLARE
     action varchar;
@@ -74,14 +75,14 @@ BEGIN
         RETURN NULL;
       END IF;
 --       INSERT INTO account_transaction_log (action, funds, timestamp, username)
+      INSERT INTO account_transaction_log (action, funds, timestamp, username)
+      VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id);
       WITH temp (action,funds,timestamp,username) AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id))
       INSERT INTO log_xml (id, xml_log_entry,user_id)
       VALUES(
         (select nextval(''hibernate_sequence'')),
         (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username)) from temp),
         (select temp.username from temp));
-      INSERT INTO account_transaction_log (action, funds, timestamp, username)
-      VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id);
       RETURN NULL;
 END;
 ' LANGUAGE plpgsql;

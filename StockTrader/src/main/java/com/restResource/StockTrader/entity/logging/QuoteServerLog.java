@@ -25,9 +25,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "quoteServer")
 public class QuoteServerLog {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    Integer transactionNum;
+    @XmlElement
+    @Builder.Default
+    Integer transactionNum = 0;
     @XmlElement
     @Builder.Default
     Long timestamp = System.currentTimeMillis();

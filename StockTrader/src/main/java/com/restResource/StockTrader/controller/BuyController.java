@@ -47,7 +47,8 @@ public class BuyController {
     Quote createBuy(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int amount) {
+            @RequestParam int amount,
+            @RequestParam int transactionNum) {
 
         loggingService.logUserCommand(
                 UserCommandLog.builder()
@@ -55,6 +56,7 @@ public class BuyController {
                         .username(userId)
                         .stockSymbol(stockSymbol)
                         .funds(amount)
+                        .transactionNum(transactionNum)
                         .build());
 
         if (amount <= 0) {
@@ -64,19 +66,21 @@ public class BuyController {
                             .userName(userId)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
+                            .transactionNum(transactionNum)
                             .errorMessage("The amount parameter must be greater than zero")
                             .build());
             throw new IllegalArgumentException(
                     "The amount parameter must be greater than zero.");
         }
 
-        Quote quote = quoteService.getQuote(stockSymbol, userId);
+        Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
 
         if (quote.getPrice() > amount) {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.BUY)
                             .userName(userId)
+                            .transactionNum(transactionNum)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
                             .errorMessage("The amount parameter must be greater than the quote price")
@@ -97,6 +101,7 @@ public class BuyController {
                         ErrorEventLog.builder()
                                 .command(CommandType.BUY)
                                 .userName(userId)
+                                .transactionNum(transactionNum)
                                 .stockSymbol(stockSymbol)
                                 .funds(amount)
                                 .errorMessage("Error removing funds from account. Expected 1 account to be updated but \" + updatedEntriesCount + \" accounts were updated")
@@ -125,9 +130,10 @@ public class BuyController {
 
     @PostMapping(path = "/commit")
     public @ResponseBody
-    HttpStatus commitBuy(@RequestParam String userId) {
+    HttpStatus commitBuy(@RequestParam String userId,
+                         @RequestParam int transactionNum) {
 
-        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
+        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum);
 
         int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
 
@@ -137,6 +143,7 @@ public class BuyController {
                 UserCommandLog.builder()
                         .command(CommandType.COMMIT_BUY)
                         .username(userId)
+                        .transactionNum(transactionNum)
                         .funds(amountToBuy)
                         .build());
 
@@ -145,15 +152,17 @@ public class BuyController {
 
     @PostMapping(path = "/cancel")
     public @ResponseBody
-    HttpStatus cancelBuy(@RequestParam String userId) {
+    HttpStatus cancelBuy(@RequestParam String userId,
+                         @RequestParam int transactionNum) {
 
 
-        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
+        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum);
 
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.CANCEL_BUY)
                         .username(userId)
+                        .transactionNum(transactionNum)
                         .stockSymbol(pendingBuy.getStockSymbol())
                         .funds(pendingBuy.getAmount())
                         .build());
@@ -165,7 +174,7 @@ public class BuyController {
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingBuy claimMostRecentPendingBuy(String userId) {
+    private PendingBuy claimMostRecentPendingBuy(String userId,int transactionNum) {
         while (true) {
             PendingBuy pendingBuy =
                     buyRepository
@@ -180,6 +189,7 @@ public class BuyController {
                         ErrorEventLog.builder()
                                 .command(CommandType.CANCEL_BUY)
                                 .userName(userId)
+                                .transactionNum(transactionNum)
                                 .stockSymbol(pendingBuy.getStockSymbol())
                                 .funds(pendingBuy.getAmount())
                                 .errorMessage("There was no valid buy")
@@ -199,6 +209,7 @@ public class BuyController {
                                 .command(CommandType.CANCEL_BUY)
                                 .userName(userId)
                                 .stockSymbol(pendingBuy.getStockSymbol())
+                                .transactionNum(transactionNum)
                                 .funds(pendingBuy.getAmount())
                                 .errorMessage("Exception in buyRepository.deleteById(pendingBuy.getId())")
                                 .build());

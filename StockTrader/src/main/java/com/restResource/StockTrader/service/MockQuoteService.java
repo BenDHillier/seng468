@@ -15,11 +15,12 @@ public class MockQuoteService implements QuoteService {
         this.loggingService = loggingService;
     }
     @Override
-    public Quote getQuote(String stockSymbol, String userId) {
+    public Quote getQuote(String stockSymbol, String userId, int transactionNum) {
 
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
                         .price(50)
+                        .transactionNum(transactionNum)
                         .stockSymbol(stockSymbol)
                         .cryptokey("made_up_cryptokey")
                         .build());
@@ -28,6 +29,7 @@ public class MockQuoteService implements QuoteService {
                 SystemEventLog.builder()
                         .command(CommandType.QUOTE)
                         .username(userId)
+                        .transactionNum(transactionNum)
                         .stockStymbol(stockSymbol)
                         .build()
         );

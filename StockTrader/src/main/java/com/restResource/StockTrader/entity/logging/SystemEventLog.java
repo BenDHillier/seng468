@@ -18,9 +18,9 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "systemEvent")
 public class SystemEventLog {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    Integer transactionNum;
+    @XmlElement
+    @Builder.Default
+    Integer transactionNum = 0;
     @XmlElement
     @Builder.Default
     CommandType command = CommandType.NONE;

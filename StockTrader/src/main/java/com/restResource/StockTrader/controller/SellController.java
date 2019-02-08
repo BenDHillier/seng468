@@ -45,13 +45,15 @@ public class SellController {
     Quote createNewSell(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int amount) {
-        Quote quote = quoteService.getQuote(stockSymbol, userId);
+            @RequestParam int amount,
+            @RequestParam int transactionNum) {
+        Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
         try {
             loggingService.logUserCommand(
                     UserCommandLog.builder()
                             .command(CommandType.SELL)
                             .username(userId)
+                            .transactionNum(transactionNum)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
                             .build());
@@ -61,6 +63,7 @@ public class SellController {
                     ErrorEventLog.builder()
                             .command(CommandType.SELL)
                             .userName(userId)
+                            .transactionNum(transactionNum)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
                             .errorMessage("The amount parameter must be greater than zero.")
@@ -101,6 +104,7 @@ public class SellController {
                             .command(CommandType.SELL)
                             .userName(userId)
                             .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
                             .funds(amount)
                             .errorMessage("Error in sell controller")
                             .build());
@@ -111,13 +115,15 @@ public class SellController {
 
     @PostMapping("/commit")
     public @ResponseBody
-    HttpStatus commitSell(@RequestParam String userId) {
+    HttpStatus commitSell(@RequestParam String userId,
+                          @RequestParam int transactionNum) {
 
-        PendingSell pendingSell = claimMostRecentPendingSell(userId);
+        PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum);
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.SELL)
                         .username(userId)
+                        .transactionNum(transactionNum)
                         .stockSymbol(pendingSell.getStockSymbol())
                         .funds(pendingSell.getStockPrice())
                         .build());
@@ -131,15 +137,17 @@ public class SellController {
 
     @PostMapping("/cancel")
     public @ResponseBody
-    HttpStatus cancelSell(@RequestParam String userId) {
+    HttpStatus cancelSell(@RequestParam String userId,
+                          @RequestParam int transactionNum) {
 
 
-        PendingSell pendingSell = claimMostRecentPendingSell(userId);
+        PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum);
 
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.CANCEL_SELL)
                         .username(userId)
+                        .transactionNum(transactionNum)
                         .stockSymbol(pendingSell.getStockSymbol())
                         .funds(pendingSell.getStockPrice())
                         .build());
@@ -154,7 +162,7 @@ public class SellController {
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingSell claimMostRecentPendingSell(String userId) {
+    private PendingSell claimMostRecentPendingSell(String userId, int transactionNum) {
         while (true) {
             PendingSell pendingSell =
                     sellRepository
@@ -177,6 +185,7 @@ public class SellController {
                         ErrorEventLog.builder()
                                 .command(CommandType.SELL)
                                 .userName(userId)
+                                .transactionNum(transactionNum)
                                 .stockSymbol(pendingSell.getStockSymbol())
                                 .funds(pendingSell.getStockPrice())
                                 .errorMessage("Error in claimMostRecentPendingSell")

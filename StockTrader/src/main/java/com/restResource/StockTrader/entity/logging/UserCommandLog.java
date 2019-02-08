@@ -11,9 +11,9 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "userCommand")
 public class UserCommandLog {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    Integer transactionNum;
+    @XmlElement
+    @Builder.Default
+    Integer transactionNum = 0;
     @XmlElement
     @Builder.Default
     Long timestamp = System.currentTimeMillis();

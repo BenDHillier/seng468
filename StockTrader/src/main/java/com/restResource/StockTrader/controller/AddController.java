@@ -23,12 +23,14 @@ public class AddController {
     @PutMapping(value = "/add")
     public @ResponseBody
     HttpStatus addToAccountBalance(@RequestParam String userId,
-                                   @RequestParam int amount) {
+                                   @RequestParam int amount,
+                                   @RequestParam int transactionNum) {
 
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.ADD)
                         .username(userId)
+                        .transactionNum(transactionNum)
                         .funds(amount)
                         .build());
         loggingService.logDebugEvent(
@@ -37,6 +39,7 @@ public class AddController {
                         .userName(userId)
                         .funds(amount)
                         .debugMessage("Adding funds to user account")
+                        .transactionNum(transactionNum)
                         .build());
         try {
             if (amount <= 0) {
@@ -52,6 +55,7 @@ public class AddController {
                     ErrorEventLog.builder()
                             .command(CommandType.ADD)
                             .userName(userId)
+                            .transactionNum(transactionNum)
                             .funds(amount)
                             .errorMessage("Amount added must be less than or equal to zero")
                             .build());

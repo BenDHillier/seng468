@@ -22,7 +22,8 @@ public class LogController {
     }
 
     @RequestMapping(value="/dumplog/all")
-    public ResponseEntity<Resource> dumpLogs(@RequestParam String filename) {
+    public ResponseEntity<Resource> dumpLogs(@RequestParam String filename,
+                                             @RequestParam int transactionNum) {
         try {
             loggingService.dumpLogToXmlFile(filename);
             File f = new File(filename);
@@ -42,7 +43,9 @@ public class LogController {
     }
 
     @RequestMapping(value="/dumplog/user")
-    public ResponseEntity<Resource> dumpUserLogs(@RequestParam String filename,@RequestParam String userId) {
+    public ResponseEntity<Resource> dumpUserLogs(@RequestParam String filename,
+                                                 @RequestParam String userId,
+                                                 @RequestParam int transactionNum) {
         try {
             loggingService.dumpUserLogToXmlFile(filename,userId);
             File f = new File(filename);
