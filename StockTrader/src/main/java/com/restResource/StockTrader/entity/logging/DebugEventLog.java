@@ -1,7 +1,14 @@
 package com.restResource.StockTrader.entity.logging;
+
 import com.restResource.StockTrader.entity.CommandType;
-import lombok.*;
-import javax.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.xml.bind.annotation.*;
 
 @Builder(toBuilder = true)
@@ -9,8 +16,8 @@ import javax.xml.bind.annotation.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "userCommand")
-public class UserCommandLog {
+@XmlRootElement(name = "debugEvent")
+public class DebugEventLog {
     @XmlElement
     @Builder.Default
     Integer transactionNum = 0;
@@ -22,18 +29,20 @@ public class UserCommandLog {
     String server = "";
     @XmlElement
     @Builder.Default
-    @Enumerated(EnumType.STRING)
     CommandType command = CommandType.NONE;
     @XmlElement
     @Builder.Default
-    String username = "";
+    String userName = "";
     @XmlElement
     @Builder.Default
     String stockSymbol = "";
     @XmlElement
     @Builder.Default
-    String filename = "";
+    Integer funds = 0;
     @XmlElement
     @Builder.Default
-    Integer funds = 0;
+    String debugMessage = "";
+    @XmlElement
+    @Builder.Default
+    String fileName = "";
 }
