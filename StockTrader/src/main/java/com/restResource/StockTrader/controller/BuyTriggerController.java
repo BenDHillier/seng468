@@ -28,6 +28,8 @@ public class BuyTriggerController {
 
     private BuyRepository buyRepository;
 
+    private AccountRepository accountRepository;
+
     private LoggingService loggingService;
 
     private BuyTriggerRepository buyTriggerRepository;
@@ -38,12 +40,14 @@ public class BuyTriggerController {
             QuoteService quoteService,
             BuyTriggerRepository buyTriggerRepository,
             LoggingService loggingService,
-            BuyTriggerService buyTriggerService) {
+            BuyTriggerService buyTriggerService,
+            AccountRepository accountRepository) {
 
         this.quoteService = quoteService;
         this.buyTriggerRepository = buyTriggerRepository;
         this.loggingService = loggingService;
         this.buyTriggerService = buyTriggerService;
+        this.accountRepository = accountRepository;
     }
 
     @PostMapping(path = "/amount")
@@ -51,7 +55,8 @@ public class BuyTriggerController {
     HttpStatus createTriggerAmount(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockAmount) {
+            @RequestParam int stockAmount,
+            @RequestParam int transactionNum) {
 
 
         if (stockAmount <= 0) {
@@ -59,36 +64,65 @@ public class BuyTriggerController {
                     "The amount parameter must be greater than zero.");
         }
 
-        BuyTrigger buyTrigger = BuyTrigger.builder()
+        Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+        if (stockBuyTriggerStatus.isPresent()) {
+            Integer cost = stockBuyTriggerStatus.get().getStock_cost();
+            if (cost != null){
+                if(accountRepository.removeFunds(userId, cost*stockAmount) == 0){
+                    return HttpStatus.BAD_REQUEST; //insufficient funds for the transaction.
+                }
+            }
+            stockBuyTriggerStatus.get().setStock_amount(stockAmount + stockBuyTriggerStatus.get().getStock_amount());
+            buyTriggerRepository.save(stockBuyTriggerStatus.get());
+        } else {
+            BuyTrigger buyTrigger = BuyTrigger.builder()
                 .user_id(userId)
                 .stock_symbol(stockSymbol)
                 .stock_amount(stockAmount)
                 .timestamp(LocalDateTime.now())
                 .build();
-        buyTriggerRepository.save(buyTrigger);
+            buyTriggerRepository.save(buyTrigger);
+        }
 
-        //buyTriggerRepository.setBuyTriggerAmount(userId, stockSymbol, stockAmount);
-        Optional<BuyTrigger> test = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
-        System.out.println(test.toString());
-        buyTriggerService.start(userId, stockSymbol);
+
 
         return HttpStatus.OK;
     }
 
-    @PostMapping(path = "/cost")
+    @PostMapping(path = "/trigger")
     public @ResponseBody
     HttpStatus createTriggerCost(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockCost) {
+            @RequestParam int stockCost,
+            @RequestParam int transactionNum) {
 
         if (stockCost <= 0) {
             throw new IllegalArgumentException(
                     "The amount parameter must be greater than zero.");
         }
 
-        buyTriggerRepository.setBuyTriggerCost(userId, stockSymbol, stockCost);
+        buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
-        return HttpStatus.OK;
+        return HttpStatus.ACCEPTED;
+    }
+
+    @PostMapping(path = "/cancel")
+    public @ResponseBody
+    HttpStatus createTriggerCost(
+            @RequestParam String userId,
+            @RequestParam String stockSymbol,
+            @RequestParam int transactionNum) {
+
+        Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+        if (stockBuyTriggerStatus.isPresent()) {
+            buyTriggerRepository.delete(stockBuyTriggerStatus.get());
+            return HttpStatus.OK;
+        } else {
+            return HttpStatus.BAD_REQUEST;
+        }
+
     }
 }

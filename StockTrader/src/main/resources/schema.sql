@@ -4,8 +4,8 @@ DROP TABLE IF EXISTS pending_sell;
 DROP TABLE IF EXISTS investment;
 DROP TABLE IF EXISTS account;
 DROP TABLE IF EXISTS account_transaction_log;
-DROP TABLE IF EXISTS user_command_log;
 DROP TABLE IF EXISTS buy_trigger;
+DROP TABLE IF EXISTS log_xml;
 
 CREATE TABLE pending_buy (
     id integer PRIMARY KEY,
@@ -48,25 +48,22 @@ CREATE TABLE buy_trigger (
 );
 
 CREATE TABLE account_transaction_log (
-    action varchar,
+    transaction_num SERIAL PRIMARY KEY,
+    action varchar(255),
     funds integer,
-    timestamp timestamp,
-    username varchar
+    timestamp bigint,
+    username varchar(255)
 );
 
-CREATE TABLE user_command_log (
-    transaction_num integer,
-    timestamp timestamp without time zone,
-    server varchar(255),
-    command varchar(255),
-    username varchar(255),
-    stock_symbol varchar(255),
-    filename varchar(255),
-    funds integer
+CREATE TABLE log_xml (
+    id SERIAL PRIMARY KEY,
+    xml_log_entry varchar,
+    user_id varchar(255)
 );
 
 
-
+-- FIX ME need to make accountTransaction log transaction_num flow with the parent command
+-- (ie buy, add, sell, commit_sell, etc)
 CREATE OR REPLACE FUNCTION log_account_transaction() RETURNS trigger AS '
 DECLARE
     action varchar;
@@ -88,8 +85,15 @@ BEGIN
       ELSE
         RETURN NULL;
       END IF;
+--       INSERT INTO account_transaction_log (action, funds, timestamp, username)
       INSERT INTO account_transaction_log (action, funds, timestamp, username)
-      VALUES (action, funds, NOW(), NEW.user_id);
+      VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id);
+      WITH temp (action,funds,timestamp,username) AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id))
+      INSERT INTO log_xml (id, xml_log_entry,user_id)
+      VALUES(
+        (select nextval(''hibernate_sequence'')),
+        (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username)) from temp),
+        (select temp.username from temp));
       RETURN NULL;
 END;
 ' LANGUAGE plpgsql;

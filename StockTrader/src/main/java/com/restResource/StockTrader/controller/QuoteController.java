@@ -2,6 +2,7 @@ package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
+import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.QuoteService;
@@ -28,20 +29,29 @@ public class QuoteController {
     @GetMapping(value = "/quote")
     public
     ResponseEntity<Quote> getQuotePrice(@RequestParam String stockSymbol,
-                                 @RequestParam String userId) {
+                                        @RequestParam String userId,
+                                        @RequestParam int transactionNum) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .stockSymbol(stockSymbol)
-                        .username(userId)
-                        .command(CommandType.QUOTE)
-                        .build());
+        //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
 
         try {
-            Quote quote = quoteService.getQuote(stockSymbol, userId);
+            Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.QUOTE)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .funds(quote.getPrice())
+                            .build());
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( IllegalArgumentException e ) {
-            System.out.println("Exception in QuoteController: " + e.toString());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.QUOTE)
+                            .userName(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage("Error during quote request")
+                            .build());
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }

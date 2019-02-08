@@ -1,6 +1,7 @@
 package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.*;
+import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
@@ -44,62 +45,88 @@ public class SellController {
     Quote createNewSell(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int amount) {
+            @RequestParam int amount,
+            @RequestParam int transactionNum) {
+        Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+        try {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.SELL)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .build());
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .funds(amount)
-                        .command(CommandType.SELL)
-                        .build());
+            if (amount <= 0) {
+                loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SELL)
+                            .userName(userId)
+                            .transactionNum(transactionNum)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .errorMessage("The amount parameter must be greater than zero.")
+                            .build());
+                throw new IllegalArgumentException(
+                        "The amount parameter must be greater than zero.");
+            }
 
-        if (amount <= 0) {
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
+            Investment investment = investmentRepository.findById(
+                    InvestmentId.builder()
+                            .owner(userId)
+                            .stockSymbol(stockSymbol)
+                            .build())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No investments owned of specified stock"));
+            // If stockCount is higher then number of stocks owned, then just sell all.
+            int stockCount = Math.min(
+                    amount / quote.getPrice(),
+                    investment.getStockCount());
+
+            // Set aside stocks to avoid duplicate sells.
+            investmentRepository.removeStocks(userId, stockCount);
+
+            PendingSell pendingSell = PendingSell.builder()
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .timestamp(quote.getTimestamp())
+                    .stockCount(stockCount)
+                    .stockPrice(quote.getPrice())
+                    .build();
+
+            sellRepository.save(pendingSell);
+
+
+        } catch( Exception e ) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SELL)
+                            .userName(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .funds(amount)
+                            .errorMessage("Error in sell controller")
+                            .build());
+
         }
-
-        Quote quote = quoteService.getQuote(stockSymbol, userId);
-
-        Investment investment = investmentRepository.findById(
-                InvestmentId.builder()
-                        .owner(userId)
-                        .stockSymbol(stockSymbol)
-                        .build())
-                .orElseThrow(() -> new IllegalStateException(
-                                "No investments owned of specified stock"));
-        // If stockCount is higher then number of stocks owned, then just sell all.
-        int stockCount = Math.min(
-                amount / quote.getPrice(), 
-                investment.getStockCount());
-
-        // Set aside stocks to avoid duplicate sells.
-        investmentRepository.removeStocks(userId, stockCount);
-
-        PendingSell pendingSell = PendingSell.builder()
-                .userId(userId)
-                .stockSymbol(stockSymbol)
-                .timestamp(quote.getTimestamp())
-                .stockCount(stockCount)
-                .stockPrice(quote.getPrice())
-                .build();
-
-        sellRepository.save(pendingSell);
-
         return quote;
     }
 
     @PostMapping("/commit")
     public @ResponseBody
-    HttpStatus commitSell(@RequestParam String userId) {
+    HttpStatus commitSell(@RequestParam String userId,
+                          @RequestParam int transactionNum) {
 
+        PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum);
         loggingService.logUserCommand(
                 UserCommandLog.builder()
+                        .command(CommandType.SELL)
                         .username(userId)
-                        .command(CommandType.COMMIT_SELL)
+                        .transactionNum(transactionNum)
+                        .stockSymbol(pendingSell.getStockSymbol())
+                        .funds(pendingSell.getStockPrice())
                         .build());
-
-        PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
         accountRepository.updateAccountBalance(
                 userId,
@@ -110,15 +137,20 @@ public class SellController {
 
     @PostMapping("/cancel")
     public @ResponseBody
-    HttpStatus cancelSell(@RequestParam String userId) {
+    HttpStatus cancelSell(@RequestParam String userId,
+                          @RequestParam int transactionNum) {
+
+
+        PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum);
 
         loggingService.logUserCommand(
                 UserCommandLog.builder()
-                        .username(userId)
                         .command(CommandType.CANCEL_SELL)
+                        .username(userId)
+                        .transactionNum(transactionNum)
+                        .stockSymbol(pendingSell.getStockSymbol())
+                        .funds(pendingSell.getStockPrice())
                         .build());
-
-        PendingSell pendingSell = claimMostRecentPendingSell(userId);
 
         investmentRepository.insertOrIncrement(
                 userId,
@@ -130,7 +162,7 @@ public class SellController {
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingSell claimMostRecentPendingSell(String userId) {
+    private PendingSell claimMostRecentPendingSell(String userId, int transactionNum) {
         while (true) {
             PendingSell pendingSell =
                     sellRepository
@@ -149,6 +181,15 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SELL)
+                                .userName(userId)
+                                .transactionNum(transactionNum)
+                                .stockSymbol(pendingSell.getStockSymbol())
+                                .funds(pendingSell.getStockPrice())
+                                .errorMessage("Error in claimMostRecentPendingSell")
+                                .build());
                 continue;
             }
             return pendingSell;
