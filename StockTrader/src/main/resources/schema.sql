@@ -33,15 +33,19 @@ CREATE TABLE investment (
 
 CREATE TABLE account (
     user_id varchar(255) PRIMARY KEY,
-    amount integer CHECK (amount >= 0)
+    amount integer CHECK (amount >= 0),
+    last_transaction_number integer,
+    last_server varchar(255)
 );
 
 CREATE TABLE account_transaction_log (
-    transaction_num SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     action varchar(255),
     funds integer,
     timestamp bigint,
-    username varchar(255)
+    username varchar(255),
+    server varchar(255),
+    "transactionNum" integer
 );
 
 CREATE TABLE log_xml (
@@ -75,13 +79,13 @@ BEGIN
         RETURN NULL;
       END IF;
 --       INSERT INTO account_transaction_log (action, funds, timestamp, username)
-      INSERT INTO account_transaction_log (action, funds, timestamp, username)
-      VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id);
-      WITH temp (action,funds,timestamp,username) AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id))
+      INSERT INTO account_transaction_log (action, funds, timestamp, username, server, "transactionNum")
+      VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number);
+      WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
       INSERT INTO log_xml (id, xml_log_entry,user_id)
       VALUES(
         (select nextval(''hibernate_sequence'')),
-        (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username)) from temp),
+        (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username, temp.server, temp."transactionNum")) from temp),
         (select temp.username from temp));
       RETURN NULL;
 END;

@@ -62,7 +62,7 @@ public class SellController {
                 loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.SELL)
-                            .userName(userId)
+                            .username(userId)
                             .transactionNum(transactionNum)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
@@ -102,7 +102,7 @@ public class SellController {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.SELL)
-                            .userName(userId)
+                            .username(userId)
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
                             .funds(amount)
@@ -130,7 +130,8 @@ public class SellController {
 
         accountRepository.updateAccountBalance(
                 userId,
-                pendingSell.getStockPrice() * pendingSell.getStockCount());
+                pendingSell.getStockPrice() * pendingSell.getStockCount(),
+                transactionNum,"TS1");
 
         return HttpStatus.OK;
     }
@@ -184,7 +185,7 @@ public class SellController {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
                                 .command(CommandType.SELL)
-                                .userName(userId)
+                                .username(userId)
                                 .transactionNum(transactionNum)
                                 .stockSymbol(pendingSell.getStockSymbol())
                                 .funds(pendingSell.getStockPrice())

@@ -29,7 +29,7 @@ public class SystemEventLog {
     String username = "";
     @XmlElement
     @Builder.Default
-    String stockStymbol = "";
+    String stockSymbol = "";
     @XmlElement
     @Builder.Default
     String filename = "";

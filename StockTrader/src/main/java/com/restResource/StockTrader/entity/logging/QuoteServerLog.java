@@ -36,7 +36,7 @@ public class QuoteServerLog {
     Long quoteServerTime = System.currentTimeMillis();
     @XmlElement
     @Builder.Default
-    String userName = "";
+    String username = "";
     @XmlElement
     @Builder.Default
     String stockSymbol = "";

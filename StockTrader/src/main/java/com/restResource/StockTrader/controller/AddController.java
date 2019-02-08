@@ -36,7 +36,7 @@ public class AddController {
         loggingService.logDebugEvent(
                 DebugEventLog.builder()
                         .command(CommandType.ADD)
-                        .userName(userId)
+                        .username(userId)
                         .funds(amount)
                         .debugMessage("Adding funds to user account")
                         .transactionNum(transactionNum)
@@ -46,7 +46,7 @@ public class AddController {
                 throw new IllegalArgumentException(
                         "The ADD amount parameter must be greater than zero");
             } else {
-                accountRepository.updateAccountBalance(userId, amount);
+                accountRepository.updateAccountBalance(userId, amount,transactionNum,"TS1");
             }
             return HttpStatus.OK;
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class AddController {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.ADD)
-                            .userName(userId)
+                            .username(userId)
                             .transactionNum(transactionNum)
                             .funds(amount)
                             .errorMessage("Amount added must be less than or equal to zero")

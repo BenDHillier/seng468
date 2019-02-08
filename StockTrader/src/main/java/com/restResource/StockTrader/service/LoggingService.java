@@ -80,7 +80,7 @@ public class LoggingService {
             marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(log.getUserName())
+                            .userId(log.getUsername())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -94,7 +94,7 @@ public class LoggingService {
 //        SystemEventLog systemEventLog = new SystemEventLog();
 //        systemEventLog.setCommand(command);
 //        systemEventLog.setUsername(username);
-//        systemEventLog.setStockStymbol(stockSymbol);
+//        systemEventLog.setStockSymbol(stockSymbol);
 //        systemEventLog.setFilename(filename);
 //        systemEventLog.setFunds(funds);
 //        systemEventLog.setServer("TS1");
@@ -138,7 +138,7 @@ public class LoggingService {
             marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(log.getUserName())
+                            .userId(log.getUsername())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -165,7 +165,7 @@ public class LoggingService {
             marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(log.getUserName())
+                            .userId(log.getUsername())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
