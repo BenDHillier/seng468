@@ -31,12 +31,16 @@ class WorkloadGenerator:
     def run(self):
         file = open("./WorkloadFiles/{}".format(self._args_filename), "r")
         for line in file:
-            split_line = line.rstrip().split(" ")[1].split(",")
-            command = split_line[0]
-            params = split_line[1:]
+            split_line = line.rstrip().split(" ")
+            split_line_r = split_line[1].split(",")
+            split_line_l = split_line[0]
+            transaction_num = split_line_l[1:len(split_line_l)-1]
+            command = split_line_r[0]
+            params = split_line_r[1:]
+            params.append(transaction_num)
             print("sending: " + command + " with params {}".format(params))
             self.handleCommand(command,params)
-            time.sleep(.250)
+            #time.sleep(.250)
 
     def handleCommand(self,cmd,params):
         if( cmd == "ADD"):
@@ -63,7 +67,7 @@ class WorkloadGenerator:
         try:
             # TODO: Eventually will have to send unformatted string of float val
             # for now will have to send as a value formatted to integer for testing purposes
-            put_params = urllib.urlencode({'userId':params[0],'amount':int(float(params[1]))})
+            put_params = urllib.urlencode({'userId':params[0],'amount':int(float(params[1])), 'transactionNum':params[2]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('PUT', '/add', put_params, headers)
             response = self._httpconnection.getresponse()
@@ -78,7 +82,7 @@ class WorkloadGenerator:
     #GET
     def quoteRequest(self,params):
         try:
-            get_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1]})
+            get_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'transactionNum':params[2]})
             get_request = urllib2.urlopen('http://{}:{}/quote?'.format(self._args_ip,self._args_port) + get_params)
             response = get_request.read()
             print(response)
@@ -88,7 +92,7 @@ class WorkloadGenerator:
     #POST
     def buyRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2]))})
+            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2])),'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/buy/create', post_params, headers)
             response = self._httpconnection.getresponse()
@@ -104,7 +108,7 @@ class WorkloadGenerator:
     # TODO: confirm this is the /create route in server
     def commitBuyRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0]})
+            post_params = urllib.urlencode({'userId':params[0],'transactionNum':params[1]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/buy/commit', post_params, headers)
             response = self._httpconnection.getresponse()
@@ -119,7 +123,7 @@ class WorkloadGenerator:
     #POST
     def cancelBuyRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0]})
+            post_params = urllib.urlencode({'userId':params[0],'transactionNum':params[1]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/buy/cancel', post_params, headers)
             response = self._httpconnection.getresponse()
@@ -134,7 +138,7 @@ class WorkloadGenerator:
     #POST
     def sellRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2]))})
+            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2])),'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/sell/create', post_params, headers)
             response = self._httpconnection.getresponse()
@@ -149,7 +153,7 @@ class WorkloadGenerator:
     #POST
     def commitSellRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0]})
+            post_params = urllib.urlencode({'userId':params[0],'transactionNum':params[1]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/sell/commit', post_params, headers)
             response = self._httpconnection.getresponse()
@@ -164,7 +168,7 @@ class WorkloadGenerator:
     #POST
     def cancelSellRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0]})
+            post_params = urllib.urlencode({'userId':params[0],'transactionNum':params[1]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/sell/cancel', post_params, headers)
             response = self._httpconnection.getresponse()

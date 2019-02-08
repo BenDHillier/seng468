@@ -1,2 +1,4 @@
-[1] ADD,oY01WVirLr,10000.00
-[4] COMMIT_BUY,oY01WVirLr
+[1] ADD,jiosesdo,100.00
+[2] BUY,jiosesdo,S,100.00
+[3] BUY,skelsioe,S,1000.00
+[4] SELL,bob,S,1000.00

@@ -10,19 +10,24 @@ public interface AccountRepository extends CrudRepository<Account, String> {
     @Modifying
     @Transactional
     @Query(value =
-            "INSERT INTO account VALUES (?1, ?2) " +
+            "INSERT INTO account VALUES (?1, ?2, ?3, ?4) " +
                     "ON CONFLICT (user_id) DO UPDATE " +
-                    "SET amount = account.amount + ?2 ",
+                    "SET amount = account.amount + ?2, " +
+                    "last_transaction_number = ?3, " +
+                    "last_server = ?4",
         nativeQuery = true)
-    void updateAccountBalance(String userId, Integer amount);
+    void updateAccountBalance(String userId, Integer amount, Integer transactionNum, String server);
 
 
     // Need separate method for removing funds since the attempted insert
     // violates the minimum amount of 0 constraint.
     @Modifying
     @Transactional
-    @Query(value = "UPDATE account SET amount = amount - ?2 WHERE user_id = ?1",
+    @Query(value = "UPDATE account SET amount = amount - ?2, " +
+                   "last_transaction_number = ?3, " +
+                   "last_server = ?4 " +
+                   "WHERE user_id = ?1",
             nativeQuery = true)
-    Integer removeFunds(String userId, Integer amount);
+    Integer removeFunds(String userId, Integer amount, Integer transactionNum, String server);
 
 }

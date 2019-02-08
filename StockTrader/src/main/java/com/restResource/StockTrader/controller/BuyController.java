@@ -63,7 +63,7 @@ public class BuyController {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.BUY)
-                            .userName(userId)
+                            .username(userId)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
                             .transactionNum(transactionNum)
@@ -79,7 +79,7 @@ public class BuyController {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.BUY)
-                            .userName(userId)
+                            .username(userId)
                             .transactionNum(transactionNum)
                             .stockSymbol(stockSymbol)
                             .funds(amount)
@@ -95,12 +95,12 @@ public class BuyController {
         // Removing more funds then is available will violate the amount >= 0
         // constraint which will throw an exception.
         try {
-            Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount);
+            Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount,transactionNum,"TS1");
             if (updatedEntriesCount != 1) {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
                                 .command(CommandType.BUY)
-                                .userName(userId)
+                                .username(userId)
                                 .transactionNum(transactionNum)
                                 .stockSymbol(stockSymbol)
                                 .funds(amount)
@@ -167,7 +167,7 @@ public class BuyController {
                         .funds(pendingBuy.getAmount())
                         .build());
 
-        accountRepository.updateAccountBalance(userId, pendingBuy.getAmount());
+        accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
 
         return HttpStatus.OK;
     }
@@ -188,7 +188,7 @@ public class BuyController {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
                                 .command(CommandType.CANCEL_BUY)
-                                .userName(userId)
+                                .username(userId)
                                 .transactionNum(transactionNum)
                                 .stockSymbol(pendingBuy.getStockSymbol())
                                 .funds(pendingBuy.getAmount())
@@ -207,7 +207,7 @@ public class BuyController {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
                                 .command(CommandType.CANCEL_BUY)
-                                .userName(userId)
+                                .username(userId)
                                 .stockSymbol(pendingBuy.getStockSymbol())
                                 .transactionNum(transactionNum)
                                 .funds(pendingBuy.getAmount())
