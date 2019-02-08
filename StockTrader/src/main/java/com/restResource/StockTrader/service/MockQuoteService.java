@@ -30,7 +30,7 @@ public class MockQuoteService implements QuoteService {
                         .command(CommandType.QUOTE)
                         .username(userId)
                         .transactionNum(transactionNum)
-                        .stockStymbol(stockSymbol)
+                        .stockSymbol(stockSymbol)
                         .build()
         );
 

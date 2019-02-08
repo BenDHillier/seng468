@@ -34,7 +34,7 @@ public class ErrorEventLog {
     CommandType command = CommandType.NONE;
     @XmlElement
     @Builder.Default
-    String userName = "";
+    String username = "";
     @XmlElement
     @Builder.Default
     String stockSymbol = "";
@@ -46,5 +46,5 @@ public class ErrorEventLog {
     String errorMessage = "";
     @XmlElement
     @Builder.Default
-    String fileName = "";
+    String filename = "";
 }

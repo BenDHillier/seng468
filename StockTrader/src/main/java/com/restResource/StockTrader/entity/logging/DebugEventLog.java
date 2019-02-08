@@ -32,7 +32,7 @@ public class DebugEventLog {
     CommandType command = CommandType.NONE;
     @XmlElement
     @Builder.Default
-    String userName = "";
+    String username = "";
     @XmlElement
     @Builder.Default
     String stockSymbol = "";
@@ -44,5 +44,5 @@ public class DebugEventLog {
     String debugMessage = "";
     @XmlElement
     @Builder.Default
-    String fileName = "";
+    String filename = "";
 }

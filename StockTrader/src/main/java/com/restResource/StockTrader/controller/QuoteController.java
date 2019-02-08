@@ -48,7 +48,7 @@ public class QuoteController {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.QUOTE)
-                            .userName(userId)
+                            .username(userId)
                             .transactionNum(transactionNum)
                             .errorMessage("Error during quote request")
                             .build());
