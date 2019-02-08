@@ -21,12 +21,6 @@ public class LogController {
         this.loggingService = loggingService;
     }
 
-    @RequestMapping(value = "/printlogs")
-    public void printAllLogs() {
-        System.out.println("Attempting to print logs based on call to \"printAllLogs()\"");
-        loggingService.dumpLogToXmlFile("./logs.xml");
-    }
-
     @RequestMapping(value="/dumplog/all")
     public ResponseEntity<Resource> dumpLogs(@RequestParam String filename) {
         try {

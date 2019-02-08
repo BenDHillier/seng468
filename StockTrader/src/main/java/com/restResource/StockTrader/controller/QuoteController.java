@@ -31,14 +31,24 @@ public class QuoteController {
     ResponseEntity<Quote> getQuotePrice(@RequestParam String stockSymbol,
                                  @RequestParam String userId) {
 
-        loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
-
+        //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
 
         try {
             Quote quote = quoteService.getQuote(stockSymbol, userId);
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.QUOTE)
+                            .username(userId)
+                            .funds(quote.getPrice())
+                            .build());
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( IllegalArgumentException e ) {
-            loggingService.logErrorEvent(CommandType.QUOTE,userId,stockSymbol,null,null,"Error during quote request");
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.QUOTE)
+                            .userName(userId)
+                            .errorMessage("Error during quote request")
+                            .build());
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }

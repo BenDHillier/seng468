@@ -3,6 +3,7 @@ package com.restResource.StockTrader.service;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.QuoteServerLog;
+import com.restResource.StockTrader.entity.logging.SystemEventLog;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,8 +17,21 @@ public class MockQuoteService implements QuoteService {
     @Override
     public Quote getQuote(String stockSymbol, String userId) {
 
-        loggingService.logQuoteServer(50,stockSymbol,userId,System.currentTimeMillis(),"hd19dg29fj1772nd10");
-        loggingService.logSystemEvent(CommandType.QUOTE,userId,stockSymbol,null,null);
+        loggingService.logQuoteServer(
+                QuoteServerLog.builder()
+                        .price(50)
+                        .stockSymbol(stockSymbol)
+                        .cryptokey("made_up_cryptokey")
+                        .build());
+
+        loggingService.logSystemEvent(
+                SystemEventLog.builder()
+                        .command(CommandType.QUOTE)
+                        .username(userId)
+                        .stockStymbol(stockSymbol)
+                        .build()
+        );
+
         return Quote.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)

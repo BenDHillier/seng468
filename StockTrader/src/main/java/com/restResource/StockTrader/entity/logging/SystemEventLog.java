@@ -11,28 +11,35 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.xml.bind.annotation.*;
 
+@Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "systemEvent")
 public class SystemEventLog {
-    @XmlTransient
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer transactionNum;
     @XmlElement
-    CommandType command;
+    @Builder.Default
+    CommandType command = CommandType.NONE;
     @XmlElement
-    String username;
+    @Builder.Default
+    String username = "";
     @XmlElement
-    String stockStymbol;
+    @Builder.Default
+    String stockStymbol = "";
     @XmlElement
-    String filename;
+    @Builder.Default
+    String filename = "";
     @XmlElement
-    Integer funds;
+    @Builder.Default
+    Integer funds = 0;
     @XmlElement
-    Long timestamp;
+    @Builder.Default
+    Long timestamp = System.currentTimeMillis();
     @XmlElement
-    String server;
+    @Builder.Default
+    String server = "";
 }

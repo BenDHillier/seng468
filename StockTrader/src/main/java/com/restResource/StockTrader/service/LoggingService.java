@@ -3,6 +3,7 @@ package com.restResource.StockTrader.service;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.logging.*;
 import com.restResource.StockTrader.repository.logging.*;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
@@ -40,23 +41,18 @@ public class LoggingService {
                 log.toBuilder().build());
     }
 
-    public void logUserCommand(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
-        UserCommandLog user = new UserCommandLog();
-        user.setCommand(command);
-        user.setUsername(username);
-        user.setStockSymbol(stockSymbol);
-        user.setFilename(filename);
-        user.setFunds(funds);
-        user.setTimestamp(System.currentTimeMillis());
-        user.setServer("TS1");
+    public void logUserCommand(UserCommandLog log) {
+        log.toBuilder()
+                .server("TS1")
+                .build();
 
         StringWriter writer = new StringWriter();
 
         try {
-            marshaller.marshal(user,writer);
+            marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(username)
+                            .userId(log.getUsername())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -65,22 +61,26 @@ public class LoggingService {
         }
     }
 
-    public void logQuoteServer(Integer price, String stockSymbol, String username, Long quoteServerTime, String cryptokey) {
-        QuoteServerLog quoteServerLog = new QuoteServerLog();
-        quoteServerLog.setPrice(price);
-        quoteServerLog.setStockSymbol(stockSymbol);
-        quoteServerLog.setQuoteServerTime(quoteServerTime);
-        quoteServerLog.setCryptokey(cryptokey);
-        quoteServerLog.setTimestamp(System.currentTimeMillis());
-        quoteServerLog.setServer("TS1");
+    public void logQuoteServer(QuoteServerLog log) {
+//        QuoteServerLog quoteServerLog = new QuoteServerLog();
+//        quoteServerLog.setPrice(price);
+//        quoteServerLog.setStockSymbol(stockSymbol);
+//        quoteServerLog.setQuoteServerTime(quoteServerTime);
+//        quoteServerLog.setCryptokey(cryptokey);
+//        quoteServerLog.setTimestamp(System.currentTimeMillis());
+//        quoteServerLog.setServer("TS1");
+
+        log.toBuilder()
+                .server("TS1")
+                .build();
 
         StringWriter writer = new StringWriter();
 
         try {
-            marshaller.marshal(quoteServerLog,writer);
+            marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(username)
+                            .userId(log.getUserName())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -89,24 +89,28 @@ public class LoggingService {
         }
     }
 
-    public void logSystemEvent(CommandType command, String username, String stockSymbol, String filename, Integer funds) {
+    public void logSystemEvent(SystemEventLog log) {
 
-        SystemEventLog systemEventLog = new SystemEventLog();
-        systemEventLog.setCommand(command);
-        systemEventLog.setUsername(username);
-        systemEventLog.setStockStymbol(stockSymbol);
-        systemEventLog.setFilename(filename);
-        systemEventLog.setFunds(funds);
-        systemEventLog.setServer("TS1");
-        systemEventLog.setTimestamp(System.currentTimeMillis());
+//        SystemEventLog systemEventLog = new SystemEventLog();
+//        systemEventLog.setCommand(command);
+//        systemEventLog.setUsername(username);
+//        systemEventLog.setStockStymbol(stockSymbol);
+//        systemEventLog.setFilename(filename);
+//        systemEventLog.setFunds(funds);
+//        systemEventLog.setServer("TS1");
+//        systemEventLog.setTimestamp(System.currentTimeMillis());
+
+        log.toBuilder()
+                .server("TS1")
+                .build();
 
         StringWriter writer = new StringWriter();
 
         try {
-            marshaller.marshal(systemEventLog,writer);
+            marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(username)
+                            .userId(log.getUsername())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -115,22 +119,26 @@ public class LoggingService {
         }
     }
 
-    public void logErrorEvent(CommandType command, String username, String stockSymbol, String filename, Integer funds, String errorMessage) {
-        ErrorEventLog errorEventLog = new ErrorEventLog();
-        errorEventLog.setTimestamp(System.currentTimeMillis());
-        errorEventLog.setServer("TS1");
-        errorEventLog.setCommand(command);
-        errorEventLog.setUserName(username);
-        errorEventLog.setStockSymbol(stockSymbol);
-        errorEventLog.setFileName(filename);
-        errorEventLog.setFunds(funds);
-        errorEventLog.setErrorMessage(errorMessage);
+    public void logErrorEvent(ErrorEventLog log) {
+//        ErrorEventLog errorEventLog = new ErrorEventLog();
+//        errorEventLog.setTimestamp(System.currentTimeMillis());
+//        errorEventLog.setServer("TS1");
+//        errorEventLog.setCommand(command);
+//        errorEventLog.setUserName(username);
+//        errorEventLog.setStockSymbol(stockSymbol);
+//        errorEventLog.setFileName(filename);
+//        errorEventLog.setFunds(funds);
+//        errorEventLog.setErrorMessage(errorMessage);
+        log.toBuilder()
+                .server("TS1")
+                .build();
+
         StringWriter writer = new StringWriter();
         try {
-            marshaller.marshal(errorEventLog,writer);
+            marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(username)
+                            .userId(log.getUserName())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -139,22 +147,25 @@ public class LoggingService {
         }
     }
 
-    public void logDebugEvent(CommandType command, String username, String stockSymbol, String filename, Integer funds, String debugMessage) {
-        DebugEventLog debugEventLog = new DebugEventLog();
-        debugEventLog.setTimestamp(System.currentTimeMillis());
-        debugEventLog.setServer("TS1");
-        debugEventLog.setCommand(command);
-        debugEventLog.setUserName(username);
-        debugEventLog.setStockSymbol(stockSymbol);
-        debugEventLog.setFileName(filename);
-        debugEventLog.setFunds(funds);
-        debugEventLog.setDebugMessage(debugMessage);
+    public void logDebugEvent(DebugEventLog log) {
+//        DebugEventLog debugEventLog = new DebugEventLog();
+//        debugEventLog.setTimestamp(System.currentTimeMillis());
+//        debugEventLog.setServer("TS1");
+//        debugEventLog.setCommand(command);
+//        debugEventLog.setUserName(username);
+//        debugEventLog.setStockSymbol(stockSymbol);
+//        debugEventLog.setFileName(filename);
+//        debugEventLog.setFunds(funds);
+//        debugEventLog.setDebugMessage(debugMessage);
+        log.toBuilder()
+                .server("TS1")
+                .build();
         StringWriter writer = new StringWriter();
         try {
-            marshaller.marshal(debugEventLog,writer);
+            marshaller.marshal(log,writer);
             xmlLogEvent(
                     LogXml.builder()
-                            .userId(username)
+                            .userId(log.getUserName())
                             .xmlLogEntry(writer.toString())
                             .build()
             );
@@ -178,7 +189,6 @@ public class LoggingService {
 
         } catch(Exception e) {
             System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
-            logErrorEvent(CommandType.DUMPLOG,null,null,filename,null,e.getMessage());
         }
         return null;
     }
@@ -198,7 +208,6 @@ public class LoggingService {
 
         } catch(Exception e) {
             System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
-            logErrorEvent(CommandType.DUMPLOG,userId,null,filename,null,e.getMessage());
         }
         return null;
     }

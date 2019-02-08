@@ -49,10 +49,23 @@ public class BuyController {
             @RequestParam String stockSymbol,
             @RequestParam int amount) {
 
-        loggingService.logUserCommand(CommandType.BUY, userId,stockSymbol,null,amount);
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .command(CommandType.BUY)
+                        .username(userId)
+                        .stockSymbol(stockSymbol)
+                        .funds(amount)
+                        .build());
 
         if (amount <= 0) {
-            loggingService.logErrorEvent(CommandType.BUY,userId, stockSymbol,null,amount,"The amount parameter must be greater than zero.");
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.BUY)
+                            .userName(userId)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .errorMessage("The amount parameter must be greater than zero")
+                            .build());
             throw new IllegalArgumentException(
                     "The amount parameter must be greater than zero.");
         }
@@ -60,7 +73,14 @@ public class BuyController {
         Quote quote = quoteService.getQuote(stockSymbol, userId);
 
         if (quote.getPrice() > amount) {
-            loggingService.logErrorEvent(CommandType.BUY,userId, stockSymbol,null,amount,"The amount parameter must be greater than the quote price");
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.BUY)
+                            .userName(userId)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .errorMessage("The amount parameter must be greater than the quote price")
+                            .build());
             // TODO: may want to handle this differently.
             throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
         }
@@ -73,7 +93,14 @@ public class BuyController {
         try {
             Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount);
             if (updatedEntriesCount != 1) {
-                loggingService.logErrorEvent(CommandType.BUY,userId, stockSymbol,null,amount,"Error removing funds from account. Expected 1 account to be updated but " + updatedEntriesCount + " accounts were updated");
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.BUY)
+                                .userName(userId)
+                                .stockSymbol(stockSymbol)
+                                .funds(amount)
+                                .errorMessage("Error removing funds from account. Expected 1 account to be updated but \" + updatedEntriesCount + \" accounts were updated")
+                                .build());
                 throw new IllegalStateException(
                         "Error removing funds from account. Expected 1 account to be updated but " +
                                 updatedEntriesCount + " accounts were updated");
@@ -106,7 +133,12 @@ public class BuyController {
 
         investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
 
-        loggingService.logUserCommand(CommandType.COMMIT_BUY,userId, pendingBuy.getStockSymbol(),null,pendingBuy.getAmount());
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .command(CommandType.COMMIT_BUY)
+                        .username(userId)
+                        .funds(amountToBuy)
+                        .build());
 
         return HttpStatus.OK;
     }
@@ -118,7 +150,13 @@ public class BuyController {
 
         PendingBuy pendingBuy = claimMostRecentPendingBuy(userId);
 
-        loggingService.logUserCommand(CommandType.CANCEL_BUY,userId, pendingBuy.getStockSymbol(),null,pendingBuy.getAmount());
+        loggingService.logUserCommand(
+                UserCommandLog.builder()
+                        .command(CommandType.CANCEL_BUY)
+                        .username(userId)
+                        .stockSymbol(pendingBuy.getStockSymbol())
+                        .funds(pendingBuy.getAmount())
+                        .build());
 
         accountRepository.updateAccountBalance(userId, pendingBuy.getAmount());
 
@@ -138,7 +176,14 @@ public class BuyController {
             if (pendingBuy.isExpired()) {
                 // TODO: May want to remove the expired entry from the DB if
                 // this is not going to be handled by something else.
-                loggingService.logErrorEvent(CommandType.CANCEL_BUY,userId,pendingBuy.getStockSymbol(),null,pendingBuy.getAmount(),"There was no valid buy.");
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.CANCEL_BUY)
+                                .userName(userId)
+                                .stockSymbol(pendingBuy.getStockSymbol())
+                                .funds(pendingBuy.getAmount())
+                                .errorMessage("There was no valid buy")
+                                .build());
                 throw new IllegalStateException(
                         "There was no valid buy.");
             }
@@ -149,7 +194,14 @@ public class BuyController {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
                 // TODO: Verify that the error here is caused by CANCEL_BUY
-                loggingService.logErrorEvent(CommandType.CANCEL_BUY,userId,pendingBuy.getStockSymbol(),null,pendingBuy.getAmount(),"Exception in buyRepository.deleteById(pendingBuy.getId())");
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.CANCEL_BUY)
+                                .userName(userId)
+                                .stockSymbol(pendingBuy.getStockSymbol())
+                                .funds(pendingBuy.getAmount())
+                                .errorMessage("Exception in buyRepository.deleteById(pendingBuy.getId())")
+                                .build());
                 continue;
             }
             return pendingBuy;

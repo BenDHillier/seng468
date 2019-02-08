@@ -4,29 +4,36 @@ import lombok.*;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
+@Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "systemEvent")
+@XmlRootElement(name = "userCommand")
 public class UserCommandLog {
-    @XmlTransient
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer transactionNum;
     @XmlElement
-    Long timestamp;
+    @Builder.Default
+    Long timestamp = System.currentTimeMillis();
     @XmlElement
-    String server;
+    @Builder.Default
+    String server = "";
     @XmlElement
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    CommandType command;
+    CommandType command = CommandType.NONE;
     @XmlElement
-    String username;
+    @Builder.Default
+    String username = "";
     @XmlElement
-    String stockSymbol;
+    @Builder.Default
+    String stockSymbol = "";
     @XmlElement
-    String filename;
+    @Builder.Default
+    String filename = "";
     @XmlElement
-    Integer funds;
+    @Builder.Default
+    Integer funds = 0;
 }

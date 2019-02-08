@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+@Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,17 +29,24 @@ public class QuoteServerLog {
     @GeneratedValue(strategy= GenerationType.AUTO)
     Integer transactionNum;
     @XmlElement
-    Long timestamp;
+    @Builder.Default
+    Long timestamp = System.currentTimeMillis();
     @XmlElement
-    Long quoteServerTime;
+    @Builder.Default
+    Long quoteServerTime = System.currentTimeMillis();
     @XmlElement
-    String userName;
+    @Builder.Default
+    String userName = "";
     @XmlElement
-    String stockSymbol;
+    @Builder.Default
+    String stockSymbol = "";
     @XmlElement
-    Integer price;
+    @Builder.Default
+    Integer price = 0;
     @XmlElement
-    String cryptokey;
+    @Builder.Default
+    String cryptokey = "";
     @XmlElement
-    String server;
+    @Builder.Default
+    String server = "";
 }
