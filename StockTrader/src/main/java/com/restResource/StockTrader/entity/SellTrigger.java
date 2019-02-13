@@ -1,15 +1,19 @@
 package com.restResource.StockTrader.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.validation.constraints.Min;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
 /**
- * Class for a BuyTrigger table entry.
+ * Class for a SellTrigger table entry.
  */
 @Builder(toBuilder = true)
 @Entity
@@ -17,7 +21,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuyTrigger {
+public class SellTrigger {
     @Min(value = 0)
     Integer stock_amount;
     @Min(value = 0)
