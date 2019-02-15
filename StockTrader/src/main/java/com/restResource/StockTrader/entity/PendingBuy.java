@@ -1,5 +1,6 @@
 package com.restResource.StockTrader.entity;
 
+import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
 import lombok.*;
 
 import javax.persistence.*;
@@ -25,6 +26,7 @@ public class PendingBuy {
     Integer amount;
     String stockSymbol;
     String userId;
+    @Convert(converter = LocalDateTimeToEpochConverter.class)
     LocalDateTime timestamp;
 
     public boolean isExpired() {
