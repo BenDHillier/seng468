@@ -65,8 +65,10 @@ public class BuyTriggerService {
                     } else if (buyStockSnapshot.get().getStockCost() != null) { //we already have a working buy trigger
                         return;
                     } else { //we have a trigger that is waiting for a cost target
-                        buyStockSnapshot.get().setStockCost(stockCost);
-                        buyTriggerRepository.save(buyStockSnapshot.get());
+                        synchronized (this) {
+                            buyStockSnapshot.get().setStockCost(stockCost);
+                            buyTriggerRepository.save(buyStockSnapshot.get());
+                        }
                         break;
                     }
                 }
