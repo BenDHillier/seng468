@@ -17,20 +17,20 @@ import java.time.LocalDateTime;
  */
 @Builder(toBuilder = true)
 @Entity
-@IdClass(CompositeKey.class)
+@IdClass(TriggerKey.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SellTrigger {
     @Min(value = 0)
-    Integer stock_amount;
+    Integer stockAmount;
     @Min(value = 0)
-    Integer stock_cost;
+    Integer stockCost;
 
     @Id
-    String stock_symbol;
+    String stockSymbol;
     @Id
-    String user_id;
+    String userId;
     LocalDateTime timestamp;
 
     public boolean isExpired() {

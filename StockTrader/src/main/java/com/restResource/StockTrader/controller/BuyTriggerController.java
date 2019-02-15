@@ -2,6 +2,7 @@ package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.BuyTrigger;
 import com.restResource.StockTrader.entity.CommandType;
+import com.restResource.StockTrader.entity.TriggerKey;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
@@ -65,35 +66,30 @@ public class BuyTriggerController {
                             .transactionNum(transactionNum)
                             .errorMessage("The amount parameter must be greater than zero")
                             .build());
-            //FIXME do we want to throw the error or send a HttpStatus message?
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
+            return HttpStatus.BAD_REQUEST; //invalid request parameter
         }
-
+        //TODO remove the find by and replace it with a create or incremement function
         Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
+        if (accountRepository.removeFunds(userId, stockAmount, transactionNum, "TS1") == 0) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SET_BUY_AMOUNT)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .errorMessage("Insufficient Funds for the Transaction - requesting to remove: " + stockAmount)
+                            .build());
+            return HttpStatus.BAD_REQUEST; //insufficient funds for the transaction.
+        }
+
         if (stockBuyTriggerStatus.isPresent()) {
-            Integer cost = stockBuyTriggerStatus.get().getStock_cost();
-            if (cost != null) {
-                if (accountRepository.removeFunds(userId, cost*stockAmount, transactionNum, "TS1") == 0) {
-                    loggingService.logErrorEvent(
-                            ErrorEventLog.builder()
-                                    .command(CommandType.SET_BUY_AMOUNT)
-                                    .username(userId)
-                                    .stockSymbol(stockSymbol)
-                                    .transactionNum(transactionNum)
-                                    .errorMessage("Insufficient Funds for the Transaction - requesting to remove: " + cost)
-                                    .build());
-                    return HttpStatus.BAD_REQUEST; //insufficient funds for the transaction.
-                }
-            }
-            stockBuyTriggerStatus.get().setStock_amount(stockAmount + stockBuyTriggerStatus.get().getStock_amount());
-            buyTriggerRepository.save(stockBuyTriggerStatus.get());
+            buyTriggerRepository.incrementStockAmount(userId, stockAmount);
         } else {
             BuyTrigger buyTrigger = BuyTrigger.builder()
-                .user_id(userId)
-                .stock_amount(stockAmount)
-                .stock_symbol(stockSymbol)
+                .userId(userId)
+                .stockAmount(stockAmount)
+                .stockSymbol(stockSymbol)
                 .timestamp(LocalDateTime.now())
                 .build();
             buyTriggerRepository.save(buyTrigger);
@@ -150,8 +146,12 @@ public class BuyTriggerController {
         if (stockBuyTriggerStatus.isPresent()) {
             //refund the money
             //TODO add a check here to make sure it worked
-            accountRepository.updateAccountBalance(userId, stockBuyTriggerStatus.get().getStock_amount()*stockBuyTriggerStatus.get().getStock_cost(),transactionNum, "TS1");
-            buyTriggerRepository.delete(stockBuyTriggerStatus.get());
+            accountRepository.updateAccountBalance(userId, stockBuyTriggerStatus.get().getStockAmount(),transactionNum, "TS1");
+            TriggerKey triggerKey = TriggerKey.builder()
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .build();
+            buyTriggerRepository.deleteById(triggerKey);
             return HttpStatus.OK;
         } else {
             loggingService.logErrorEvent(
@@ -160,7 +160,7 @@ public class BuyTriggerController {
                             .username(userId)
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
-                            .errorMessage("The amount parameter must be greater than zero")
+                            .errorMessage("Buy trigger does not exist. user: "+userId + " StockSymbol: "+stockSymbol)
                             .build());
             return HttpStatus.BAD_REQUEST;
         }

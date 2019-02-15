@@ -5,6 +5,7 @@ import com.restResource.StockTrader.entity.SellTrigger;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.InvestmentRepository;
+import com.restResource.StockTrader.entity.TriggerKey;
 import com.restResource.StockTrader.repository.SellTriggerRepository;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.SellTriggerService;
@@ -84,14 +85,13 @@ public class SellTriggerController {
 
         Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-        if (stockSellTriggerStatus.isPresent()) {
-            stockSellTriggerStatus.get().setStock_amount(stockAmount + stockSellTriggerStatus.get().getStock_amount());
-            sellTriggerRepository.save(stockSellTriggerStatus.get());
+        if (stockSellTriggerStatus.isPresent()) { //FIXME do an insert or increment here instead of getting the trigger
+            sellTriggerRepository.incrementStockAmount(userId, stockAmount);
         } else {
             SellTrigger sellTrigger = SellTrigger.builder()
-                    .user_id(userId)
-                    .stock_symbol(stockSymbol)
-                    .stock_amount(stockAmount)
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .stockAmount(stockAmount)
                     .timestamp(LocalDateTime.now())
                     .build();
             sellTriggerRepository.save(sellTrigger);
@@ -148,8 +148,12 @@ public class SellTriggerController {
         if (stockSellTriggerStatus.isPresent()) {
             //refund the stocks
             //TODO add a check here to make sure it worked
-            investmentRepository.insertOrIncrement(userId, stockSymbol, stockSellTriggerStatus.get().getStock_amount()); //TODO logging?
-            sellTriggerRepository.delete(stockSellTriggerStatus.get());
+            investmentRepository.insertOrIncrement(userId, stockSymbol, stockSellTriggerStatus.get().getStockAmount()); //TODO logging?
+            TriggerKey triggerKey = TriggerKey.builder()
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .build();
+            sellTriggerRepository.deleteById(triggerKey);
             return HttpStatus.OK;
         } else {
             loggingService.logErrorEvent(
@@ -158,7 +162,7 @@ public class SellTriggerController {
                             .username(userId)
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
-                            .errorMessage("The amount parameter must be greater than zero")
+                            .errorMessage("Sell Trigger does not exist")
                             .build());
             return HttpStatus.BAD_REQUEST;
         }

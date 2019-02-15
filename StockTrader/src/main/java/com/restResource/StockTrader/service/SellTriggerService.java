@@ -48,10 +48,10 @@ public class SellTriggerService {
 
                     if (!sellStockSnapshot.isPresent()) { //we dont have an entry yet, so continue waiting
                         continue;
-                    } else if (sellStockSnapshot.get().getStock_cost() != null) { //we already have a working sell trigger
+                    } else if (sellStockSnapshot.get().getStockCost() != null) { //we already have a working sell trigger
                         return;
                     } else { //dont need to check anything since the stock has already been removed
-                        sellStockSnapshot.get().setStock_cost(stockCost);
+                        sellStockSnapshot.get().setStockCost(stockCost);
                         sellTriggerRepository.save(sellStockSnapshot.get());
                         break;
                     }
@@ -63,8 +63,8 @@ public class SellTriggerService {
                     //TODO its possible avoid this db query, by saving the thread id to the db and deleteing the thread using that
                     Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
                     if (sellStockSnapshot.isPresent()) {
-                        cost = sellStockSnapshot.get().getStock_cost();
-                        amount = sellStockSnapshot.get().getStock_amount();
+                        cost = sellStockSnapshot.get().getStockCost();
+                        amount = sellStockSnapshot.get().getStockAmount();
                     } else { //the trigger has been deleted -> not needed if we are removing the thread using the id
                         return;
                     }
