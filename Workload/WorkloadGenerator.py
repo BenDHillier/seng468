@@ -59,6 +59,8 @@ class WorkloadGenerator:
             self.commitSellRequest(params)
         elif( cmd == "CANCEL_SELL"):
             self.cancelSellRequest(params)
+        elif( cmd == "DUMPLOG"):
+            self.dumplogRequest(params)
         else:
             print("command was " + cmd)
 
@@ -180,6 +182,19 @@ class WorkloadGenerator:
         except Exception as e:
             print "CANCEL_SELL,{} failed due to exception {}".format(params[0],e)
 
+    #GET
+    def dumplogRequest(self,params):
+        try:
+            get_params = urllib.urlencode({'filename':params[0],'transactionNum':params[1]})
+            get_request = urllib2.urlopen('http://{}:{}/dumplog/all?'.format(self._args_ip,self._args_port) + get_params)
+            response = get_request.read()
+            logfile = open(params[0], "w+")
+            logfile.write(response)
+            logfile.close
+            print("Log written to {}".format(params[0]))
+            #print(response)
+        except Exception as e:
+            print "DUMPLOG,{},{} failed due to exception {}".format(params[0],params[1],e)
 
 if __name__ == "__main__":
     client = WorkloadGenerator(sys.argv)
