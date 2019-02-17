@@ -4,11 +4,15 @@ import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
+import com.restResource.StockTrader.entity.logging.SystemEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.service.LoggingService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
@@ -43,8 +47,7 @@ public class BuyController {
     }
 
     @PostMapping(path = "/create")
-    public @ResponseBody
-    Quote createBuy(
+    public ResponseEntity<String> createBuy(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int amount,
@@ -53,79 +56,59 @@ public class BuyController {
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.BUY)
+                        .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
                         .username(userId)
                         .stockSymbol(stockSymbol)
                         .funds(amount)
                         .transactionNum(transactionNum)
                         .build());
-
-        if (amount <= 0) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .transactionNum(transactionNum)
-                            .errorMessage("The amount parameter must be greater than zero")
-                            .build());
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
-        }
-
-        Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
-
-        if (quote.getPrice() > amount) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .errorMessage("The amount parameter must be greater than the quote price")
-                            .build());
-            // TODO: may want to handle this differently.
-            throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
-        }
-
-        // Removes any excess amount not needed to purchase the maximum number of stocks.
-        Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
-
-        // Removing more funds then is available will violate the amount >= 0
-        // constraint which will throw an exception.
         try {
+
+            //Can't buy nothing or a negative amount
+            if (amount <= 0) { throw new IllegalArgumentException("The amount parameter must be greater than zero."); }
+
+            //Don't hit the quote server if the user account doesn't exist
+            if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
+
+            //Get the quote
+            Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+
+            //User can't afford the stock at this price
+            if (quote.getPrice() > amount) { throw new IllegalArgumentException(userId + " can't afford to buy " + amount + " worth of " + quote.getStockSymbol()); }
+
+            // Removes any excess amount not needed to purchase the maximum number of stocks.
+            Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
             Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount,transactionNum,"TS1");
-            if (updatedEntriesCount != 1) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.BUY)
-                                .username(userId)
-                                .transactionNum(transactionNum)
-                                .stockSymbol(stockSymbol)
-                                .funds(amount)
-                                .errorMessage("Error removing funds from account. Expected 1 account to be updated but \" + updatedEntriesCount + \" accounts were updated")
-                                .build());
-                throw new IllegalStateException(
+
+            //Account wasn't updated for some reason
+            if (updatedEntriesCount != 1) { throw new IllegalStateException(
                         "Error removing funds from account. Expected 1 account to be updated but " +
                                 updatedEntriesCount + " accounts were updated");
             }
+
+            PendingBuy pendingBuy = PendingBuy.builder()
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .amount(roundedAmount)
+                    .timestamp(quote.getTimestamp())
+                    .price(quote.getPrice())
+                    .build();
+            buyRepository.save(pendingBuy);
+
         } catch (Exception e) {
-            // TODO: may want to handle this differently.
-            //throw new IllegalStateException("You do not have enough funds.");
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.BUY)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("Buy error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        PendingBuy pendingBuy = PendingBuy.builder()
-                .userId(userId)
-                .stockSymbol(stockSymbol)
-                .amount(roundedAmount)
-                .timestamp(quote.getTimestamp())
-                .price(quote.getPrice())
-                .build();
-
-        buyRepository.save(pendingBuy);
-
-        return quote;
+        return new ResponseEntity<>("PendingBuy success", HttpStatus.OK);
     }
 
     @PostMapping(path = "/commit")

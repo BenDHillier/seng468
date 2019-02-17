@@ -9,7 +9,10 @@ import com.restResource.StockTrader.repository.SellRepository;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.QuoteService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.InvalidParameterException;
 
 
 @RestController
@@ -41,13 +44,12 @@ public class SellController {
     }
 
     @PostMapping("/create")
-    public @ResponseBody
-    Quote createNewSell(
+    public
+    ResponseEntity<String> createNewSell(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int amount,
             @RequestParam int transactionNum) {
-        Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
         try {
             loggingService.logUserCommand(
                     UserCommandLog.builder()
@@ -58,16 +60,12 @@ public class SellController {
                             .funds(amount)
                             .build());
 
+            //Don't hit the quote server if the user account doesn't exist
+            if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
+
+            Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+
             if (amount <= 0) {
-                loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .errorMessage("The amount parameter must be greater than zero.")
-                            .build());
                 throw new IllegalArgumentException(
                         "The amount parameter must be greater than zero.");
             }
@@ -94,9 +92,7 @@ public class SellController {
                     .stockCount(stockCount)
                     .stockPrice(quote.getPrice())
                     .build();
-
             sellRepository.save(pendingSell);
-
 
         } catch( Exception e ) {
             loggingService.logErrorEvent(
@@ -106,11 +102,12 @@ public class SellController {
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
                             .funds(amount)
-                            .errorMessage("Error in sell controller")
+                            .errorMessage(e.getMessage())
                             .build());
+            return new ResponseEntity<>("PendingSell error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 
         }
-        return quote;
+        return new ResponseEntity<>("PendingSell success", HttpStatus.OK);
     }
 
     @PostMapping("/commit")

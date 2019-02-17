@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class QuoteServerLog {
     @XmlElement
     @Builder.Default
-    Integer transactionNum = 0;
+    Integer transactionNum = -1;
     @XmlElement
     @Builder.Default
     Long timestamp = System.currentTimeMillis();
@@ -36,17 +36,17 @@ public class QuoteServerLog {
     Long quoteServerTime = System.currentTimeMillis();
     @XmlElement
     @Builder.Default
-    String username = "";
+    String username = "DEFAULT_USERNAME";
     @XmlElement
     @Builder.Default
-    String stockSymbol = "";
+    String stockSymbol = "DEFAULT_STOCK_SYMBOL";
     @XmlElement
     @Builder.Default
     Integer price = 0;
     @XmlElement
     @Builder.Default
-    String cryptokey = "";
+    String cryptokey = "DEFAULT_CRYPTOKEY";
     @XmlElement
     @Builder.Default
-    String server = "";
+    String server = "DEFAULT_SERVER";
 }

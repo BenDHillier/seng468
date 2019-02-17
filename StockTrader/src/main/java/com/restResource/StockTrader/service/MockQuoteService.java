@@ -25,14 +25,14 @@ public class MockQuoteService implements QuoteService {
                         .cryptokey("made_up_cryptokey")
                         .build());
 
-        loggingService.logSystemEvent(
+/*        loggingService.logSystemEvent(
                 SystemEventLog.builder()
                         .command(CommandType.QUOTE)
                         .username(userId)
                         .transactionNum(transactionNum)
                         .stockSymbol(stockSymbol)
                         .build()
-        );
+        );*/
 
         return Quote.builder()
                 .userId(userId)

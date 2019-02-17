@@ -20,26 +20,22 @@ import javax.xml.bind.annotation.*;
 public class SystemEventLog {
     @XmlElement
     @Builder.Default
-    Integer transactionNum = 0;
-    @XmlElement
+    Integer transactionNum = -1;
+    @XmlElement(required = true)
     @Builder.Default
     CommandType command = CommandType.NONE;
     @XmlElement
-    @Builder.Default
-    String username = "";
+    String username;//can be null
     @XmlElement
-    @Builder.Default
-    String stockSymbol = "";
+    String stockSymbol;//can be null
     @XmlElement
-    @Builder.Default
-    String filename = "";
+    String filename;//can be null
     @XmlElement
-    @Builder.Default
-    Integer funds = 0;
+    Integer funds; //can be null
     @XmlElement
     @Builder.Default
     Long timestamp = System.currentTimeMillis();
     @XmlElement
     @Builder.Default
-    String server = "";
+    String server = "DEFAULT_SERVER";
 }
