@@ -42,6 +42,7 @@ public class QuoteController {
                     QuoteServerLog.builder()
                         .timestamp(System.currentTimeMillis())
                         .server("QS1")
+                        .transactionNum(transactionNum)
                         .username(userId)
                         .stockSymbol(stockSymbol)
                         .price(quote.getPrice())
