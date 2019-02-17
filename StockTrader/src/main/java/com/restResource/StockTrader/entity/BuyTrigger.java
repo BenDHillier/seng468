@@ -1,6 +1,5 @@
 package com.restResource.StockTrader.entity;
 
-import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
 import lombok.*;
 
 import javax.persistence.*;
@@ -9,27 +8,28 @@ import java.time.LocalDateTime;
 
 
 /**
- * Class for a BuyRepository table entry.
+ * Class for a BuyTrigger table entry.
  */
 @Builder(toBuilder = true)
 @Entity
+@IdClass(TriggerKey.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PendingBuy {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    Integer id;
-
-    Integer price;
+public class BuyTrigger {
     @Min(value = 0)
-    Integer amount;
+    Integer stockAmount;
+    @Min(value = 0)
+    Integer stockCost;
+
+    @Id
     String stockSymbol;
+    @Id
     String userId;
-    @Convert(converter = LocalDateTimeToEpochConverter.class)
     LocalDateTime timestamp;
 
     public boolean isExpired() {
         return timestamp.isBefore(LocalDateTime.now().minusMinutes(1));
     }
 }
+

@@ -4,13 +4,15 @@ DROP TABLE IF EXISTS pending_sell;
 DROP TABLE IF EXISTS investment;
 DROP TABLE IF EXISTS account;
 DROP TABLE IF EXISTS account_transaction_log;
+DROP TABLE IF EXISTS buy_trigger;
+DROP TABLE IF EXISTS sell_trigger;
 DROP TABLE IF EXISTS log_xml;
 
 CREATE TABLE pending_buy (
     id integer PRIMARY KEY,
     price integer,
     amount integer CHECK (amount >= 0),
-    timestamp timestamp without time zone,
+    timestamp bigint,
     user_id varchar(255),
     stock_symbol varchar(255)
 );
@@ -19,7 +21,7 @@ CREATE TABLE pending_sell (
     id integer PRIMARY KEY,
     stock_count integer CHECK (stock_count >= 0),
     stock_price integer,
-    timestamp timestamp without time zone,
+    timestamp bigint,
     user_id varchar(255),
     stock_symbol varchar(255)
 );
@@ -36,6 +38,26 @@ CREATE TABLE account (
     amount integer CHECK (amount >= 0),
     last_transaction_number integer,
     last_server varchar(255)
+);
+
+CREATE TABLE buy_trigger (
+  --id SERIAL PRIMARY KEY,
+  stock_amount integer CHECK (stock_amount >= 0),
+  stock_cost integer,
+  timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
+  user_id varchar(255),
+  stock_symbol varchar(255),
+  PRIMARY KEY (user_id, stock_symbol)
+);
+
+CREATE TABLE sell_trigger (
+  --id SERIAL PRIMARY KEY,
+  stock_amount integer CHECK (stock_amount >= 0),
+  stock_cost integer,
+  timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
+  user_id varchar(255),
+  stock_symbol varchar(255),
+  PRIMARY KEY (user_id, stock_symbol)
 );
 
 CREATE TABLE account_transaction_log (

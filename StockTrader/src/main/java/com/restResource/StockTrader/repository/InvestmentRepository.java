@@ -23,5 +23,5 @@ public interface InvestmentRepository extends CrudRepository<Investment, Investm
     @Transactional
     @Query(value = "UPDATE investment SET stock_count = stock_count - ?2 WHERE owner = ?1",
             nativeQuery = true)
-    void removeStocks(String owner, Integer stockCount);
+    Integer removeStocks(String owner, Integer stockCount);
 }
