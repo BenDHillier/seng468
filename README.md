@@ -1,5 +1,8 @@
 # seng468
 
+this is subbranch of database_to_xml in order to create an improved
+logging system from gen1 logging
+
 To run on lab machine add file ~/.m2/settings.xml with contents
 ```
 <settings>
