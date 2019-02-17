@@ -104,63 +104,76 @@ public class SellController {
                             .funds(amount)
                             .errorMessage(e.getMessage())
                             .build());
-            return new ResponseEntity<>("PendingSell error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 
         }
-        return new ResponseEntity<>("PendingSell success", HttpStatus.OK);
+        return new ResponseEntity<>("SELL success", HttpStatus.OK);
     }
 
     @PostMapping("/commit")
     public @ResponseBody
-    HttpStatus commitSell(@RequestParam String userId,
+    ResponseEntity<String> commitSell(@RequestParam String userId,
                           @RequestParam int transactionNum) {
 
-        PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum);
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.SELL)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .stockSymbol(pendingSell.getStockSymbol())
-                        .funds(pendingSell.getStockPrice())
-                        .build());
-
-        accountRepository.updateAccountBalance(
-                userId,
-                pendingSell.getStockPrice() * pendingSell.getStockCount(),
-                transactionNum,"TS1");
-
-        return HttpStatus.OK;
+        try {
+            PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum, CommandType.COMMIT_SELL);
+            accountRepository.updateAccountBalance(
+                    userId,
+                    pendingSell.getStockPrice() * pendingSell.getStockCount(),
+                    transactionNum,"TS1");
+        } catch( Exception e ) {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.COMMIT_SELL)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .build());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.COMMIT_SELL)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("COMMIT_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("COMMIT_SELL success", HttpStatus.OK);
     }
 
     @PostMapping("/cancel")
     public @ResponseBody
-    HttpStatus cancelSell(@RequestParam String userId,
+    ResponseEntity<String> cancelSell(@RequestParam String userId,
                           @RequestParam int transactionNum) {
 
-
-        PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum);
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.CANCEL_SELL)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .stockSymbol(pendingSell.getStockSymbol())
-                        .funds(pendingSell.getStockPrice())
-                        .build());
-
-        investmentRepository.insertOrIncrement(
-                userId,
-                pendingSell.getStockSymbol(),
-                pendingSell.getStockCount());
-
-        return HttpStatus.OK;
+        try {
+            PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum, CommandType.CANCEL_SELL);
+            investmentRepository.insertOrIncrement(
+                    userId,
+                    pendingSell.getStockSymbol(),
+                    pendingSell.getStockCount());
+        } catch( Exception e ) {
+            //command was made during an invalid account state, but we still need to log the activity
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.CANCEL_SELL)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .build());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.CANCEL_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("CANCEL_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("CANCEL_SELL success", HttpStatus.OK);
     }
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingSell claimMostRecentPendingSell(String userId, int transactionNum) {
+    private PendingSell claimMostRecentPendingSell(String userId, int transactionNum, CommandType commandType) {
         while (true) {
             PendingSell pendingSell =
                     sellRepository
@@ -181,15 +194,24 @@ public class SellController {
             } catch (Exception e) {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
-                                .command(CommandType.SELL)
+                                .command(CommandType.CANCEL_BUY)
                                 .username(userId)
-                                .transactionNum(transactionNum)
                                 .stockSymbol(pendingSell.getStockSymbol())
+                                .transactionNum(transactionNum)
                                 .funds(pendingSell.getStockPrice())
-                                .errorMessage("Error in claimMostRecentPendingSell")
+                                .errorMessage("COMMIT_SELL or CANCEL_SELL error: " + e.getMessage())
                                 .build());
                 continue;
             }
+            //command is allowed (ie there was a valid sell prior to this, etc)
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(commandType)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .stockSymbol(pendingSell.getStockSymbol())
+                            .funds(pendingSell.getStockPrice())
+                            .build());
             return pendingSell;
         }
     }

@@ -105,80 +105,83 @@ public class BuyController {
                             .transactionNum(transactionNum)
                             .errorMessage(e.getMessage())
                             .build());
-            return new ResponseEntity<>("Buy error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>("PendingBuy success", HttpStatus.OK);
+        return new ResponseEntity<>("BUY success", HttpStatus.OK);
     }
 
     @PostMapping(path = "/commit")
     public @ResponseBody
-    HttpStatus commitBuy(@RequestParam String userId,
+    ResponseEntity<String> commitBuy(@RequestParam String userId,
                          @RequestParam int transactionNum) {
+        try {
+            PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum, CommandType.COMMIT_BUY);
+            int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
+            investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
+        } catch(Exception e) {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.COMMIT_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .build());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.COMMIT_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("COMMIT_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
-        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum);
-
-        int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
-
-        investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.COMMIT_BUY)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .funds(amountToBuy)
-                        .build());
-
-        return HttpStatus.OK;
+        return new ResponseEntity<>("COMMIT_BUY success", HttpStatus.OK);
     }
 
     @PostMapping(path = "/cancel")
     public @ResponseBody
-    HttpStatus cancelBuy(@RequestParam String userId,
+    ResponseEntity<String> cancelBuy(@RequestParam String userId,
                          @RequestParam int transactionNum) {
 
-
-        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum);
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.CANCEL_BUY)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .stockSymbol(pendingBuy.getStockSymbol())
-                        .funds(pendingBuy.getAmount())
-                        .build());
-
-        accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
-
-        return HttpStatus.OK;
+        try {
+            PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum, CommandType.CANCEL_BUY);
+            accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
+        } catch( Exception e) {
+            //command was made during an invalid account state, but we still need to log the activity
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.CANCEL_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .build());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.CANCEL_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("CANCEL_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("CANCEL_BUY success", HttpStatus.OK);
     }
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingBuy claimMostRecentPendingBuy(String userId,int transactionNum) {
+    private PendingBuy claimMostRecentPendingBuy(String userId,int transactionNum, CommandType commandType) {
         while (true) {
             PendingBuy pendingBuy =
                     buyRepository
                             .findMostRecentForUserId(userId)
                             .orElseThrow(() -> new IllegalStateException(
-                                    "There was no valid buy."));
+                                    "There was no valid buy prior to this command."));
 
             if (pendingBuy.isExpired()) {
                 // TODO: May want to remove the expired entry from the DB if
                 // this is not going to be handled by something else.
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.CANCEL_BUY)
-                                .username(userId)
-                                .transactionNum(transactionNum)
-                                .stockSymbol(pendingBuy.getStockSymbol())
-                                .funds(pendingBuy.getAmount())
-                                .errorMessage("There was no valid buy")
-                                .build());
                 throw new IllegalStateException(
-                        "There was no valid buy.");
+                        "There was no valid buy prior to this command.");
             }
 
             // If delete fails, then the pendingBuy has already been claimed and
@@ -186,7 +189,6 @@ public class BuyController {
             try {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
-                // TODO: Verify that the error here is caused by CANCEL_BUY
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
                                 .command(CommandType.CANCEL_BUY)
@@ -194,10 +196,19 @@ public class BuyController {
                                 .stockSymbol(pendingBuy.getStockSymbol())
                                 .transactionNum(transactionNum)
                                 .funds(pendingBuy.getAmount())
-                                .errorMessage("Exception in buyRepository.deleteById(pendingBuy.getId())")
+                                .errorMessage("COMMIT_BUY or CANCEL_BUY error: " + e.getMessage())
                                 .build());
                 continue;
             }
+            //command is allowed (ie there was a valid buy prior to this, etc)
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(commandType)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .stockSymbol(pendingBuy.getStockSymbol())
+                            .funds(pendingBuy.getAmount())
+                            .build());
             return pendingBuy;
         }
     }
