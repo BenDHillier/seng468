@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 //import java.time.LocalDateTime;
 
+import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
 @Data
@@ -30,10 +32,12 @@ public class QuoteServerLog {
     Integer transactionNum = 0;
     @XmlElement
     @Builder.Default
-    Long timestamp = System.currentTimeMillis();
+    @Convert(converter = LocalDateTimeToEpochConverter.class)
+    LocalDateTime timestamp = LocalDateTime.now();
     @XmlElement
     @Builder.Default
-    Long quoteServerTime = System.currentTimeMillis();
+    @Convert(converter = LocalDateTimeToEpochConverter.class)
+    LocalDateTime quoteServerTime = LocalDateTime.now();
     @XmlElement
     @Builder.Default
     String username = "";

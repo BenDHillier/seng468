@@ -4,18 +4,21 @@ import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.QuoteServerLog;
 import com.restResource.StockTrader.entity.logging.SystemEventLog;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
+@Profile("!prod")
 public class MockQuoteService implements QuoteService {
     private LoggingService loggingService;
     private MockQuoteService(LoggingService loggingService) {
         this.loggingService = loggingService;
     }
     @Override
-    public Quote getQuote(String stockSymbol, String userId, int transactionNum) {
+    public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
 
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
@@ -31,15 +34,14 @@ public class MockQuoteService implements QuoteService {
                         .username(userId)
                         .transactionNum(transactionNum)
                         .stockSymbol(stockSymbol)
-                        .build()
-        );
+                        .build());
 
-        return Quote.builder()
+        return Optional.of(Quote.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)
                 .price(50)
-                .key("hd19dg29fj1772nd10")
+                .cryptoKey("hd19dg29fj1772nd10")
                 .timestamp(LocalDateTime.now())
-                .build();
+                .build());
     }
 }
