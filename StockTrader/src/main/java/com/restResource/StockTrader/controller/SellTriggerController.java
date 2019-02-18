@@ -44,7 +44,7 @@ public class SellTriggerController {
     HttpStatus createTriggerAmount(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam(value="amount") int stockAmount,
+            @RequestParam(value = "amount") int stockAmount,
             @RequestParam int transactionNum) {
 
 
@@ -107,7 +107,7 @@ public class SellTriggerController {
     HttpStatus createTriggerCost(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam(value="cost") int stockCost,
+            @RequestParam(value = "amount") int stockCost,
             @RequestParam int transactionNum) {
 
         if (stockCost <= 0) {
