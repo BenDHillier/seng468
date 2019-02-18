@@ -11,6 +11,8 @@ import com.restResource.StockTrader.service.QuoteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping(value = "/sell")
@@ -47,7 +49,11 @@ public class SellController {
             @RequestParam String stockSymbol,
             @RequestParam int amount,
             @RequestParam int transactionNum) {
-        Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+        Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+        if (!optionalQuote.isPresent()) {
+            return null;
+        }
+        Quote quote = optionalQuote.get();
         try {
             loggingService.logUserCommand(
                     UserCommandLog.builder()

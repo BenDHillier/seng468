@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 public class QuoteController {
     private QuoteService quoteService;
@@ -35,7 +37,11 @@ public class QuoteController {
         //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
 
         try {
-            Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            if (!optionalQuote.isPresent()) {
+                return null;
+            }
+            Quote quote = optionalQuote.get();
             loggingService.logUserCommand(
                     UserCommandLog.builder()
                             .command(CommandType.QUOTE)
@@ -52,7 +58,7 @@ public class QuoteController {
                             .transactionNum(transactionNum)
                             .errorMessage("Error during quote request")
                             .build());
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

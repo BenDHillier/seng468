@@ -3,6 +3,7 @@ package com.restResource.StockTrader.service;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.SellTrigger;
 import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.repository.SellTriggerRepository;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,13 @@ public class SellTriggerService {
     private SellTriggerRepository sellTriggerRepository;
     private TaskExecutor taskExecutor;
     private AccountRepository accountRepository;
+    private InvestmentRepository investmentRepository;
     private LoggingService loggingService;
 
     public SellTriggerService(LoggingService loggingService,
                              QuoteService quoteService,
                              SellTriggerRepository sellTriggerRepository,
+                             InvestmentRepository investmentRepository,
                              TaskExecutor taskExecutor,
                              AccountRepository accountRepository){
         this.quoteService = quoteService;
@@ -28,6 +31,7 @@ public class SellTriggerService {
         this.taskExecutor = taskExecutor;
         this.accountRepository = accountRepository;
         this.loggingService = loggingService;
+        this.investmentRepository = investmentRepository;
     }
 
     public void start(String userId, String stockSymbol, Integer stockCost, Integer transactionNum) {
@@ -47,10 +51,18 @@ public class SellTriggerService {
                     } else { //the trigger has been deleted -> not needed if we are removing the thread using the id
                         return;
                     }
-                    Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
-                    //TODO handle quote not existing
+                    Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+                    if (!optionalQuote.isPresent()) {
+                        return;
+                    }
+                    Quote quote = optionalQuote.get();
                     if (quote.getPrice() >= cost) {
-                        Integer profit = quote.getPrice()*amount;
+                        int stocksToSell = amount / quote.getPrice();
+                        int stocksReserved = amount / cost;
+                        Integer profit = quote.getPrice() * stocksToSell;
+                        if (stocksReserved > stocksToSell) {
+                            investmentRepository.insertOrIncrement(userId, stockSymbol, stocksReserved - stocksToSell);
+                        }
                         accountRepository.updateAccountBalance(userId, profit, transactionNum, "TS1");
                         sellTriggerRepository.delete(sellStockSnapshot.get());
                         return;
