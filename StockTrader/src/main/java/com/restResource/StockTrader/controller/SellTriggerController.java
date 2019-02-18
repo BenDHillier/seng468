@@ -86,7 +86,7 @@ public class SellTriggerController {
         Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
         if (stockSellTriggerStatus.isPresent()) { //FIXME do an insert or increment here instead of getting the trigger
-            sellTriggerRepository.incrementStockAmount(userId, stockAmount);
+            sellTriggerRepository.incrementStockAmount(userId, stockAmount, stockSymbol);
         } else {
             SellTrigger sellTrigger = SellTrigger.builder()
                     .userId(userId)
@@ -122,6 +122,36 @@ public class SellTriggerController {
                         .stockSymbol(stockSymbol)
                         .transactionNum(transactionNum)
                         .build());
+
+
+
+        Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+        if (!sellStockSnapshot.isPresent()) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SET_SELL_TRIGGER)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                            .build());
+            return HttpStatus.BAD_REQUEST;
+        } else if (sellStockSnapshot.get().getStockCost() != null) {
+            return HttpStatus.BAD_REQUEST;
+        } else {
+            if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SET_SELL_TRIGGER)
+                                .username(userId)
+                                .stockSymbol(stockSymbol)
+                                .transactionNum(transactionNum)
+                                .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                                .build());
+                return HttpStatus.BAD_REQUEST;
+            }
+        }
 
         sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 

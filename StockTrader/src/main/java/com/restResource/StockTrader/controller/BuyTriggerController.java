@@ -84,7 +84,7 @@ public class BuyTriggerController {
         }
 
         if (stockBuyTriggerStatus.isPresent()) {
-            buyTriggerRepository.incrementStockAmount(userId, stockAmount);
+            buyTriggerRepository.incrementStockAmount(userId, stockAmount, stockSymbol);
         } else {
             BuyTrigger buyTrigger = BuyTrigger.builder()
                 .userId(userId)
@@ -120,6 +120,34 @@ public class BuyTriggerController {
                         .stockSymbol(stockSymbol)
                         .transactionNum(transactionNum)
                         .build());
+
+        Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+        if (!buyStockSnapshot.isPresent()) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SET_BUY_TRIGGER)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                            .build());
+            return HttpStatus.BAD_REQUEST;
+        } else if (buyStockSnapshot.get().getStockCost() != null) { //we already have a working buy trigger
+            return HttpStatus.BAD_REQUEST;
+        } else {
+            if (buyTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SET_BUY_TRIGGER)
+                                .username(userId)
+                                .stockSymbol(stockSymbol)
+                                .transactionNum(transactionNum)
+                                .errorMessage("A trigger cost is already set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                                .build());
+                return HttpStatus.BAD_REQUEST;
+            }
+        }
 
         buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
