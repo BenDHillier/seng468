@@ -40,38 +40,7 @@ public class BuyTriggerService {
         taskExecutor.execute(new Runnable() {
             @Override
             public void run(){
-                //wait for both rest calls to complete, verify sufficient funds.
-                for (;;) {
 
-                    try {
-                        Thread.sleep(5000);
-                    } catch(InterruptedException e) {
-                        throw new IllegalArgumentException(
-                                "Error with Thread.sleep in "+Thread.currentThread().getName());
-                    }
-
-                    Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
-
-                    if (!buyStockSnapshot.isPresent()) { //we dont have an entry yet, so continue waiting
-                        loggingService.logErrorEvent(
-                                ErrorEventLog.builder()
-                                        .command(CommandType.SET_BUY_TRIGGER)
-                                        .username(userId)
-                                        .stockSymbol(stockSymbol)
-                                        .transactionNum(transactionNum)
-                                        .errorMessage("A trigger amount has not been set for the stock symbol: "+stockSymbol+" for the user: "+userId)
-                                        .build());
-                        return;
-                    } else if (buyStockSnapshot.get().getStockCost() != null) { //we already have a working buy trigger
-                        return;
-                    } else { //we have a trigger that is waiting for a cost target
-                        synchronized (this) {
-                            buyStockSnapshot.get().setStockCost(stockCost);
-                            buyTriggerRepository.save(buyStockSnapshot.get());
-                        }
-                        break;
-                    }
-                }
                 //TODO technically can assign this from initialization
                 Integer cost;
                 Integer amount;

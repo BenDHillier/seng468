@@ -20,9 +20,6 @@ public class StockTraderApplication {
 	@Bean
 	public Executor taskExecutor(){
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(2); //Dont think we need this
-		executor.setMaxPoolSize(2);
-		executor.setQueueCapacity(500); //not sure what number this should be, might be too small -> dunno if there is a way to make it dynamic
 		executor.initialize();
 		return executor;
 	}

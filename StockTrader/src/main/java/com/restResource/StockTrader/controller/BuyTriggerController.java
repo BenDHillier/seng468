@@ -45,7 +45,7 @@ public class BuyTriggerController {
     HttpStatus createTriggerAmount(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockAmount,
+            @RequestParam(value="amount") int stockAmount,
             @RequestParam int transactionNum) {
 
 
@@ -84,7 +84,7 @@ public class BuyTriggerController {
         }
 
         if (stockBuyTriggerStatus.isPresent()) {
-            buyTriggerRepository.incrementStockAmount(userId, stockAmount);
+            buyTriggerRepository.incrementStockAmount(userId, stockAmount, stockSymbol);
         } else {
             BuyTrigger buyTrigger = BuyTrigger.builder()
                 .userId(userId)
@@ -105,7 +105,7 @@ public class BuyTriggerController {
     HttpStatus createTriggerCost(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockCost,
+            @RequestParam(value="cost") int stockCost,
             @RequestParam int transactionNum) {
 
         if (stockCost <= 0) {
@@ -120,6 +120,40 @@ public class BuyTriggerController {
                         .stockSymbol(stockSymbol)
                         .transactionNum(transactionNum)
                         .build());
+        try{
+
+            Thread.sleep(200);
+        }catch(InterruptedException e){
+            System.out.println("poop");
+        }
+
+        Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+        if (!buyStockSnapshot.isPresent()) { //we dont have an entry yet, so continue waiting
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SET_BUY_TRIGGER)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                            .build());
+            return HttpStatus.BAD_REQUEST;
+        } else if (buyStockSnapshot.get().getStockCost() != null) { //we already have a working buy trigger
+            return HttpStatus.BAD_REQUEST;
+        } else { //we have a trigger that is waiting for a cost target
+            if (buyTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SET_BUY_TRIGGER)
+                                .username(userId)
+                                .stockSymbol(stockSymbol)
+                                .transactionNum(transactionNum)
+                                .errorMessage("A trigger cost is already set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                                .build());
+                return HttpStatus.BAD_REQUEST;
+            }
+        }
 
         buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
