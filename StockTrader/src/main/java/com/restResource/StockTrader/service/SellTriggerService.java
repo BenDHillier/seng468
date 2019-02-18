@@ -34,28 +34,7 @@ public class SellTriggerService {
         taskExecutor.execute(new Runnable() {
             @Override
             public void run(){
-                //wait for both rest calls to complete, verify sufficient funds.
-                for (;;) {
 
-                    try {
-                        Thread.sleep(5000); //check every 5 seconds to see if its been completed TODO make configurable / in config
-                    } catch(InterruptedException e) {
-                        throw new IllegalArgumentException(
-                                "Error with Thread.sleep found in "+Thread.currentThread().getName());
-                    }
-
-                    Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
-
-                    if (!sellStockSnapshot.isPresent()) { //we dont have an entry yet, so continue waiting
-                        continue;
-                    } else if (sellStockSnapshot.get().getStockCost() != null) { //we already have a working sell trigger
-                        return;
-                    } else { //dont need to check anything since the stock has already been removed
-                        sellStockSnapshot.get().setStockCost(stockCost);
-                        sellTriggerRepository.save(sellStockSnapshot.get());
-                        break;
-                    }
-                }
                 //TODO technically can assign this from initialization
                 Integer cost;
                 Integer amount;
