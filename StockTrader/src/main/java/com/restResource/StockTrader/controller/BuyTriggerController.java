@@ -120,16 +120,10 @@ public class BuyTriggerController {
                         .stockSymbol(stockSymbol)
                         .transactionNum(transactionNum)
                         .build());
-        try{
-
-            Thread.sleep(200);
-        }catch(InterruptedException e){
-            System.out.println("poop");
-        }
 
         Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-        if (!buyStockSnapshot.isPresent()) { //we dont have an entry yet, so continue waiting
+        if (!buyStockSnapshot.isPresent()) {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.SET_BUY_TRIGGER)
@@ -141,7 +135,7 @@ public class BuyTriggerController {
             return HttpStatus.BAD_REQUEST;
         } else if (buyStockSnapshot.get().getStockCost() != null) { //we already have a working buy trigger
             return HttpStatus.BAD_REQUEST;
-        } else { //we have a trigger that is waiting for a cost target
+        } else {
             if (buyTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()

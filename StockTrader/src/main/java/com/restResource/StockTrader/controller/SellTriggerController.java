@@ -127,7 +127,7 @@ public class SellTriggerController {
 
         Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-        if (!sellStockSnapshot.isPresent()) { //we dont have an entry yet, so continue waiting
+        if (!sellStockSnapshot.isPresent()) {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.SET_SELL_TRIGGER)
@@ -137,9 +137,9 @@ public class SellTriggerController {
                             .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
                             .build());
             return HttpStatus.BAD_REQUEST;
-        } else if (sellStockSnapshot.get().getStockCost() != null) { //we already have a working sell trigger
+        } else if (sellStockSnapshot.get().getStockCost() != null) {
             return HttpStatus.BAD_REQUEST;
-        } else { //dont need to check anything since the stock has already been removed
+        } else {
             if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()

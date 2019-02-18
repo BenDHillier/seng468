@@ -29,7 +29,7 @@ public interface SellTriggerRepository extends CrudRepository<SellTrigger, Trigg
     @Query(value =
             "UPDATE sell_trigger " +
             "SET stock_cost = ?2 " +
-            "WHERE sell_trigger.user_id = ?1 AND sell_trigger.stock_symbol = ?3 AND sell_trigger.cost = NULL ",
+            "WHERE sell_trigger.user_id = ?1 AND sell_trigger.stock_symbol = ?3 AND sell_trigger.cost IS NULL ",
             nativeQuery = true)
     Integer addCostAmount(String userId, Integer cost, String stockSymbol);
 }

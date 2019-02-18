@@ -29,7 +29,7 @@ public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, Trigger
     @Query(value =
             "UPDATE buy_trigger " +
              "SET stock_cost = ?2 " +
-             "WHERE buy_trigger.user_id = ?1 AND buy_trigger.stock_symbol = ?3 AND buy_trigger.cost = NULL ",
+             "WHERE buy_trigger.user_id = ?1 AND buy_trigger.stock_symbol = ?3 AND buy_trigger.cost IS NULL ",
             nativeQuery = true)
     Integer addCostAmount(String userId, Integer amount, String stockSymbol);
 }
