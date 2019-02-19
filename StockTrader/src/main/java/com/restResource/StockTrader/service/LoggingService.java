@@ -41,6 +41,7 @@ public class LoggingService {
             return marshaller;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
     }
