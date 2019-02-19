@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.main.java.restResource</groupId>
-	<artifactId>StockTrader</artifactId>
+	<artifactId>stock-trader</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>StockTrader</name>
 	<description>Stock Trader Project for Seng 468</description>
