@@ -7,6 +7,7 @@ import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlElement;
 import java.io.File;
@@ -32,18 +33,12 @@ public class LoggingService {
 
     }
 
-    private Marshaller createMarshaller() {
-        try {
-            Marshaller marshaller = this.jaxbContext.createMarshaller();
-            // TODO: make this false which will save space in database
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
-            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-            return marshaller;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
+    private Marshaller createMarshaller() throws JAXBException {
+        Marshaller marshaller = this.jaxbContext.createMarshaller();
+        // TODO: make this false which will save space in database
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
+        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+        return marshaller;
     }
 
     public void xmlLogEvent(LogXml log) {
