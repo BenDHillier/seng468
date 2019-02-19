@@ -53,7 +53,11 @@ public class BuyTriggerService {
                     } else { //the trigger has been deleted -> not needed if we are removing the thread using the id
                         return;
                     }
-                    Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+                    Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+                    if (!optionalQuote.isPresent()) {
+                        return;
+                    }
+                    Quote quote = optionalQuote.get();
                     //TODO handle quote not existing
                     if (quote.getPrice() <= cost) {
                         Integer refund = amount % quote.getPrice();

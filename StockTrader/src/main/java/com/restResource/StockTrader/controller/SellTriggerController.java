@@ -70,18 +70,6 @@ public class SellTriggerController {
                     "The amount parameter must be greater than zero.");
         }
 
-        //we check to see if we have sufficient stock to sell. We dont care about how much we are selling it for though.
-        if (investmentRepository.removeStocks(userId, stockAmount) == 0) { //TODO logging?
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_SELL_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage("Insufficient Stock for the Transaction - requesting to remove: " + stockAmount)
-                            .build());
-            return HttpStatus.BAD_REQUEST; //insufficient funds for the transaction.
-        }
 
         Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
@@ -123,8 +111,6 @@ public class SellTriggerController {
                         .transactionNum(transactionNum)
                         .build());
 
-
-
         Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
         if (!sellStockSnapshot.isPresent()) {
@@ -139,23 +125,39 @@ public class SellTriggerController {
             return HttpStatus.BAD_REQUEST;
         } else if (sellStockSnapshot.get().getStockCost() != null) {
             return HttpStatus.BAD_REQUEST;
-        } else {
-            if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.SET_SELL_TRIGGER)
-                                .username(userId)
-                                .stockSymbol(stockSymbol)
-                                .transactionNum(transactionNum)
-                                .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
-                                .build());
-                return HttpStatus.BAD_REQUEST;
-            }
+        }
+
+        SellTrigger sellTrigger = sellStockSnapshot.get();
+
+        if (investmentRepository.removeStocks(userId, sellTrigger.getStockAmount() / stockCost) == 0) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SET_SELL_AMOUNT)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .errorMessage(
+                                    "Insufficient Stock for the Transaction - requesting to remove: " + sellTrigger.getStockAmount() / stockCost)
+                            .build());
+            return HttpStatus.BAD_REQUEST;
+
+        }
+
+        if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.SET_SELL_TRIGGER)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
+                            .build());
+            return HttpStatus.BAD_REQUEST;
         }
 
         sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
-        return HttpStatus.ACCEPTED; //we do accepted since we cant be sure it worked but we can be sure we passed it to a thread
+        return HttpStatus.ACCEPTED;
     }
 
     @PostMapping(path = "/cancel")

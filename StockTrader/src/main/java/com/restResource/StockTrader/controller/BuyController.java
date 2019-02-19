@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
 
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping(value = "/buy")
@@ -73,7 +75,11 @@ public class BuyController {
                     "The amount parameter must be greater than zero.");
         }
 
-        Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+        Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+        if (!optionalQuote.isPresent()) {
+            return null;
+        }
+        Quote quote = optionalQuote.get();
 
         if (quote.getPrice() > amount) {
             loggingService.logErrorEvent(
