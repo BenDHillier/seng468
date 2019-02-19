@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface SellTriggerRepository extends CrudRepository<SellTrigger, TriggerKey> {
     @Query(value=
-            "Select * from buy_trigger where user_id = ?1 and stock_symbol=?2 ",
+            "Select * from sell_trigger where user_id = ?1 and stock_symbol=?2 ",
             nativeQuery = true)
     Optional<SellTrigger> findByUserIdAndStockSymbol(String userId, String stockSymbol);
 
@@ -29,7 +29,7 @@ public interface SellTriggerRepository extends CrudRepository<SellTrigger, Trigg
     @Query(value =
             "UPDATE sell_trigger " +
             "SET stock_cost = ?2 " +
-            "WHERE sell_trigger.user_id = ?1 AND sell_trigger.stock_symbol = ?3 AND sell_trigger.cost IS NULL ",
+            "WHERE sell_trigger.user_id = ?1 AND sell_trigger.stock_symbol = ?3 AND sell_trigger.stock_cost IS NULL ",
             nativeQuery = true)
     Integer addCostAmount(String userId, Integer cost, String stockSymbol);
 }
