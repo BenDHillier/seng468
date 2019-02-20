@@ -92,7 +92,7 @@ class WorkloadGenerator:
     #POST
     def setSellTriggerRequest(self,params):
         try:
-            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockCost':int(float(params[2])* 100), 'transactionNum':params[3]})
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2])* 100), 'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/sellTrigger/trigger', put_params, headers)
             response = self._httpconnection.getresponse()
@@ -104,7 +104,7 @@ class WorkloadGenerator:
     #POST
     def setSellAmountRequest(self,params):
         try:
-            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockAmount':int(float(params[2]) * 100), 'transactionNum':params[3]})
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2]) * 100), 'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/sellTrigger/amount', put_params, headers)
             response = self._httpconnection.getresponse()
@@ -127,7 +127,7 @@ class WorkloadGenerator:
     #POST
     def setBuyTriggerRequest(self,params):
         try:
-            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockCost':int(float(params[2])* 100), 'transactionNum':params[3]})
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2])* 100), 'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/buyTrigger/trigger', put_params, headers)
             response = self._httpconnection.getresponse()
@@ -139,7 +139,7 @@ class WorkloadGenerator:
     #POST
     def setBuyAmountRequest(self,params):
         try:
-            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockAmount':int(float(params[2]) * 100), 'transactionNum':params[3]})
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2]) * 100), 'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/buyTrigger/amount', put_params, headers)
             response = self._httpconnection.getresponse()
