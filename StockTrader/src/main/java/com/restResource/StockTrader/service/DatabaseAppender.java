@@ -9,6 +9,17 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
 
+//TODO Make the logging work remainder of log types
+//FIXME: part of the problem here is that the DBAppender is initialized with one prepared statement,
+//FIXME: I dont believe that the preparedStatement can be altered dynamically, so it's possible that
+//FIXME: we might just have to create a custom DatabaseAppender for each log type.
+
+//FIXME it is possible that multiple declarations of "<appender name="db" class="com.restResource.StockTrader.service.DatabaseAppender"> .."
+// within the logback.xml file can just utilize the same DatabaseAppender class here..
+// if that's true, then we MIGHT be able to resolve the name of the TABLE on initialization...not sure if that's possible tho
+
+//FIXME if all else fails, we can put all logs into a single table, then just query the rows at dump, using some kind of custom xml query with postgresql
+// which is very possible
 public class DatabaseAppender extends DBAppender {
     protected String insertSQL;
 
@@ -39,9 +50,9 @@ public class DatabaseAppender extends DBAppender {
 
     public DatabaseAppender(){}
 
+    //This method is called only once on system init
     @Override
     public void start() {
-
         super.start();
         if (databaseNameResolver == null)
             databaseNameResolver = new DatabaseNameResolver();
@@ -53,8 +64,6 @@ public class DatabaseAppender extends DBAppender {
     @Override
     protected void subAppend(ILoggingEvent event, Connection connection,
                              PreparedStatement insertStatement) throws Throwable {
-
-
 
         bindLoggingEventWithInsertStatement(insertStatement, event);
 

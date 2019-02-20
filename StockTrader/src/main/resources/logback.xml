@@ -25,10 +25,6 @@
                 <password>postgres</password>
             </dataSource>
         </connectionSource>
-
-        <!--<filter class = "com.restResource.StockTrader.service.LoggingFilter">-->
-            <!--<Marker>userCommand</Marker>-->
-        <!--</filter>-->
     </appender>
 
     <root>
