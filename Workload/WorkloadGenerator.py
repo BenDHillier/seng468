@@ -1,4 +1,6 @@
 import httplib
+import threading
+import thread
 import urllib
 import urllib2
 import sys
@@ -30,6 +32,7 @@ class WorkloadGenerator:
 
     def run(self):
         file = open("./WorkloadFiles/{}".format(self._args_filename), "r")
+        paramDict = {}
         for line in file:
             split_line = line.rstrip().split(" ")
             split_line_r = split_line[1].split(",")
@@ -38,9 +41,19 @@ class WorkloadGenerator:
             command = split_line_r[0]
             params = split_line_r[1:]
             params.append(transaction_num)
-            print("sending: " + command + " with params {}".format(params))
+            if params[0] not in paramDict and command != "DUMPLOG":
+                 paramDict[params[0]] = []
+            if command != "DUMPLOG":
+		 paramDict[params[0]].append((command,params))
+        for key in paramDict:
+            t = threading.Thread(target=self.runThread,args=(paramDict[key],))
+            t.start()
+            time.sleep(.250)
+
+    def runThread(self,paramsList):
+        for (command,params) in paramsList:
+            print("\n[THREAD {}] sending: ".format(thread.get_ident()) + command + " with params {}".format(params))
             self.handleCommand(command,params)
-            #time.sleep(.250)
 
     def handleCommand(self,cmd,params):
         if( cmd == "ADD"):
@@ -59,23 +72,105 @@ class WorkloadGenerator:
             self.commitSellRequest(params)
         elif( cmd == "CANCEL_SELL"):
             self.cancelSellRequest(params)
+        elif( cmd == "SET_BUY_AMOUNT"):
+            self.setBuyAmountRequest(params)
+        elif( cmd == "SET_BUY_TRIGGER"):
+            self.setBuyTriggerRequest(params)
+        elif( cmd == "CANCEL_SET_BUY"):
+            self.cancelSetBuyRequest(params)
+        elif( cmd == "SET_SELL_AMOUNT"):
+            self.setSellAmountRequest(params)
+        elif( cmd == "SET_SELL_TRIGGER"):
+            self.setSellTriggerRequest(params)
+        elif( cmd == "CANCEL_SET_SELL"):
+            self.cancelSetSellRequest(params)
+        elif( cmd == "DUMPLOG"):
+            sef.dumplogRequest(params)
         else:
             print("command was " + cmd)
+
+    #POST
+    def setSellTriggerRequest(self,params):
+        try:
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockCost':int(float(params[2])* 100), 'transactionNum':params[3]})
+            headers = {"Content-type": "application/x-www-form-urlencoded"}
+            self._httpconnection.request('POST', '/sellTrigger/trigger', put_params, headers)
+            response = self._httpconnection.getresponse()
+            data = response.read()
+            print("{} {}".format(data,response.status))
+        except Exception as e:
+            print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
+
+    #POST
+    def setSellAmountRequest(self,params):
+        try:
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockAmount':int(float(params[2]) * 100), 'transactionNum':params[3]})
+            headers = {"Content-type": "application/x-www-form-urlencoded"}
+            self._httpconnection.request('POST', '/sellTrigger/amount', put_params, headers)
+            response = self._httpconnection.getresponse()
+            data = response.read()
+            print("{} {}".format(data,response.status))
+        except Exception as e:
+            print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
+
+    #POST
+    def cancelSetSellRequest(self,params):
+        try:
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1], 'transactionNum':params[2]})
+            headers = {"Content-type": "application/x-www-form-urlencoded"}
+            self._httpconnection.request('POST', '/sellTrigger/cancel', put_params, headers)
+            response = self._httpconnection.getresponse()
+            data = response.read()
+            print("{} {}".format(data,response.status))
+        except Exception as e:
+            print "CANCEL SET BUY,{},{} failed due to exception {}".format(params[0],params[1],e)
+    #POST
+    def setBuyTriggerRequest(self,params):
+        try:
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockCost':int(float(params[2])* 100), 'transactionNum':params[3]})
+            headers = {"Content-type": "application/x-www-form-urlencoded"}
+            self._httpconnection.request('POST', '/buyTrigger/trigger', put_params, headers)
+            response = self._httpconnection.getresponse()
+            data = response.read()
+            print("{} {}".format(data,response.status))
+        except Exception as e:
+            print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
+
+    #POST
+    def setBuyAmountRequest(self,params):
+        try:
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'stockAmount':int(float(params[2]) * 100), 'transactionNum':params[3]})
+            headers = {"Content-type": "application/x-www-form-urlencoded"}
+            self._httpconnection.request('POST', '/buyTrigger/amount', put_params, headers)
+            response = self._httpconnection.getresponse()
+            data = response.read()
+            print("{} {}".format(data,response.status))
+        except Exception as e:
+            print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
+
+    #POST
+    def cancelSetBuyRequest(self,params):
+        try:
+            put_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1], 'transactionNum':params[2]})
+            headers = {"Content-type": "application/x-www-form-urlencoded"}
+            self._httpconnection.request('POST', '/buyTrigger/cancel', put_params, headers)
+            response = self._httpconnection.getresponse()
+            data = response.read()
+            print("{} {}".format(data,response.status))
+        except Exception as e:
+            print "CANCEL SET BUY,{},{} failed due to exception {}".format(params[0],params[1],e)
 
     #PUT
     def addRequest(self,params):
         try:
             # TODO: Eventually will have to send unformatted string of float val
             # for now will have to send as a value formatted to integer for testing purposes
-            put_params = urllib.urlencode({'userId':params[0],'amount':int(float(params[1])), 'transactionNum':params[2]})
+            put_params = urllib.urlencode({'userId':params[0],'amount':int(float(params[1]) * 100), 'transactionNum':params[2]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('PUT', '/add', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -92,15 +187,12 @@ class WorkloadGenerator:
     #POST
     def buyRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2])),'transactionNum':params[3]})
+            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2]) * 100),'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/buy/create', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "BUY,{},{},{} failed due to exception {}".format(params[0],params[1],params[2],e)
 
@@ -113,10 +205,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buy/commit', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "COMMIT_BUY,{} failed due to exception {}".format(params[0],e)
 
@@ -128,25 +217,19 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buy/cancel', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "CANCEL_BUY,{} failed due to exception {}".format(params[0],e)
 
     #POST
     def sellRequest(self,params):
         try:
-            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2])),'transactionNum':params[3]})
+            post_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'amount':int(float(params[2]) * 100),'transactionNum':params[3]})
             headers = {"Content-type": "application/x-www-form-urlencoded"}
             self._httpconnection.request('POST', '/sell/create', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "SELL,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -158,10 +241,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sell/commit', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "COMMIT_SELL,{} failed due to exception {}".format(params[0],e)
 
@@ -173,12 +253,23 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sell/cancel', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            if( response.status == 200 ):
-                print("Response from server: " + data)
-            else:
-                print(response.status)
+            print("{} {}".format(data,response.status))
         except Exception as e:
             print "CANCEL_SELL,{} failed due to exception {}".format(params[0],e)
+
+    #GET
+    def dumplogRequest(self,params):
+        try:
+            get_params = urllib.urlencode({'filename':params[0],'transactionNum':params[1]})
+            get_request = urllib2.urlopen('http://{}:{}/dumplog/all?'.format(self._args_ip,self._args_port) + get_params)
+            response = get_request.read()
+            logfile = open(params[0], "w+")
+            logfile.write(response)
+            logfile.close
+            print("Log written to {}".format(params[0]))
+            #print(response)
+        except Exception as e:
+            print "DUMPLOG,{},{} failed due to exception {}".format(params[0],params[1],e)
 
 
 if __name__ == "__main__":
