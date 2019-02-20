@@ -1,4 +1,4 @@
-package com.main.java.restResource.StockTrader;
+package com.restResource.StockTrader;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

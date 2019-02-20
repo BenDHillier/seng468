@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.InvalidParameterException;
+import java.util.Optional;
 
 
 @RestController
@@ -50,6 +50,11 @@ public class SellController {
             @RequestParam String stockSymbol,
             @RequestParam int amount,
             @RequestParam int transactionNum) {
+        Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+        if (!optionalQuote.isPresent()) {
+            return null;
+        }
+        Quote quote = optionalQuote.get();
         try {
             loggingService.logUserCommand(
                     UserCommandLog.builder()
@@ -63,7 +68,7 @@ public class SellController {
             //Don't hit the quote server if the user account doesn't exist
             if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
 
-            Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+            //quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
 
             if (amount <= 0) {
                 throw new IllegalArgumentException(

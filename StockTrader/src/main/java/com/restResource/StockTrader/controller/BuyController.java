@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
 
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping(value = "/buy")
@@ -71,7 +73,11 @@ public class BuyController {
             if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
 
             //Get the quote
-            Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            if (!optionalQuote.isPresent()) {
+                return null;
+            }
+            Quote quote = optionalQuote.get();
 
             //User can't afford the stock at this price
             if (quote.getPrice() > amount) { throw new IllegalArgumentException(userId + " can't afford to buy " + amount + " worth of " + quote.getStockSymbol()); }
@@ -107,7 +113,6 @@ public class BuyController {
                             .build());
             return new ResponseEntity<>("BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
         return new ResponseEntity<>("BUY success", HttpStatus.OK);
     }
 

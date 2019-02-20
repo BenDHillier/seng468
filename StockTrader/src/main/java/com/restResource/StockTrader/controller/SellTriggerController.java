@@ -44,7 +44,7 @@ public class SellTriggerController {
     HttpStatus createTriggerAmount(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockAmount,
+            @RequestParam(value = "amount") int stockAmount,
             @RequestParam int transactionNum) {
         try {
             loggingService.logUserCommand(
@@ -67,7 +67,7 @@ public class SellTriggerController {
             Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
             if ( stockSellTriggerStatus.isPresent()) { //FIXME do an insert or increment here instead of getting the trigger
-                sellTriggerRepository.incrementStockAmount(userId, stockAmount);
+                sellTriggerRepository.incrementStockAmount(userId, stockAmount, stockSymbol);
             } else {
                 SellTrigger sellTrigger = SellTrigger.builder()
                         .userId(userId)
@@ -96,7 +96,7 @@ public class SellTriggerController {
     HttpStatus createTriggerCost(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockCost,
+            @RequestParam(value = "amount") int stockCost,
             @RequestParam int transactionNum) {
 
         try {
@@ -108,24 +108,38 @@ public class SellTriggerController {
                             .transactionNum(transactionNum)
                             .build());
 
-            if (stockCost <= 0) {
-                throw new IllegalArgumentException(
-                        "The amount parameter must be greater than zero.");
-            }
+        Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-            sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
-        } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_SELL_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
-            return HttpStatus.NOT_ACCEPTABLE;
+        if (!sellStockSnapshot.isPresent()) {
+            throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
+        } else if (sellStockSnapshot.get().getStockCost() != null) {
+            throw new Exception("A trigger has already been set");
         }
-        return HttpStatus.ACCEPTED; //we do accepted since we cant be sure it worked but we can be sure we passed it to a thread
+
+        SellTrigger sellTrigger = sellStockSnapshot.get();
+
+        if (investmentRepository.removeStocks(userId, sellTrigger.getStockAmount() / stockCost) == 0) {
+            throw new Exception("Insufficient Stock for the Transaction - requesting to remove: " + sellTrigger.getStockAmount() / stockCost);
+        }
+
+        if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+            throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
+        }
+
+        sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
+
+        } catch( Exception e ) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SET_SELL_TRIGGER)
+                                .username(userId)
+                                .stockSymbol(stockSymbol)
+                                .transactionNum(transactionNum)
+                                .errorMessage(e.getMessage())
+                                .build());
+                return HttpStatus.NOT_ACCEPTABLE;
+        }
+        return HttpStatus.ACCEPTED;
     }
 
     @PostMapping(path = "/cancel")

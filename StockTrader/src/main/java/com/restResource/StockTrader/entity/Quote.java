@@ -12,5 +12,5 @@ public class Quote {
     String stockSymbol;
     String userId;
     LocalDateTime timestamp;
-    String key;
+    String cryptoKey;
 }
