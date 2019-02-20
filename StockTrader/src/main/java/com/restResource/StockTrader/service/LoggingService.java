@@ -174,41 +174,41 @@ public class LoggingService {
         }
     }
 
-    public File dumpLogToXmlFile(String filename) {
-        try {
-            Iterable<String> logFragments = logXmlRepository.findAllLogs();
-            FileWriter writer = new FileWriter("./"+filename);
-            writer.write("<log>");
-            for(String s : logFragments) {
-                writer.write(s);
-            }
-            writer.write("</log>");
-            File file = new File("./"+filename);
-            writer.close();
-            return file;
+//    public File dumpLogToXmlFile(String filename) {
+//        try {
+//            Iterable<String> logFragments = logXmlRepository.findAllLogs();
+//            FileWriter writer = new FileWriter("./"+filename);
+//            writer.write("<log>");
+//            for(String s : logFragments) {
+//                writer.write(s);
+//            }
+//            writer.write("</log>");
+//            File file = new File("./"+filename);
+//            writer.close();
+//            return file;
+//
+//        } catch(Exception e) {
+//            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
+//        }
+//        return null;
+//    }
 
-        } catch(Exception e) {
-            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
-        }
-        return null;
-    }
-
-    public File dumpUserLogToXmlFile(String filename, String userId) {
-        try {
-            Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
-            FileWriter writer = new FileWriter("./"+filename);
-            writer.write("<log>");
-            for(String s : logFragments) {
-                writer.write(s);
-            }
-            writer.write("</log>");
-            File file = new File("./"+filename);
-            writer.close();
-            return file;
-
-        } catch(Exception e) {
-            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
-        }
-        return null;
-    }
+//    public File dumpUserLogToXmlFile(String filename, String userId) {
+//        try {
+//            Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
+//            FileWriter writer = new FileWriter("./"+filename);
+//            writer.write("<log>");
+//            for(String s : logFragments) {
+//                writer.write(s);
+//            }
+//            writer.write("</log>");
+//            File file = new File("./"+filename);
+//            writer.close();
+//            return file;
+//
+//        } catch(Exception e) {
+//            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
+//        }
+//        return null;
+//    }
 }

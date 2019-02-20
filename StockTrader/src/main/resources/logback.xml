@@ -1,0 +1,40 @@
+<configuration>
+
+    <turboFilter class="com.restResource.StockTrader.service.LoggingTurboFilter">
+        <Marker>userCommand</Marker>
+    </turboFilter>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                <!--%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n-->
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!--<appender name="db" class="ch.qos.logback.classic.db.DBAppender">-->
+    <appender name="db" class="com.restResource.StockTrader.service.DatabaseAppender">
+        <connectionSource
+                class="ch.qos.logback.core.db.DataSourceConnectionSource">
+            <dataSource
+                    class="com.mchange.v2.c3p0.ComboPooledDataSource">
+                <driverClass>org.postgresql.Driver</driverClass>
+                <jdbcUrl>jdbc:postgresql://localhost:5432/stocktraderdb</jdbcUrl>
+                <user>postgres</user>
+                <password>postgres</password>
+            </dataSource>
+        </connectionSource>
+
+        <!--<filter class = "com.restResource.StockTrader.service.LoggingFilter">-->
+            <!--<Marker>userCommand</Marker>-->
+        <!--</filter>-->
+    </appender>
+
+    <root>
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="db" />
+    </root>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+</configuration>
+
