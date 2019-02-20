@@ -41,14 +41,19 @@ class WorkloadGenerator:
             command = split_line_r[0]
             params = split_line_r[1:]
             params.append(transaction_num)
-            if params[0] not in paramDict and command != "DUMPLOG":
-                 paramDict[params[0]] = []
-            if command != "DUMPLOG":
-		 paramDict[params[0]].append((command,params))
-        for key in paramDict:
-            t = threading.Thread(target=self.runThread,args=(paramDict[key],))
-            t.start()
-            time.sleep(.250)
+            
+            ##For single thread
+            self.handleCommand(command,params)
+
+            ##For multithread
+            #if params[0] not in paramDict and command != "DUMPLOG":
+            #     paramDict[params[0]] = []
+            #if command != "DUMPLOG":
+		    #    paramDict[params[0]].append((command,params))
+        #for key in paramDict:
+            #t = threading.Thread(target=self.runThread,args=(paramDict[key],))
+            #t.start()
+            #time.sleep(.250)
 
     def runThread(self,paramsList):
         for (command,params) in paramsList:
@@ -85,7 +90,7 @@ class WorkloadGenerator:
         elif( cmd == "CANCEL_SET_SELL"):
             self.cancelSetSellRequest(params)
         elif( cmd == "DUMPLOG"):
-            sef.dumplogRequest(params)
+            self.dumplogRequest(params)
         else:
             print("command was " + cmd)
 
