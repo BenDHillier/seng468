@@ -9,13 +9,14 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.main.java.restResource</groupId>
-	<artifactId>StockTrader</artifactId>
+	<artifactId>stock-trader</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>StockTrader</name>
 	<description>Stock Trader Project for Seng 468</description>
 
 	<properties>
 		<java.version>1.8</java.version>
+        <docker.image.prefix>forever-soft</docker.image.prefix>
 	</properties>
 
 	<dependencies>
