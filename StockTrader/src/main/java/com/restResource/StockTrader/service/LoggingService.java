@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlElement;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
+import java.time.LocalDate;
 
 @Service
 public class LoggingService {
@@ -25,7 +26,7 @@ public class LoggingService {
     ) {
         this.logXmlRepository = logXmlRepository;
         try {
-            this.jaxbContext = JAXBContext.newInstance(UserCommandLog.class,QuoteServerLog.class,SystemEventLog.class,ErrorEventLog.class,DebugEventLog.class);
+            this.jaxbContext = JAXBContext.newInstance(UserCommandLog.class,QuoteServerLog.class,SystemEventLog.class,ErrorEventLog.class,DebugEventLog.class, Long.class);
 
         } catch( Exception e ) {
             e.printStackTrace();

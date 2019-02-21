@@ -46,16 +46,6 @@ public class QuoteController {
                 return null;
             }
             Quote quote = optionalQuote.get();
-            loggingService.logQuoteServer(
-                    QuoteServerLog.builder()
-                            .timestamp(LocalDateTime.now())
-                            .server("QS1")
-                            .transactionNum(transactionNum)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .price(quote.getPrice())
-                            .cryptokey("made_up_cryptokey")
-                            .build());
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( IllegalArgumentException e ) {
             loggingService.logErrorEvent(

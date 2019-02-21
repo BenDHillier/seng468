@@ -5,7 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-//import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
 import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
 import lombok.AllArgsConstructor;
@@ -31,13 +31,13 @@ public class QuoteServerLog {
     @Builder.Default
     Integer transactionNum = -1;
     @XmlElement
-    @Builder.Default
-    @Convert(converter = LocalDateTimeToEpochConverter.class)
-    LocalDateTime timestamp = LocalDateTime.now();
+    //@Builder.Default
+    //@Convert(converter = LocalDateTimeToEpochConverter.class)
+    Long timestamp;
     @XmlElement
-    @Builder.Default
-    @Convert(converter = LocalDateTimeToEpochConverter.class)
-    LocalDateTime quoteServerTime = LocalDateTime.now();
+    //@Builder.Default
+    //@Convert(converter = LocalDateTimeToEpochConverter.class)
+    Long quoteServerTime;
     @XmlElement
     @Builder.Default
     String username = "DEFAULT_USERNAME";
