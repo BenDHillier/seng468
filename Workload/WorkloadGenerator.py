@@ -276,8 +276,6 @@ def run(args):
     for key in paramDict:
         t = threading.Thread(target=runThread,args=(ip, port, paramDict[key],))
         t.start()
-        time.sleep(.250)
-
 
 if __name__ == "__main__":
     run(sys.argv)
