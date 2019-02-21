@@ -33,14 +33,6 @@ public class AddController {
                         .transactionNum(transactionNum)
                         .funds(amount)
                         .build());
-        loggingService.logDebugEvent(
-                DebugEventLog.builder()
-                        .command(CommandType.ADD)
-                        .username(userId)
-                        .funds(amount)
-                        .debugMessage("Adding funds to user account")
-                        .transactionNum(transactionNum)
-                        .build());
         try {
             if (amount <= 0) {
                 throw new IllegalArgumentException(

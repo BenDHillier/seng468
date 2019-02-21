@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
 
@@ -54,7 +55,7 @@ public class QuoteServiceImpl implements QuoteService {
         }
 
         int price = extractPriceFromResponseList(responseList);
-        LocalDateTime quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
+        Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
         String cryptoKey = responseList[4];
 
         Quote quote = Quote.builder()
@@ -70,7 +71,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .price(quote.getPrice())
                         .username(userId)
                         .quoteServerTime(quoteServerTime)
-                        .timestamp(quote.getTimestamp())
+                        .timestamp(System.currentTimeMillis())
                         .transactionNum(transactionNum)
                         .stockSymbol(stockSymbol)
                         .cryptokey(quote.getCryptoKey())
@@ -82,9 +83,8 @@ public class QuoteServiceImpl implements QuoteService {
         return (int) (Double.parseDouble(responseList[0]) * 100);
     }
 
-    private LocalDateTime extractQuoteServerTimeFromResponseList(String[] responseList) {
+    private Long extractQuoteServerTimeFromResponseList(String[] responseList) {
         String responseTimestamp = responseList[3];
-        LocalDateTimeToEpochConverter converter = new LocalDateTimeToEpochConverter();
-        return converter.convertToEntityAttribute(Long.parseLong(responseTimestamp));
+        return Long.parseLong(responseTimestamp);
     }
 }

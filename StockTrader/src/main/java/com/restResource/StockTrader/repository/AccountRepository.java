@@ -30,4 +30,8 @@ public interface AccountRepository extends CrudRepository<Account, String> {
             nativeQuery = true)
     Integer removeFunds(String userId, Integer amount, Integer transactionNum, String server);
 
+    //Need to check if user account exists to prevent unnecessary quoteServer requests in BuyController
+    @Query(value = "SELECT EXISTS( SELECT 1 FROM account WHERE user_id = ?1)", nativeQuery = true)
+    Boolean accountExists(String userId);
+
 }

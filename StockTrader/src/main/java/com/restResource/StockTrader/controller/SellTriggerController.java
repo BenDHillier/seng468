@@ -46,47 +46,48 @@ public class SellTriggerController {
             @RequestParam String stockSymbol,
             @RequestParam(value = "amount") int stockAmount,
             @RequestParam int transactionNum) {
+        try {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.SET_SELL_AMOUNT)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .build());
+            if (stockAmount <= 0) {
+                throw new IllegalArgumentException(
+                        "The amount parameter must be greater than zero.");
+            }
 
+            //we check to see if we have sufficient stock to sell. We dont care about how much we are selling it for though.
+            if (investmentRepository.removeStocks(userId, stockAmount) == 0) { //TODO logging?
+                throw new IllegalArgumentException("Insufficient Stock for the Transaction - requesting to remove: ");
+            }
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.SET_SELL_AMOUNT)
-                        .username(userId)
+            Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+            if ( stockSellTriggerStatus.isPresent()) { //FIXME do an insert or increment here instead of getting the trigger
+                sellTriggerRepository.incrementStockAmount(userId, stockAmount, stockSymbol);
+            } else {
+                SellTrigger sellTrigger = SellTrigger.builder()
+                        .userId(userId)
                         .stockSymbol(stockSymbol)
-                        .transactionNum(transactionNum)
-                        .build());
-
-        if (stockAmount <= 0) {
+                        .stockAmount(stockAmount)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+                sellTriggerRepository.save(sellTrigger);
+            }
+        } catch(Exception e) {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.SET_SELL_AMOUNT)
                             .username(userId)
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
-                            .errorMessage("The amount parameter must be greater than zero")
+                            .errorMessage(e.getMessage())
                             .build());
-            //FIXME do we want to throw the error or send a HttpStatus message?
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
+            return HttpStatus.BAD_REQUEST;
         }
-
-
-        Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
-
-        if (stockSellTriggerStatus.isPresent()) { //FIXME do an insert or increment here instead of getting the trigger
-            sellTriggerRepository.incrementStockAmount(userId, stockAmount, stockSymbol);
-        } else {
-            SellTrigger sellTrigger = SellTrigger.builder()
-                    .userId(userId)
-                    .stockSymbol(stockSymbol)
-                    .stockAmount(stockAmount)
-                    .timestamp(LocalDateTime.now())
-                    .build();
-            sellTriggerRepository.save(sellTrigger);
-        }
-
-
-
         return HttpStatus.OK;
     }
 
@@ -98,65 +99,46 @@ public class SellTriggerController {
             @RequestParam(value = "amount") int stockCost,
             @RequestParam int transactionNum) {
 
-        if (stockCost <= 0) {
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
-        }
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.SET_SELL_TRIGGER)
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .transactionNum(transactionNum)
-                        .build());
-
-        Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
-
-        if (!sellStockSnapshot.isPresent()) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
+        try {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
                             .command(CommandType.SET_SELL_TRIGGER)
                             .username(userId)
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
-                            .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
                             .build());
-            return HttpStatus.BAD_REQUEST;
+
+        Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+        if (!sellStockSnapshot.isPresent()) {
+            throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
         } else if (sellStockSnapshot.get().getStockCost() != null) {
-            return HttpStatus.BAD_REQUEST;
+            throw new Exception("A trigger has already been set");
         }
 
         SellTrigger sellTrigger = sellStockSnapshot.get();
 
         if (investmentRepository.removeStocks(userId, sellTrigger.getStockAmount() / stockCost) == 0) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_SELL_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(
-                                    "Insufficient Stock for the Transaction - requesting to remove: " + sellTrigger.getStockAmount() / stockCost)
-                            .build());
-            return HttpStatus.BAD_REQUEST;
-
+            throw new Exception("Insufficient Stock for the Transaction - requesting to remove: " + sellTrigger.getStockAmount() / stockCost);
         }
 
         if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_SELL_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId)
-                            .build());
-            return HttpStatus.BAD_REQUEST;
+            throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
         }
 
         sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
+        } catch( Exception e ) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SET_SELL_TRIGGER)
+                                .username(userId)
+                                .stockSymbol(stockSymbol)
+                                .transactionNum(transactionNum)
+                                .errorMessage(e.getMessage())
+                                .build());
+                return HttpStatus.NOT_ACCEPTABLE;
+        }
         return HttpStatus.ACCEPTED;
     }
 
@@ -166,38 +148,38 @@ public class SellTriggerController {
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int transactionNum) {
+        try {
+            //log regardless of outcome
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.CANCEL_SET_SELL)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .transactionNum(transactionNum)
+                            .build());
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.CANCEL_SELL_TRIGGER)
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .transactionNum(transactionNum)
-                        .build());
+            Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+            if(!stockSellTriggerStatus.isPresent()) {
+                throw new IllegalArgumentException("Sell trigger does not exist");
+            }
 
-        Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
-
-        if (stockSellTriggerStatus.isPresent()) {
-            //refund the stocks
-            //TODO add a check here to make sure it worked
             investmentRepository.insertOrIncrement(userId, stockSymbol, stockSellTriggerStatus.get().getStockAmount()); //TODO logging?
             TriggerKey triggerKey = TriggerKey.builder()
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .build();
             sellTriggerRepository.deleteById(triggerKey);
-            return HttpStatus.OK;
-        } else {
+        } catch( Exception e ) {
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_BUY_TRIGGER)
+                            .command(CommandType.CANCEL_SET_SELL)
                             .username(userId)
                             .stockSymbol(stockSymbol)
                             .transactionNum(transactionNum)
-                            .errorMessage("Sell Trigger does not exist")
+                            .errorMessage(e.getMessage())
                             .build());
             return HttpStatus.BAD_REQUEST;
         }
-
+        return HttpStatus.OK;
     }
 }

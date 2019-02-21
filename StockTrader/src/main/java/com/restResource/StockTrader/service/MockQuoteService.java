@@ -23,9 +23,11 @@ public class MockQuoteService implements QuoteService {
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
                         .price(50)
+                        .quoteServerTime(System.currentTimeMillis())
+                        .timestamp(System.currentTimeMillis())
                         .transactionNum(transactionNum)
                         .stockSymbol(stockSymbol)
-                        .cryptokey("made_up_cryptokey")
+                        .cryptokey("made_up_cryptokey...")
                         .build());
 
         loggingService.logSystemEvent(

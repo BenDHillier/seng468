@@ -3,6 +3,8 @@ package com.restResource.StockTrader.controller;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
+import com.restResource.StockTrader.entity.logging.QuoteServerLog;
+import com.restResource.StockTrader.entity.logging.SystemEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.QuoteService;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -42,13 +46,6 @@ public class QuoteController {
                 return null;
             }
             Quote quote = optionalQuote.get();
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.QUOTE)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .funds(quote.getPrice())
-                            .build());
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( IllegalArgumentException e ) {
             loggingService.logErrorEvent(

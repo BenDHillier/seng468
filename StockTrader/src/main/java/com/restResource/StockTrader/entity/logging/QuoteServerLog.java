@@ -5,7 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-//import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
 import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
 import lombok.AllArgsConstructor;
@@ -29,28 +29,28 @@ import java.time.LocalDateTime;
 public class QuoteServerLog {
     @XmlElement
     @Builder.Default
-    Integer transactionNum = 0;
+    Integer transactionNum = -1;
+    @XmlElement
+    //@Builder.Default
+    //@Convert(converter = LocalDateTimeToEpochConverter.class)
+    Long timestamp;
+    @XmlElement
+    //@Builder.Default
+    //@Convert(converter = LocalDateTimeToEpochConverter.class)
+    Long quoteServerTime;
     @XmlElement
     @Builder.Default
-    @Convert(converter = LocalDateTimeToEpochConverter.class)
-    LocalDateTime timestamp = LocalDateTime.now();
+    String username = "DEFAULT_USERNAME";
     @XmlElement
     @Builder.Default
-    @Convert(converter = LocalDateTimeToEpochConverter.class)
-    LocalDateTime quoteServerTime = LocalDateTime.now();
-    @XmlElement
-    @Builder.Default
-    String username = "";
-    @XmlElement
-    @Builder.Default
-    String stockSymbol = "";
+    String stockSymbol = "DEFAULT_STOCK_SYMBOL";
     @XmlElement
     @Builder.Default
     Integer price = 0;
     @XmlElement
     @Builder.Default
-    String cryptokey = "";
+    String cryptokey = "DEFAULT_CRYPTOKEY";
     @XmlElement
     @Builder.Default
-    String server = "";
+    String server = "DEFAULT_SERVER";
 }

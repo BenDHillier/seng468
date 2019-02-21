@@ -4,11 +4,15 @@ import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.PendingBuy;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
+import com.restResource.StockTrader.entity.logging.SystemEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.service.LoggingService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
@@ -45,8 +49,7 @@ public class BuyController {
     }
 
     @PostMapping(path = "/create")
-    public @ResponseBody
-    Quote createBuy(
+    public ResponseEntity<String> createBuy(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
             @RequestParam int amount,
@@ -55,153 +58,135 @@ public class BuyController {
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.BUY)
+                        .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
                         .username(userId)
                         .stockSymbol(stockSymbol)
                         .funds(amount)
                         .transactionNum(transactionNum)
                         .build());
-
-        if (amount <= 0) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .transactionNum(transactionNum)
-                            .errorMessage("The amount parameter must be greater than zero")
-                            .build());
-            throw new IllegalArgumentException(
-                    "The amount parameter must be greater than zero.");
-        }
-
-        Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
-        if (!optionalQuote.isPresent()) {
-            return null;
-        }
-        Quote quote = optionalQuote.get();
-
-        if (quote.getPrice() > amount) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .errorMessage("The amount parameter must be greater than the quote price")
-                            .build());
-            // TODO: may want to handle this differently.
-            throw new IllegalArgumentException("The amount parameter must be greater than the quote price");
-        }
-
-        // Removes any excess amount not needed to purchase the maximum number of stocks.
-        Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
-
-        // Removing more funds then is available will violate the amount >= 0
-        // constraint which will throw an exception.
         try {
+
+            //Can't buy nothing or a negative amount
+            if (amount <= 0) { throw new IllegalArgumentException("The amount parameter must be greater than zero."); }
+
+            //Don't hit the quote server if the user account doesn't exist
+            if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
+
+            //Get the quote
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            if (!optionalQuote.isPresent()) {
+                return null;
+            }
+            Quote quote = optionalQuote.get();
+
+            //User can't afford the stock at this price
+            if (quote.getPrice() > amount) { throw new IllegalArgumentException(userId + " can't afford to buy " + amount + " worth of " + quote.getStockSymbol()); }
+
+            // Removes any excess amount not needed to purchase the maximum number of stocks.
+            Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
             Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount,transactionNum,"TS1");
-            if (updatedEntriesCount != 1) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.BUY)
-                                .username(userId)
-                                .transactionNum(transactionNum)
-                                .stockSymbol(stockSymbol)
-                                .funds(amount)
-                                .errorMessage("Error removing funds from account. Expected 1 account to be updated but \" + updatedEntriesCount + \" accounts were updated")
-                                .build());
-                throw new IllegalStateException(
+
+            //Account wasn't updated for some reason
+            if (updatedEntriesCount != 1) { throw new IllegalStateException(
                         "Error removing funds from account. Expected 1 account to be updated but " +
                                 updatedEntriesCount + " accounts were updated");
             }
+
+            PendingBuy pendingBuy = PendingBuy.builder()
+                    .userId(userId)
+                    .stockSymbol(stockSymbol)
+                    .amount(roundedAmount)
+                    .timestamp(quote.getTimestamp())
+                    .price(quote.getPrice())
+                    .build();
+            buyRepository.save(pendingBuy);
+
         } catch (Exception e) {
-            // TODO: may want to handle this differently.
-            //throw new IllegalStateException("You do not have enough funds.");
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.BUY)
+                            .username(userId)
+                            .stockSymbol(stockSymbol)
+                            .funds(amount)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
-        PendingBuy pendingBuy = PendingBuy.builder()
-                .userId(userId)
-                .stockSymbol(stockSymbol)
-                .amount(roundedAmount)
-                .timestamp(quote.getTimestamp())
-                .price(quote.getPrice())
-                .build();
-
-        buyRepository.save(pendingBuy);
-
-        return quote;
+        return new ResponseEntity<>("BUY success", HttpStatus.OK);
     }
 
     @PostMapping(path = "/commit")
     public @ResponseBody
-    HttpStatus commitBuy(@RequestParam String userId,
+    ResponseEntity<String> commitBuy(@RequestParam String userId,
                          @RequestParam int transactionNum) {
+        try {
+            PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum, CommandType.COMMIT_BUY);
+            int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
+            investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
+        } catch(Exception e) {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.COMMIT_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .build());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.COMMIT_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("COMMIT_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
-        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum);
-
-        int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
-
-        investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.COMMIT_BUY)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .funds(amountToBuy)
-                        .build());
-
-        return HttpStatus.OK;
+        return new ResponseEntity<>("COMMIT_BUY success", HttpStatus.OK);
     }
 
     @PostMapping(path = "/cancel")
     public @ResponseBody
-    HttpStatus cancelBuy(@RequestParam String userId,
+    ResponseEntity<String> cancelBuy(@RequestParam String userId,
                          @RequestParam int transactionNum) {
 
-
-        PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum);
-
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.CANCEL_BUY)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .stockSymbol(pendingBuy.getStockSymbol())
-                        .funds(pendingBuy.getAmount())
-                        .build());
-
-        accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
-
-        return HttpStatus.OK;
+        try {
+            PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum, CommandType.CANCEL_BUY);
+            accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
+        } catch( Exception e) {
+            //command was made during an invalid account state, but we still need to log the activity
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.CANCEL_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .build());
+            loggingService.logErrorEvent(
+                    ErrorEventLog.builder()
+                            .command(CommandType.CANCEL_BUY)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .errorMessage(e.getMessage())
+                            .build());
+            return new ResponseEntity<>("CANCEL_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("CANCEL_BUY success", HttpStatus.OK);
     }
 
     // TODO: change from exceptions to something else.
     // I think that it'd be best to return a failed http status code with a message.
-    private PendingBuy claimMostRecentPendingBuy(String userId,int transactionNum) {
+    private PendingBuy claimMostRecentPendingBuy(String userId,int transactionNum, CommandType commandType) {
         while (true) {
             PendingBuy pendingBuy =
                     buyRepository
                             .findMostRecentForUserId(userId)
                             .orElseThrow(() -> new IllegalStateException(
-                                    "There was no valid buy."));
+                                    "There was no valid buy prior to this command."));
 
             if (pendingBuy.isExpired()) {
                 // TODO: May want to remove the expired entry from the DB if
                 // this is not going to be handled by something else.
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.CANCEL_BUY)
-                                .username(userId)
-                                .transactionNum(transactionNum)
-                                .stockSymbol(pendingBuy.getStockSymbol())
-                                .funds(pendingBuy.getAmount())
-                                .errorMessage("There was no valid buy")
-                                .build());
                 throw new IllegalStateException(
-                        "There was no valid buy.");
+                        "There was no valid buy prior to this command.");
             }
 
             // If delete fails, then the pendingBuy has already been claimed and
@@ -209,7 +194,6 @@ public class BuyController {
             try {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
-                // TODO: Verify that the error here is caused by CANCEL_BUY
                 loggingService.logErrorEvent(
                         ErrorEventLog.builder()
                                 .command(CommandType.CANCEL_BUY)
@@ -217,10 +201,19 @@ public class BuyController {
                                 .stockSymbol(pendingBuy.getStockSymbol())
                                 .transactionNum(transactionNum)
                                 .funds(pendingBuy.getAmount())
-                                .errorMessage("Exception in buyRepository.deleteById(pendingBuy.getId())")
+                                .errorMessage("COMMIT_BUY or CANCEL_BUY error: " + e.getMessage())
                                 .build());
                 continue;
             }
+            //command is allowed (ie there was a valid buy prior to this, etc)
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(commandType)
+                            .username(userId)
+                            .transactionNum(transactionNum)
+                            .stockSymbol(pendingBuy.getStockSymbol())
+                            .funds(pendingBuy.getAmount())
+                            .build());
             return pendingBuy;
         }
     }

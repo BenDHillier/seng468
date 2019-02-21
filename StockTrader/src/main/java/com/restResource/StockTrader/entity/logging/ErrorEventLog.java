@@ -22,29 +22,24 @@ import javax.xml.bind.annotation.*;
 public class ErrorEventLog {
     @XmlElement
     @Builder.Default
-    Integer transactionNum = 0;
+    Integer transactionNum = -1;
     @XmlElement
     @Builder.Default
     Long timestamp = System.currentTimeMillis();
     @XmlElement
     @Builder.Default
-    String server = "";
+    String server = "DEFAULT_SERVER";
     @XmlElement
     @Builder.Default
     CommandType command = CommandType.NONE;
     @XmlElement
-    @Builder.Default
-    String username = "";
+    String username;//can be null
     @XmlElement
-    @Builder.Default
-    String stockSymbol = "";
+    String stockSymbol;//can be null
     @XmlElement
-    @Builder.Default
-    Integer funds = 0;
+    Integer funds;//can be null
     @XmlElement
-    @Builder.Default
-    String errorMessage = "";
+    String errorMessage;//can be null
     @XmlElement
-    @Builder.Default
-    String filename = "";
+    String filename;//can be null
 }
