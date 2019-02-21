@@ -13,16 +13,12 @@ import time
 # Will do DISPLAY_SUMMARY once logging is in place
 
 class WorkloadGenerator:
-    def __init__(self, *args):
+    def __init__(self, ip, port, paramsList):
+        self._args_ip = ip
+        self._args_port = port
+        self.paramsList = paramsList
         try:
-            if( len(args[0]) < 4 ):
-                raise TypeError("Incorrect number of arguments. Try python2 WorkloadGenerator webserver_ip port workloadfile")
-            self._args_ip = args[0][1]
-            self._args_port = args[0][2]
-            self._args_filename = args[0][3]
             self._httpconnection = httplib.HTTPConnection(self._args_ip, self._args_port)
-            print( "CLIENT ARGS [ip]: {} [port]: {} [filename]: {}".format(self._args_ip,self._args_port,self._args_filename) )
-
         except httplib.HTTPException:
             print("Error. Could not create HTTPConnection")
             sys.exit()
@@ -31,32 +27,7 @@ class WorkloadGenerator:
             sys.exit()
 
     def run(self):
-        file = open("./WorkloadFiles/{}".format(self._args_filename), "r")
-        paramDict = {}
-        for line in file:
-            split_line = line.rstrip().split(" ")
-            split_line_r = split_line[1].split(",")
-            split_line_l = split_line[0]
-            transaction_num = split_line_l[1:len(split_line_l)-1]
-            command = split_line_r[0]
-            params = split_line_r[1:]
-            params.append(transaction_num)
-            
-            ##For single thread
-            self.handleCommand(command,params)
-
-            ##For multithread
-            #if params[0] not in paramDict and command != "DUMPLOG":
-            #     paramDict[params[0]] = []
-            #if command != "DUMPLOG":
-		    #    paramDict[params[0]].append((command,params))
-        #for key in paramDict:
-            #t = threading.Thread(target=self.runThread,args=(paramDict[key],))
-            #t.start()
-            #time.sleep(.250)
-
-    def runThread(self,paramsList):
-        for (command,params) in paramsList:
+        for (command,params) in self.paramsList:
             print("\n[THREAD {}] sending: ".format(thread.get_ident()) + command + " with params {}".format(params))
             self.handleCommand(command,params)
 
@@ -276,7 +247,38 @@ class WorkloadGenerator:
         except Exception as e:
             print "DUMPLOG,{},{} failed due to exception {}".format(params[0],params[1],e)
 
+def extractParamDict(file):
+    paramDict = {}
+    for line in file:
+        split_line = line.rstrip().split(" ")
+        split_line_r = split_line[1].split(",")
+        split_line_l = split_line[0]
+        transaction_num = split_line_l[1:len(split_line_l)-1]
+        command = split_line_r[0]
+        params = split_line_r[1:]
+        params.append(transaction_num)
+        if command == "DUMPLOG":
+            continue
+        if params[0] not in paramDict:
+            paramDict[params[0]] = []
+        paramDict[params[0]].append((command,params))
+    return paramDict
+
+def runThread(ip, port, paramsList):
+    client = WorkloadGenerator(ip, port, paramsList)
+    client.run()
+
+def run(args):
+    file = open("./WorkloadFiles/{}".format(args[3]), "r")
+    ip = args[1]
+    port = args[2]
+    paramDict = extractParamDict(file)
+    for key in paramDict:
+        t = threading.Thread(target=runThread,args=(ip, port, paramDict[key],))
+        t.start()
+        time.sleep(.250)
+
 
 if __name__ == "__main__":
-    client = WorkloadGenerator(sys.argv)
-    client.run()
+		run(sys.argv)
+    
