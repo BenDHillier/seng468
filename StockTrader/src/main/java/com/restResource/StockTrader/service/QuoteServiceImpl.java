@@ -1,5 +1,7 @@
 package com.restResource.StockTrader.service;
 
+import java.io.*;
+import java.net.*;
 import com.google.common.collect.ImmutableMap;
 import java.time.LocalDateTime;
 import com.restResource.StockTrader.entity.Quote;
@@ -18,18 +20,32 @@ import java.util.Optional;
 public class QuoteServiceImpl implements QuoteService {
 
     private LoggingService loggingService;
+    private static String quoteServerHost = "quoteserve.seng.uvic.ca";
+    private static int quoteServerPort = 4452;
+
 
     public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
     }
 
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
-        String quoteServerUrl = "http://quoteserve.seng.uvic.ca:4452";
-        Map<String, String> params = ImmutableMap.of("stockSymbol", stockSymbol, "userId", userId);
-        RestTemplate restTemplate = new RestTemplate();
+	String response;
+	try {
+		Socket socket = new Socket(quoteServerHost, quoteServerPort);
+		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        	BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		out.println(stockSymbol+","+userId);
+		response = in.readLine();
+		out.close();
+        	in.close();
+        	socket.close();
+	} catch (IOException e) {
+		System.out.println(e.getMessage());
+		return Optional.empty();
+	}
+	System.out.println("response: "+response);
 
-        String response = restTemplate.getForObject(quoteServerUrl, String.class, params);
-        if (response == null) {
+        if (response == null || response.equals("")) {
             return Optional.empty();
         }
         String[] responseList = response.split(",");
