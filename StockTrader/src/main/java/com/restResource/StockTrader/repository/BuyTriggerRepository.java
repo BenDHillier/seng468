@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, TriggerKey> {
@@ -14,6 +15,9 @@ public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, Trigger
             "Select * from buy_trigger where user_id = ?1 and stock_symbol=?2 ",
             nativeQuery = true)
     Optional<BuyTrigger> findByUserIdAndStockSymbol(String userId, String stockSymbol);
+
+    @Query(value= "SELECT * FROM buy_trigger WHERE user_id = ?1", nativeQuery = true)
+    List<BuyTrigger> findByUserId(String userId);
 
     @Transactional
     @Modifying
