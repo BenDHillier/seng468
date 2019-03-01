@@ -28,30 +28,30 @@ import java.util.concurrent.TimeUnit;
 public class QuoteServiceImpl implements QuoteService {
 
     private LoggingService loggingService;
-    private static String quoteServerHost = "quoteserve.seng.uvic.ca";
-    private static int quoteServerPort = 4452;
-    private Cache<String,Quote> quoteCache;
+
+    private static Cache<String,Quote> quoteCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(50, TimeUnit.SECONDS)
+            .maximumSize(1000)
+            .initialCapacity(1000)
+            .build();
 
     public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
-        quoteCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(50, TimeUnit.SECONDS)
-                .maximumSize(1000)
-                .initialCapacity(1000)
-                .build();
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
+        String quoteServerHost = "quoteserve.seng.uvic.ca";
+        int quoteServerPort = 4452;
 
         String response;
-            Socket socket = new Socket(quoteServerHost, quoteServerPort);
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out.println(stockSymbol+","+userId);
-            response = in.readLine();
-            out.close();
-            in.close();
-            socket.close();
+        Socket socket = new Socket(quoteServerHost, quoteServerPort);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out.println(stockSymbol+","+userId);
+        response = in.readLine();
+        out.close();
+        in.close();
+        socket.close();
         if (response == null || response.equals("")) {
             throw new IllegalStateException("response not valid");
         }
