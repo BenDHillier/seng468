@@ -39,7 +39,11 @@ public class QuoteController {
                                         @RequestParam int transactionNum) {
 
         //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
-
+        loggingService.logUserCommand(UserCommandLog.builder()
+                .stockSymbol(stockSymbol)
+                .username(userId)
+                .transactionNum(transactionNum)
+                .build());
         try {
             Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
             if (!optionalQuote.isPresent()) {
