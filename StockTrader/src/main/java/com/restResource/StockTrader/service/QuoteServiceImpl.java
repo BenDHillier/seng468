@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
 import com.restResource.StockTrader.entity.logging.QuoteServerLog;
+import com.sun.org.apache.xpath.internal.operations.Quo;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -87,11 +88,10 @@ public class QuoteServiceImpl implements QuoteService {
 
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
         try {
-            if (quoteCache.get(stockSymbol, () -> getQuoteFromServer(stockSymbol,userId,transactionNum))) {
-
-            }
+            Quote quote = quoteCache.get(stockSymbol, () -> getQuoteFromServer(stockSymbol,userId,transactionNum));
+            return Optional.of(quote);
         } catch (Exception e) {
-
+            return Optional.empty();
         }
 
     }
