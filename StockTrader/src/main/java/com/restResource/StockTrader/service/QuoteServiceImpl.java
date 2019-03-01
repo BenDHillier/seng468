@@ -2,7 +2,12 @@ package com.restResource.StockTrader.service;
 
 import java.io.*;
 import java.net.*;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.converter.LocalDateTimeToEpochConverter;
@@ -12,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.ZoneId;
+import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Profile("prod")
@@ -22,36 +29,35 @@ public class QuoteServiceImpl implements QuoteService {
     private LoggingService loggingService;
     private static String quoteServerHost = "quoteserve.seng.uvic.ca";
     private static int quoteServerPort = 4452;
-
+    private Cache<String,Quote> quoteCache;
 
     public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
+        quoteCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(50, TimeUnit.SECONDS)
+                .maximumSize(1000)
+                .initialCapacity(1000)
+                .build();
     }
 
-    public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
-	String response;
-	try {
-		Socket socket = new Socket(quoteServerHost, quoteServerPort);
-		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        	BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		out.println(stockSymbol+","+userId);
-		response = in.readLine();
-		out.close();
-        	in.close();
-        	socket.close();
-	} catch (IOException e) {
-		System.out.println(e.getMessage());
-		return Optional.empty();
-	}
-	System.out.println("response: "+response);
+    private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
 
+        String response;
+            Socket socket = new Socket(quoteServerHost, quoteServerPort);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out.println(stockSymbol+","+userId);
+            response = in.readLine();
+            out.close();
+            in.close();
+            socket.close();
         if (response == null || response.equals("")) {
-            return Optional.empty();
+            throw new IllegalStateException("response not valid");
         }
         String[] responseList = response.split(",");
         // Valid response list should be a length of 5.
         if (responseList.length < 5) {
-            return Optional.empty();
+            throw new IllegalStateException("response not valid");
         }
 
         int price = extractPriceFromResponseList(responseList);
@@ -76,7 +82,18 @@ public class QuoteServiceImpl implements QuoteService {
                         .stockSymbol(stockSymbol)
                         .cryptokey(quote.getCryptoKey())
                         .build());
-        return Optional.of(quote);
+        return quote;
+    }
+
+    public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
+        try {
+            if (quoteCache.get(stockSymbol, () -> getQuoteFromServer(stockSymbol,userId,transactionNum))) {
+
+            }
+        } catch (Exception e) {
+
+        }
+
     }
 
     private Integer extractPriceFromResponseList(String[] responseList) {
