@@ -4,7 +4,7 @@
 # Log file
 *.log
 testLOG
-
+testlog.xml
 
 # BlueJ files
 *.ctxt
