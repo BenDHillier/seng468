@@ -59,10 +59,10 @@ public class BuyController {
         loggingService.logUserCommand(
                 UserCommandLog.builder()
                         .command(CommandType.BUY)
-                        .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
+                        .server("TS1")
                         .username(userId)
                         .stockSymbol(stockSymbol)
-                        .funds((amount*1.0)/100)
+                        .funds(String.format("%.2f",(amount*1.0)/100))
                         .transactionNum(transactionNum)
                         .build());
         try {
@@ -214,7 +214,7 @@ public class BuyController {
                             .username(userId)
                             .transactionNum(transactionNum)
                             .stockSymbol(pendingBuy.getStockSymbol())
-                            .funds((1.0*pendingBuy.getAmount())/100)
+                            .funds(String.format("%.2f",(1.0*pendingBuy.getAmount())/100))
                             .build());
             return pendingBuy;
         }
