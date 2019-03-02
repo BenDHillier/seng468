@@ -75,7 +75,7 @@ public class QuoteServiceImpl implements QuoteService {
 
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
-                        .price(quote.getPrice())
+                        .price(responseList[0])
                         .username(userId)
                         .quoteServerTime(quoteServerTime)
                         .timestamp(System.currentTimeMillis())

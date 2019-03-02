@@ -22,7 +22,7 @@ public class MockQuoteService implements QuoteService {
 
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
-                        .price(50)
+                        .price("50")
                         .quoteServerTime(System.currentTimeMillis())
                         .timestamp(System.currentTimeMillis())
                         .transactionNum(transactionNum)
