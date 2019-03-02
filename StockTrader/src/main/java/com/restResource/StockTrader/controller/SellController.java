@@ -63,7 +63,7 @@ public class SellController {
                             .username(userId)
                             .transactionNum(transactionNum)
                             .stockSymbol(stockSymbol)
-                            .funds(amount)
+                            .funds((amount*1.0)/100)
                             .build());
 
             //Don't hit the quote server if the user account doesn't exist
@@ -217,7 +217,7 @@ public class SellController {
                             .username(userId)
                             .transactionNum(transactionNum)
                             .stockSymbol(pendingSell.getStockSymbol())
-                            .funds(pendingSell.getStockPrice())
+                            .funds((1.0*pendingSell.getStockPrice())/100)
                             .build());
             return pendingSell;
         }

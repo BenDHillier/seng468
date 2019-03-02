@@ -31,7 +31,7 @@ public class AddController {
                         .command(CommandType.ADD)
                         .username(userId)
                         .transactionNum(transactionNum)
-                        .funds(amount)
+                        .funds((amount*1.0)/100)
                         .build());
         try {
             if (amount <= 0) {

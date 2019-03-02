@@ -62,7 +62,7 @@ public class BuyController {
                         .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
                         .username(userId)
                         .stockSymbol(stockSymbol)
-                        .funds(amount)
+                        .funds((amount*1.0)/100)
                         .transactionNum(transactionNum)
                         .build());
         try {
@@ -214,7 +214,7 @@ public class BuyController {
                             .username(userId)
                             .transactionNum(transactionNum)
                             .stockSymbol(pendingBuy.getStockSymbol())
-                            .funds(pendingBuy.getAmount())
+                            .funds((1.0*pendingBuy.getAmount())/100)
                             .build());
             return pendingBuy;
         }
