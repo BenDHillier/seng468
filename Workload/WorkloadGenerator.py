@@ -62,6 +62,8 @@ class WorkloadGenerator:
             self.cancelSetSellRequest(params)
         elif( cmd == "DUMPLOG"):
             self.dumplogRequest(params)
+        elif( cmd == "DISPLAY_SUMMARY"):
+            self.displaySummaryRequest(params)
         else:
             print("command was " + cmd)
 
@@ -246,6 +248,16 @@ class WorkloadGenerator:
             #print(response)
         except Exception as e:
             print "DUMPLOG,{},{} failed due to exception {}".format(params[0],params[1],e)
+    
+    #GET
+    def displaySummaryRequest(self,params):
+        try:
+            get_params = urllib.urlencode({'userId':params[0],'transactionNum':params[1]})
+            get_request = urllib2.urlopen('http://{}:{}/display?'.format(self._args_ip,self._args_port) + get_params)
+            response = get_request.read()
+            print(response)
+        except Exception as e:
+            print "DISPLAY_SUMMAR,{},{} failed due to exception {}".format(params[0],params[1],e)
 
 def extractParamDict(file):
     paramDict = {}
