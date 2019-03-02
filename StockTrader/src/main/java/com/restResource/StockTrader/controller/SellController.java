@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -94,6 +95,7 @@ public class SellController {
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .timestamp(quote.getTimestamp())
+                    .timeCreated(LocalDateTime.now())
                     .stockCount(stockCount)
                     .stockPrice(quote.getPrice())
                     .build();

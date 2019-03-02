@@ -13,6 +13,7 @@ CREATE TABLE pending_buy (
     price integer,
     amount integer CHECK (amount >= 0),
     timestamp bigint,
+    time_created bigint,
     user_id varchar(255),
     stock_symbol varchar(255)
 );
@@ -22,6 +23,7 @@ CREATE TABLE pending_sell (
     stock_count integer CHECK (stock_count >= 0),
     stock_price integer,
     timestamp bigint,
+    time_created bigint,
     user_id varchar(255),
     stock_symbol varchar(255)
 );

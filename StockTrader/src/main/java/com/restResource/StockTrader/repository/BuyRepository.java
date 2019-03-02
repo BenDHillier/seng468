@@ -11,7 +11,7 @@ public interface BuyRepository extends CrudRepository<PendingBuy, Integer> {
             "WITH users_buys AS (" +
             "SELECT * FROM pending_buy WHERE user_id = ?1) " +
             "SELECT * FROM users_buys " +
-            "WHERE timestamp = (SELECT  MAX(timestamp) FROM users_buys)",
+            "WHERE time_created = (SELECT  MAX(time_created) FROM users_buys)",
             nativeQuery = true)
     Optional<PendingBuy> findMostRecentForUserId(String userId);
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -96,6 +97,7 @@ public class BuyController {
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .amount(roundedAmount)
+                    .timeCreated(LocalDateTime.now())
                     .timestamp(quote.getTimestamp())
                     .price(quote.getPrice())
                     .build();
