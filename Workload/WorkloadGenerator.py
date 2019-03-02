@@ -255,7 +255,7 @@ class WorkloadGenerator:
             get_params = urllib.urlencode({'userId':params[0],'transactionNum':params[1]})
             get_request = urllib2.urlopen('http://{}:{}/display?'.format(self._args_ip,self._args_port) + get_params)
             response = get_request.read()
-            print(response)
+            #print(response)
         except Exception as e:
             print "DISPLAY_SUMMAR,{},{} failed due to exception {}".format(params[0],params[1],e)
 
