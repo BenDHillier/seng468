@@ -94,6 +94,7 @@ public class SellController {
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .timestamp(quote.getTimestamp())
+                    .timeCreated(quote.getTimeCreated())
                     .stockCount(stockCount)
                     .stockPrice(quote.getPrice())
                     .build();

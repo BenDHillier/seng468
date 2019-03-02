@@ -96,6 +96,7 @@ public class BuyController {
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .amount(roundedAmount)
+                    .timeCreated(quote.getTimeCreated())
                     .timestamp(quote.getTimestamp())
                     .price(quote.getPrice())
                     .build();
