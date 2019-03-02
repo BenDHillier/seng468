@@ -28,7 +28,7 @@ class WorkloadGenerator:
 
     def run(self):
         for (command,params) in self.paramsList:
-            print("\n[THREAD {}] sending: ".format(thread.get_ident()) + command + " with params {}".format(params))
+            print("SEND {}".format(params))
             self.handleCommand(command,params)
 
     def handleCommand(self,cmd,params):
@@ -75,7 +75,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sellTrigger/trigger', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -87,7 +87,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sellTrigger/amount', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -99,7 +99,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sellTrigger/cancel', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "CANCEL SET BUY,{},{} failed due to exception {}".format(params[0],params[1],e)
     #POST
@@ -110,7 +110,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buyTrigger/trigger', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -122,7 +122,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buyTrigger/amount', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -134,7 +134,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buyTrigger/cancel', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "CANCEL SET BUY,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -148,7 +148,7 @@ class WorkloadGenerator:
             self._httpconnection.request('PUT', '/add', put_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "ADD,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -158,7 +158,7 @@ class WorkloadGenerator:
             get_params = urllib.urlencode({'userId':params[0],'stockSymbol':params[1],'transactionNum':params[2]})
             get_request = urllib2.urlopen('http://{}:{}/quote?'.format(self._args_ip,self._args_port) + get_params)
             response = get_request.read()
-            print(response)
+            #print(response)
         except Exception as e:
             print "QUOTE,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -170,7 +170,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buy/create', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "BUY,{},{},{} failed due to exception {}".format(params[0],params[1],params[2],e)
 
@@ -183,7 +183,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buy/commit', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "COMMIT_BUY,{} failed due to exception {}".format(params[0],e)
 
@@ -195,7 +195,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/buy/cancel', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "CANCEL_BUY,{} failed due to exception {}".format(params[0],e)
 
@@ -207,7 +207,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sell/create', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "SELL,{},{} failed due to exception {}".format(params[0],params[1],e)
 
@@ -219,7 +219,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sell/commit', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "COMMIT_SELL,{} failed due to exception {}".format(params[0],e)
 
@@ -231,7 +231,7 @@ class WorkloadGenerator:
             self._httpconnection.request('POST', '/sell/cancel', post_params, headers)
             response = self._httpconnection.getresponse()
             data = response.read()
-            print("{} {}".format(data,response.status))
+            #print("{} {}".format(data,response.status))
         except Exception as e:
             print "CANCEL_SELL,{} failed due to exception {}".format(params[0],e)
 
@@ -244,7 +244,7 @@ class WorkloadGenerator:
             logfile = open(params[0], "w+")
             logfile.write(response)
             logfile.close
-            print("Log written to {}".format(params[0]))
+            #print("Log written to {}".format(params[0]))
             #print(response)
         except Exception as e:
             print "DUMPLOG,{},{} failed due to exception {}".format(params[0],params[1],e)
