@@ -59,7 +59,6 @@ public class DisplaySummaryController {
                         .username(userId)
                         .transactionNum(transactionNum)
                         .build());
-
         return accountRepository.findById(userId).map(account ->
                 new ResponseEntity<>(DisplaySummary.builder()
                         .userId(userId)

@@ -116,5 +116,25 @@ END;
 CREATE TRIGGER log_account_transaction AFTER INSERT OR UPDATE ON account
     FOR EACH ROW EXECUTE PROCEDURE log_account_transaction();
 
+
+CREATE OR REPLACE FUNCTION
+increment_amount_after_set_cost(active_user varchar(255), ss varchar(255), amount_inc integer)
+    RETURNS integer AS '
+DECLARE
+BEGIN
+    WITH trigger AS
+        (SELECT * FROM sell_trigger WHERE user_id = active_user AND stock_symbol = ss),
+    stocks_to_remove AS (SELECT
+        ((trigger.stock_amount % trigger.stock_cost) + amount_inc) / trigger.stock_cost
+        FROM trigger)
+    UPDATE investment SET stock_count = stock_count - (TABLE stocks_to_remove);
+    UPDATE sell_trigger SET stock_amount = stock_amount + amount_inc
+    WHERE user_id = active_user AND stock_symbol = ss;
+    RETURN 1;
+END;
+' LANGUAGE plpgsql;
+
+
+
 DROP SEQUENCE IF EXISTS hibernate_sequence;
 CREATE SEQUENCE hibernate_sequence START 1;

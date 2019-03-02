@@ -23,9 +23,9 @@ public interface InvestmentRepository extends CrudRepository<Investment, Investm
     // violates the minimum stockCount of 0 constraint.
     @Modifying
     @Transactional
-    @Query(value = "UPDATE investment SET stock_count = stock_count - ?2 WHERE owner = ?1",
+    @Query(value = "UPDATE investment SET stock_count = stock_count - ?2 WHERE owner = ?1 AND stock_symbol = ?3",
             nativeQuery = true)
-    Integer removeStocks(String owner, Integer stockCount);
+    Integer removeStocks(String owner, Integer stockCount, String stockSymbol);
 
     @Query(value= "SELECT * FROM investment WHERE owner = ?1", nativeQuery = true)
     List<Investment> findByOwner(String userId);

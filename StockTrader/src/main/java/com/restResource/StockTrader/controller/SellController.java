@@ -88,7 +88,7 @@ public class SellController {
                     investment.getStockCount());
 
             // Set aside stocks to avoid duplicate sells.
-            investmentRepository.removeStocks(userId, stockCount);
+            investmentRepository.removeStocks(userId, stockCount, stockSymbol);
 
             PendingSell pendingSell = PendingSell.builder()
                     .userId(userId)
