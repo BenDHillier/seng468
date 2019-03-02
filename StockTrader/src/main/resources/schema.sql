@@ -65,7 +65,8 @@ CREATE TABLE sell_trigger (
 CREATE TABLE account_transaction_log (
     id SERIAL PRIMARY KEY,
     action varchar(255),
-    funds integer,
+--     funds float,
+    funds NUMERIC(12,2),
     timestamp bigint,
     username varchar(255),
     server varchar(255),
@@ -105,7 +106,7 @@ BEGIN
 --       INSERT INTO account_transaction_log (action, funds, timestamp, username)
       INSERT INTO account_transaction_log (action, funds, timestamp, username, server, "transactionNum")
       VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number);
-      WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
+      WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, TRUNC((SELECT CAST(funds AS NUMERIC(12,2))/100.00),2), trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
       INSERT INTO log_xml (id, xml_log_entry,user_id)
       VALUES(
         (select nextval(''hibernate_sequence'')),
