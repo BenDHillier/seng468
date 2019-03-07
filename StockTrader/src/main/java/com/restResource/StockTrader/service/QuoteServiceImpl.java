@@ -70,7 +70,7 @@ public class QuoteServiceImpl implements QuoteService {
                 .userId(userId)
                 .price(price)
                 .timestamp(LocalDateTime.now())
-                .cryptoKey(cryptoKey)
+                .cryptoKey(cryptoKey.trim())
                 .build();
 
         loggingService.logQuoteServer(
