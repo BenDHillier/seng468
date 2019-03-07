@@ -64,15 +64,16 @@ public class QuoteServiceImpl implements QuoteService {
         int price = extractPriceFromResponseList(responseList);
         Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
         String cryptoKey = responseList[4];
-        cryptoKey = cryptoKey.replaceAll("\\s+$", "");
-
+        if( cryptoKey.length() != cryptoKey.replaceAll("\\s+$", "").length() ) {
+            System.out.println("########## REPLACED TRAILING SPACE");
+        }
 
         Quote quote = Quote.builder()
                 .stockSymbol(stockSymbol)
                 .userId(userId)
                 .price(price)
                 .timestamp(LocalDateTime.now())
-                .cryptoKey(cryptoKey)
+                .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
                 .build();
 
         loggingService.logQuoteServer(
