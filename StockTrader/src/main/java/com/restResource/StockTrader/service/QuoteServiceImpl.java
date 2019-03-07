@@ -64,13 +64,15 @@ public class QuoteServiceImpl implements QuoteService {
         int price = extractPriceFromResponseList(responseList);
         Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
         String cryptoKey = responseList[4];
+        cryptokey = cryptoKey.replaceAll("\\s+$", "");
+
 
         Quote quote = Quote.builder()
                 .stockSymbol(stockSymbol)
                 .userId(userId)
                 .price(price)
                 .timestamp(LocalDateTime.now())
-                .cryptoKey(cryptoKey.trim())
+                .cryptoKey(cryptoKey)
                 .build();
 
         loggingService.logQuoteServer(
