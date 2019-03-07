@@ -64,7 +64,7 @@ public class QuoteServiceImpl implements QuoteService {
         int price = extractPriceFromResponseList(responseList);
         Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
         String cryptoKey = responseList[4];
-        cryptokey = cryptoKey.replaceAll("\\s+$", "");
+        cryptoKey = cryptoKey.replaceAll("\\s+$", "");
 
 
         Quote quote = Quote.builder()
