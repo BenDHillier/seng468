@@ -64,10 +64,8 @@ public class QuoteServiceImpl implements QuoteService {
         int price = extractPriceFromResponseList(responseList);
         Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
         String cryptoKey = responseList[4];
-        if( cryptoKey.length() != cryptoKey.replaceAll("\\s+$", "").length() ) {
-            System.out.println("########## REPLACED TRAILING SPACE");
-        }
 
+        //Only replacing trailing space on cryptokey
         Quote quote = Quote.builder()
                 .stockSymbol(stockSymbol)
                 .userId(userId)
