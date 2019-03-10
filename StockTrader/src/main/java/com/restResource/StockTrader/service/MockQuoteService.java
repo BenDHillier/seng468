@@ -25,7 +25,7 @@ public class MockQuoteService implements QuoteService {
         jedis.hset("user#1", "name", "Peter");
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
-                        .price(50)
+                        .price("50")
                         .quoteServerTime(System.currentTimeMillis())
                         .timestamp(System.currentTimeMillis())
                         .transactionNum(transactionNum)

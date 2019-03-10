@@ -40,6 +40,7 @@ public class QuoteController {
 
         //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
         loggingService.logUserCommand(UserCommandLog.builder()
+                .command(CommandType.QUOTE)
                 .stockSymbol(stockSymbol)
                 .username(userId)
                 .transactionNum(transactionNum)

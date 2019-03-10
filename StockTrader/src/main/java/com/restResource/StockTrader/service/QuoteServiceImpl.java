@@ -65,17 +65,18 @@ public class QuoteServiceImpl implements QuoteService {
         Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
         String cryptoKey = responseList[4];
 
+        //Only replacing trailing space on cryptokey
         Quote quote = Quote.builder()
                 .stockSymbol(stockSymbol)
                 .userId(userId)
                 .price(price)
                 .timestamp(LocalDateTime.now())
-                .cryptoKey(cryptoKey)
+                .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
                 .build();
 
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
-                        .price(quote.getPrice())
+                        .price(responseList[0])
                         .username(userId)
                         .quoteServerTime(quoteServerTime)
                         .timestamp(System.currentTimeMillis())

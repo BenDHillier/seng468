@@ -1,5 +1,7 @@
 package com.restResource.StockTrader.controller;
 
+import com.restResource.StockTrader.entity.CommandType;
+import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.service.LoggingService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -25,6 +27,12 @@ public class LogController {
     public ResponseEntity<Resource> dumpLogs(@RequestParam String filename,
                                              @RequestParam int transactionNum) {
         try {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.DUMPLOG)
+                            .server("TS1")
+                            .transactionNum(transactionNum)
+                            .build());
             loggingService.dumpLogToXmlFile(filename);
             File f = new File(filename);
             HttpHeaders headers = new HttpHeaders();
@@ -47,6 +55,12 @@ public class LogController {
                                                  @RequestParam String userId,
                                                  @RequestParam int transactionNum) {
         try {
+            loggingService.logUserCommand(
+                    UserCommandLog.builder()
+                            .command(CommandType.DUMPLOG)
+                            .server("TS1")
+                            .transactionNum(transactionNum)
+                            .build());
             loggingService.dumpUserLogToXmlFile(filename,userId);
             File f = new File(filename);
             HttpHeaders headers = new HttpHeaders();

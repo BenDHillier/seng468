@@ -46,7 +46,7 @@ public class QuoteServerLog {
     String stockSymbol = "DEFAULT_STOCK_SYMBOL";
     @XmlElement
     @Builder.Default
-    Integer price = 0;
+    String price = "0.00";
     @XmlElement
     @Builder.Default
     String cryptokey = "DEFAULT_CRYPTOKEY";

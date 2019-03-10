@@ -31,7 +31,8 @@ public class AddController {
                         .command(CommandType.ADD)
                         .username(userId)
                         .transactionNum(transactionNum)
-                        .funds((amount*1.0)/100)
+                        //(1.0*pendingSell.getStockPrice())/100
+                        .funds(String.format("%.2f",(amount*1.0)/100))
                         .build());
         try {
             if (amount <= 0) {

@@ -31,5 +31,5 @@ public class UserCommandLog {
     @XmlElement
     String filename; //can be null
     @XmlElement
-    Double funds; //can be null
+    String funds; //can be null
 }
