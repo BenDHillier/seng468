@@ -6,7 +6,7 @@ import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.SystemEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
-import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.AccountService;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.service.LoggingService;
 import org.springframework.http.HttpHeaders;
@@ -31,7 +31,7 @@ public class BuyController {
 
     private InvestmentRepository investmentRepository;
 
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     private LoggingService loggingService;
 
@@ -40,12 +40,12 @@ public class BuyController {
             BuyRepository buyRepository,
             InvestmentRepository investmentRepository,
             LoggingService loggingService,
-            AccountRepository accountRepository) {
+            AccountService accountService) {
 
         this.buyRepository = buyRepository;
         this.quoteService = quoteService;
         this.investmentRepository = investmentRepository;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.loggingService = loggingService;
     }
 
@@ -71,7 +71,7 @@ public class BuyController {
             if (amount <= 0) { throw new IllegalArgumentException("The amount parameter must be greater than zero."); }
 
             //Don't hit the quote server if the user account doesn't exist
-            if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
+            if( !accountService.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
 
             //Get the quote
             Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
@@ -85,7 +85,7 @@ public class BuyController {
 
             // Removes any excess amount not needed to purchase the maximum number of stocks.
             Integer roundedAmount = quote.getPrice() * (amount / quote.getPrice());
-            Integer updatedEntriesCount = accountRepository.removeFunds(userId, roundedAmount,transactionNum,"TS1");
+            Integer updatedEntriesCount = accountService.removeFunds(userId, roundedAmount,transactionNum);
 
             //Account wasn't updated for some reason
             if (updatedEntriesCount != 1) { throw new IllegalStateException(
@@ -153,7 +153,7 @@ public class BuyController {
 
         try {
             PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum, CommandType.CANCEL_BUY);
-            accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
+            accountService.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum);
         } catch( Exception e) {
             //command was made during an invalid account state, but we still need to log the activity
             loggingService.logUserCommand(

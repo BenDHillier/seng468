@@ -3,7 +3,7 @@ package com.restResource.StockTrader.controller;
 import com.restResource.StockTrader.entity.*;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
-import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.AccountService;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.repository.SellRepository;
 import com.restResource.StockTrader.service.LoggingService;
@@ -26,7 +26,7 @@ public class SellController {
 
     private InvestmentRepository investmentRepository;
 
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     private LoggingService loggingService;
 
@@ -35,13 +35,13 @@ public class SellController {
             SellRepository sellRepository,
             InvestmentRepository investmentRepository,
             LoggingService loggingService,
-            AccountRepository accountRepository) {
+            AccountService accountService) {
 
         this.quoteService = quoteService;
         this.loggingService = loggingService;
         this.sellRepository = sellRepository;
         this.investmentRepository = investmentRepository;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
     }
 
     @PostMapping("/create")
@@ -67,7 +67,7 @@ public class SellController {
                             .build());
 
             //Don't hit the quote server if the user account doesn't exist
-            if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
+            if( !accountService.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
 
             //quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
 
@@ -124,10 +124,10 @@ public class SellController {
 
         try {
             PendingSell pendingSell = claimMostRecentPendingSell(userId,transactionNum, CommandType.COMMIT_SELL);
-            accountRepository.updateAccountBalance(
+            accountService.updateAccountBalance(
                     userId,
                     pendingSell.getStockPrice() * pendingSell.getStockCount(),
-                    transactionNum,"TS1");
+                    transactionNum);
         } catch( Exception e ) {
             loggingService.logUserCommand(
                     UserCommandLog.builder()

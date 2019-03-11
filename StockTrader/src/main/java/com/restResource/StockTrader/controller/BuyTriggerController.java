@@ -5,7 +5,7 @@ import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.TriggerKey;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
-import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.AccountService;
 import com.restResource.StockTrader.repository.BuyTriggerRepository;
 import com.restResource.StockTrader.service.BuyTriggerService;
 import com.restResource.StockTrader.service.LoggingService;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequestMapping(value = "/buyTrigger")
 public class BuyTriggerController {
 
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     private LoggingService loggingService;
 
@@ -32,12 +32,12 @@ public class BuyTriggerController {
             BuyTriggerRepository buyTriggerRepository,
             LoggingService loggingService,
             BuyTriggerService buyTriggerService,
-            AccountRepository accountRepository) {
+            AccountService accountService) {
 
         this.buyTriggerRepository = buyTriggerRepository;
         this.loggingService = loggingService;
         this.buyTriggerService = buyTriggerService;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
     }
 
     @PostMapping(path = "/amount")
@@ -64,7 +64,7 @@ public class BuyTriggerController {
             //TODO remove the find by and replace it with a create or incremement function
             Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-            if (accountRepository.removeFunds(userId, stockAmount, transactionNum, "TS1") == 0) {
+            if (accountService.removeFunds(userId, stockAmount, transactionNum) == 0) {
                 //insufficient funds for the transaction.
                 throw new IllegalArgumentException("Insufficient Funds for the Transaction - requesting to remove: " + stockAmount);
             }
@@ -161,7 +161,7 @@ public class BuyTriggerController {
 
             //refund the money
             //TODO add a check here to make sure it worked
-            accountRepository.updateAccountBalance(userId, stockBuyTriggerStatus.get().getStockAmount(),transactionNum, "TS1");
+            accountService.updateAccountBalance(userId, stockBuyTriggerStatus.get().getStockAmount(),transactionNum);
             TriggerKey triggerKey = TriggerKey.builder()
                     .userId(userId)
                     .stockSymbol(stockSymbol)

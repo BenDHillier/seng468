@@ -2,12 +2,13 @@ package com.restResource.StockTrader.service;
 
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.SellTrigger;
-import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.AccountService;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.repository.SellTriggerRepository;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -16,7 +17,7 @@ public class SellTriggerService {
     private QuoteService quoteService;
     private SellTriggerRepository sellTriggerRepository;
     private TaskExecutor taskExecutor;
-    private AccountRepository accountRepository;
+    private AccountService accountService;
     private InvestmentRepository investmentRepository;
     private LoggingService loggingService;
 
@@ -25,11 +26,11 @@ public class SellTriggerService {
                              SellTriggerRepository sellTriggerRepository,
                              InvestmentRepository investmentRepository,
                              TaskExecutor taskExecutor,
-                             AccountRepository accountRepository){
+                             AccountService accountService){
         this.quoteService = quoteService;
         this.sellTriggerRepository = sellTriggerRepository;
         this.taskExecutor = taskExecutor;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.loggingService = loggingService;
         this.investmentRepository = investmentRepository;
     }
@@ -63,7 +64,7 @@ public class SellTriggerService {
                         if (stocksReserved > stocksToSell) {
                             investmentRepository.insertOrIncrement(userId, stockSymbol, stocksReserved - stocksToSell);
                         }
-                        accountRepository.updateAccountBalance(userId, profit, transactionNum, "TS1");
+                        accountService.updateAccountBalance(userId, profit, transactionNum);
                         sellTriggerRepository.delete(sellStockSnapshot.get());
                         return;
                     }

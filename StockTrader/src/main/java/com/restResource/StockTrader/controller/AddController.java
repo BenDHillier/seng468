@@ -3,7 +3,7 @@ import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.logging.DebugEventLog;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
-import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.AccountService;
 import com.restResource.StockTrader.service.LoggingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class AddController {
 
-    private AccountRepository accountRepository;
+    private AccountService accountService;
     private LoggingService loggingService;
 
-    public AddController(AccountRepository accountRepository,
+    public AddController(AccountService accountService,
                          LoggingService loggingService) {
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.loggingService = loggingService;
     }
 
@@ -39,7 +39,7 @@ public class AddController {
                 throw new IllegalArgumentException(
                         "The ADD amount parameter must be greater than zero");
             } else {
-                accountRepository.updateAccountBalance(userId, amount,transactionNum,"TS1");
+                accountService.updateAccountBalance(userId, amount,transactionNum);
             }
             return HttpStatus.OK;
         } catch (Exception e) {

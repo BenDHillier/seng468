@@ -4,7 +4,7 @@ import com.restResource.StockTrader.entity.BuyTrigger;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
-import com.restResource.StockTrader.repository.AccountRepository;
+import com.restResource.StockTrader.service.AccountService;
 import com.restResource.StockTrader.repository.BuyTriggerRepository;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import org.springframework.core.task.TaskExecutor;
@@ -18,7 +18,7 @@ public class BuyTriggerService {
     private QuoteService quoteService;
     private BuyTriggerRepository buyTriggerRepository;
     private TaskExecutor taskExecutor;
-    private AccountRepository accountRepository;
+    private AccountService accountService;
     private InvestmentRepository investmentRepository;
     private LoggingService loggingService;
 
@@ -27,11 +27,11 @@ public class BuyTriggerService {
                              BuyTriggerRepository buyTriggerRepository,
                              TaskExecutor taskExecutor,
                              InvestmentRepository investmentRepository,
-                             AccountRepository accountRepository){
+                             AccountService accountService){
         this.quoteService = quoteService;
         this.buyTriggerRepository = buyTriggerRepository;
         this.taskExecutor = taskExecutor;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.investmentRepository = investmentRepository;
         this.loggingService = loggingService;
     }
@@ -63,7 +63,7 @@ public class BuyTriggerService {
                         Integer refund = amount % quote.getPrice();
                         if (refund > 0) {
                             //if the user wanted to buy for cheaper then the cost, refund the difference
-                            accountRepository.updateAccountBalance(userId, refund, transactionNum, "TS1");
+                            accountService.updateAccountBalance(userId, refund, transactionNum);
                         }
                         investmentRepository.insertOrIncrement(userId, stockSymbol, amount);
                         buyTriggerRepository.delete(buyStockSnapshot.get());
