@@ -3,8 +3,10 @@
 
 # Log file
 *.log
-testLOG
+dumpLOG*
+testLOG*
 testlog.xml
+validate.xsd
 
 # BlueJ files
 *.ctxt
