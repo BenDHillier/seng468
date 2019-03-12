@@ -111,7 +111,7 @@ public class LoggingService {
         }
     }
 
-
+    @Async
     public File dumpLogToXmlFile(String filename) {
         try {
             Iterable<String> logFragments = logXmlRepository.findAllLogs();
@@ -131,6 +131,7 @@ public class LoggingService {
         return null;
     }
 
+    @Async
     public File dumpUserLogToXmlFile(String filename, String userId) {
         try {
             Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
