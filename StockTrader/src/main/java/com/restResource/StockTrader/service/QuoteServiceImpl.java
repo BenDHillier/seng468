@@ -56,6 +56,7 @@ public class QuoteServiceImpl implements QuoteService {
 
             //check redis
             String response = jedis.get(stockSymbol);
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@ thing...." + response);
             boolean isNew = false;
 
             //if redis doesnt have the response, grab it from the quote server
