@@ -1,9 +1,7 @@
 package com.restResource.StockTrader.service;
 
-import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.QuoteServerLog;
-import com.restResource.StockTrader.entity.logging.SystemEventLog;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +17,6 @@ public class MockQuoteService implements QuoteService {
     }
     @Override
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
-
         loggingService.logQuoteServer(
                 QuoteServerLog.builder()
                         .price("50")
