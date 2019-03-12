@@ -111,7 +111,8 @@ public class QuoteServiceImpl implements QuoteService {
             }
             return quote;
         } catch (Exception e) {
-            System.out.println("\n" + e.getMessage());
+            System.out.print("\n");
+            e.printStackTrace();
             return null;
         } finally {
             lock.release();
