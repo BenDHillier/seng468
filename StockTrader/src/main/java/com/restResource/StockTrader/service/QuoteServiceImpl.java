@@ -110,6 +110,9 @@ public class QuoteServiceImpl implements QuoteService {
                                 .build());
             }
             return quote;
+        } catch (Exception e) {
+            System.out.println("\n" + e.getMessage());
+            return null;
         } finally {
             lock.release();
         }

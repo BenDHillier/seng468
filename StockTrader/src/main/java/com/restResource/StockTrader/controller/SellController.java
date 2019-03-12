@@ -51,9 +51,7 @@ public class SellController {
             @RequestParam String stockSymbol,
             @RequestParam int amount,
             @RequestParam int transactionNum) {
-        Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
 
-        Quote quote = optionalQuote.get();
         try {
             loggingService.logUserCommand(
                     UserCommandLog.builder()
@@ -63,10 +61,12 @@ public class SellController {
                             .stockSymbol(stockSymbol)
                             .funds(String.format("%.2f",(amount*1.0)/100))
                             .build());
+
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
             if (!optionalQuote.isPresent()) {
-                //return null;
-                throw new Exception("blah");
+                throw new Exception("Quote was null");
             }
+            Quote quote = optionalQuote.get();
 
             //Don't hit the quote server if the user account doesn't exist
             if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
