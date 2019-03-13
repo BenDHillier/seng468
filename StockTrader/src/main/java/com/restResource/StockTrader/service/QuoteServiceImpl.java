@@ -53,13 +53,13 @@ public class QuoteServiceImpl implements QuoteService {
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
         Jedis jedis = jedisPool.getResource();
-        JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
+	JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
         lock.acquire();
+	System.out.print(" Output ->");
         try {
 
             //check redis
             String response = jedis.get(stockSymbol);
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@ thing...." + response);
             boolean isNew = false;
 
             //if redis doesnt have the response, grab it from the quote server
