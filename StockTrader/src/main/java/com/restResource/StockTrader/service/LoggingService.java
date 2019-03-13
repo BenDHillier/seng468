@@ -36,6 +36,7 @@ public class LoggingService {
         // TODO: make this false which will save space in database
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+        marshaller.setProperty(Marshaller.JAXB_ENCODING,"UTF-8");
         return marshaller;
     }
 
