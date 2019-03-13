@@ -19,8 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.ZoneId;
 import java.time.temporal.TemporalUnit;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -35,16 +34,37 @@ public class QuoteServiceImpl implements QuoteService {
             .initialCapacity(1000)
             .build();
 
+    private static final Queue<Socket> quoteConnections = new LinkedList<>();
+    private static final int CONNECTION_COUNT = 5;
+
     public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
+        createConnections();
+    }
+
+    private Socket createConnections() {
+        for (int i = 0; i < CONNECTION_COUNT; ++i) {
+            try {
+                String quoteServerHost = "quoteserve.seng.uvic.ca";
+                int quoteServerPort = 4452;
+                quoteConnections.add(new Socket(quoteServerHost, quoteServerPort));
+            } catch (Exception e) {
+                // do nothing.
+            }
+        }
+    }
+
+    private Socket acquireConnection() {
+        Socket s;
+        synchronized (quoteConnections) {
+            s = quoteConnections.poll();
+        }
+        return s;
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
-        String quoteServerHost = "quoteserve.seng.uvic.ca";
-        int quoteServerPort = 4452;
-
         String response;
-        Socket socket = new Socket(quoteServerHost, quoteServerPort);
+        Socket socket = acquireConnection();
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out.println(stockSymbol+","+userId);
