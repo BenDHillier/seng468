@@ -46,7 +46,7 @@ public class QuoteServiceImpl implements QuoteService {
         this.jedis = jedis;
     }
 
-    private Socket createConnections() {
+    private void createConnections() {
         for (int i = 0; i < CONNECTION_COUNT; ++i) {
             try {
                 String quoteServerHost = "quoteserve.seng.uvic.ca";
@@ -58,7 +58,6 @@ public class QuoteServiceImpl implements QuoteService {
         }
     }
 
-<<<<<<< HEAD
     private Socket acquireConnection() {
         Socket s;
         synchronized (quoteConnections) {
