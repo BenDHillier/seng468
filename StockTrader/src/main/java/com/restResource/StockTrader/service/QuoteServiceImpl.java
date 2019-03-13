@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.time.ZoneId;
 import java.time.temporal.TemporalUnit;
@@ -30,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class QuoteServiceImpl implements QuoteService {
 
     private LoggingService loggingService;
-    private Jedis jedis;
+    private JedisPool jedisPool;
+
 
     private static Cache<String,Quote> quoteCache = CacheBuilder.newBuilder()
             .expireAfterWrite(50, TimeUnit.SECONDS)
@@ -38,9 +40,9 @@ public class QuoteServiceImpl implements QuoteService {
             .initialCapacity(1000)
             .build();
 
-    public QuoteServiceImpl(LoggingService loggingService, Jedis jedis) {
+    public QuoteServiceImpl(LoggingService loggingService, JedisPool jedisPool) {
         this.loggingService = loggingService;
-        this.jedis = jedis;
+        this.jedisPool = jedisPool;
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
@@ -50,6 +52,7 @@ public class QuoteServiceImpl implements QuoteService {
         //create and aquire a lock for the stock symbol
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
+        Jedis jedis = jedisPool.getResource();
         JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
         lock.acquire();
         try {
