@@ -48,22 +48,39 @@ public class QuoteServiceImpl implements QuoteService {
 
     private void createConnections() {
         for (int i = 0; i < CONNECTION_COUNT; ++i) {
-            try {
-                String quoteServerHost = "quoteserve.seng.uvic.ca";
-                int quoteServerPort = 4452;
-                quoteConnections.add(new Socket(quoteServerHost, quoteServerPort));
-            } catch (Exception e) {
-                // do nothing.
+            Socket s = createConnection();
+            if (s != null) {
+                quoteConnections.add(s);
             }
+        }
+    }
+
+    private Socket createConnection() {
+        String quoteServerHost = "quoteserve.seng.uvic.ca";
+        int quoteServerPort = 4452;
+        try {
+            return new Socket(quoteServerHost, quoteServerPort);
+        } catch(Exception e) {
+            return null;
         }
     }
 
     private Socket acquireConnection() {
         Socket s;
         synchronized (quoteConnections) {
-            s = quoteConnections.poll();
+            if (quoteConnections.size() > 0) {
+                s = quoteConnections.poll();
+            } else {
+                s = createConnection();
+            }
         }
         return s;
+    }
+
+    private void returnConnection(Socket s) {
+        synchronized (quoteConnections) {
+            quoteConnections.add(s);
+        }
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
@@ -87,7 +104,7 @@ public class QuoteServiceImpl implements QuoteService {
                 response = in.readLine();
                 out.close();
                 in.close();
-                socket.close();
+                returnConnection(socket);
                 if (response == null || response.equals("")) {
                     throw new IllegalStateException("response not valid");
                 }
