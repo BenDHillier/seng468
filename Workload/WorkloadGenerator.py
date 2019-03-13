@@ -281,13 +281,27 @@ def runThread(ip, port, paramsList):
     client.run()
 
 def run(args):
-    file = open("./WorkloadFiles/{}".format(args[3]), "r")
+    file = open(args[3], "r")
     ip = args[1]
     port = args[2]
     paramDict = extractParamDict(file)
     for key in paramDict:
         t = threading.Thread(target=runThread,args=(ip, port, paramDict[key],))
         t.start()
+    while threading.active_count() > 1:
+        time.sleep(5)
+    try:
+        filename = './dumpLOG'
+        get_params = urllib.urlencode({'filename':filename,'transactionNum':args[4]})
+        get_request = urllib2.urlopen('http://{}:{}/dumplog/all?'.format(ip,port) + get_params)
+        response = get_request.read()
+        logfile = open(filename, "w+")
+        logfile.write(response)
+        logfile.close
+        #print("Log written to {}".format(params[0]))
+        #print(response)
+    except Exception as e:
+        print "DUMPLOG failed due to exception {}".format(e)
 
 if __name__ == "__main__":
     run(sys.argv)
