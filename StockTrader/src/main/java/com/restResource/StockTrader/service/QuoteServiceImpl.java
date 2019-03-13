@@ -3,6 +3,7 @@ package com.restResource.StockTrader.service;
 import java.io.*;
 import java.net.*;
 
+import com.github.jedis.lock.JedisLock;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
@@ -16,6 +17,7 @@ import com.sun.org.apache.xpath.internal.operations.Quo;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import redis.clients.jedis.Jedis;
 
 import java.time.ZoneId;
 import java.time.temporal.TemporalUnit;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class QuoteServiceImpl implements QuoteService {
 
     private LoggingService loggingService;
+    private Jedis jedis;
 
     private static Cache<String,Quote> quoteCache = CacheBuilder.newBuilder()
             .expireAfterWrite(50, TimeUnit.SECONDS)
@@ -40,6 +43,7 @@ public class QuoteServiceImpl implements QuoteService {
     public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
         createConnections();
+        this.jedis = jedis;
     }
 
     private Socket createConnections() {
@@ -54,6 +58,7 @@ public class QuoteServiceImpl implements QuoteService {
         }
     }
 
+<<<<<<< HEAD
     private Socket acquireConnection() {
         Socket s;
         synchronized (quoteConnections) {
@@ -63,48 +68,71 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
-        String response;
-        Socket socket = acquireConnection();
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out.println(stockSymbol+","+userId);
-        response = in.readLine();
-        out.close();
-        in.close();
-        socket.close();
-        if (response == null || response.equals("")) {
-            throw new IllegalStateException("response not valid");
+        //create and aquire a lock for the stock symbol
+        String lockkey = stockSymbol+"_lock";
+        //lock will time out after 10 seconds and expire after 50
+        JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
+        lock.acquire();
+        try {
+            //check redis
+            String response = jedis.get(stockSymbol);
+            boolean isNew = false;
+
+            //if redis doesnt have the response, grab it from the quote server
+            if (response == null) {
+                isNew = true;
+                Socket socket = acquireConnection();
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out.println(stockSymbol + "," + userId);
+                response = in.readLine();
+                out.close();
+                in.close();
+                socket.close();
+                if (response == null || response.equals("")) {
+                    throw new IllegalStateException("response not valid");
+                }
+                //assign the stock symbol the unparsed response
+                jedis.set(stockSymbol, response);
+                //give it a lifespan of 50 seconds
+                jedis.expire(stockSymbol, 50);
+            }
+
+
+            String[] responseList = response.split(",");
+            // Valid response list should be a length of 5.
+            if (responseList.length < 5) {
+                throw new IllegalStateException("response not valid");
+            }
+
+            int price = extractPriceFromResponseList(responseList);
+            Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
+            String cryptoKey = responseList[4];
+
+            //Only replacing trailing space on cryptokey
+            Quote quote = Quote.builder()
+                    .stockSymbol(stockSymbol)
+                    .userId(userId)
+                    .price(price)
+                    .timestamp(LocalDateTime.now())
+                    .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
+                    .build();
+            if (isNew) {
+                loggingService.logQuoteServer(
+                        QuoteServerLog.builder()
+                                .price(responseList[0])
+                                .username(userId)
+                                .quoteServerTime(quoteServerTime)
+                                .timestamp(System.currentTimeMillis())
+                                .transactionNum(transactionNum)
+                                .stockSymbol(stockSymbol)
+                                .cryptokey(quote.getCryptoKey())
+                                .build());
+            }
+            return quote;
+        } finally {
+            lock.release();
         }
-        String[] responseList = response.split(",");
-        // Valid response list should be a length of 5.
-        if (responseList.length < 5) {
-            throw new IllegalStateException("response not valid");
-        }
-
-        int price = extractPriceFromResponseList(responseList);
-        Long quoteServerTime = extractQuoteServerTimeFromResponseList(responseList);
-        String cryptoKey = responseList[4];
-
-        //Only replacing trailing space on cryptokey
-        Quote quote = Quote.builder()
-                .stockSymbol(stockSymbol)
-                .userId(userId)
-                .price(price)
-                .timestamp(LocalDateTime.now())
-                .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
-                .build();
-
-        loggingService.logQuoteServer(
-                QuoteServerLog.builder()
-                        .price(responseList[0])
-                        .username(userId)
-                        .quoteServerTime(quoteServerTime)
-                        .timestamp(System.currentTimeMillis())
-                        .transactionNum(transactionNum)
-                        .stockSymbol(stockSymbol)
-                        .cryptokey(quote.getCryptoKey())
-                        .build());
-        return quote;
     }
 
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
