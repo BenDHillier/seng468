@@ -2,6 +2,7 @@ package com.restResource.StockTrader.service;
 
 import com.restResource.StockTrader.entity.logging.*;
 import com.restResource.StockTrader.repository.logging.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
@@ -10,6 +11,7 @@ import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class LoggingService {
@@ -34,14 +36,17 @@ public class LoggingService {
         // TODO: make this false which will save space in database
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+        marshaller.setProperty(Marshaller.JAXB_ENCODING,"UTF-8");
         return marshaller;
     }
 
+    @Async
     public void xmlLogEvent(LogXml log) {
         logXmlRepository.save(
                 log.toBuilder().build());
     }
 
+    @Async
     public void logUserCommand(UserCommandLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -63,6 +68,7 @@ public class LoggingService {
         }
     }
 
+    @Async
     public void logQuoteServer(QuoteServerLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -84,51 +90,13 @@ public class LoggingService {
         }
     }
 
-    public void logSystemEvent(SystemEventLog log) {
-        log.toBuilder()
-                .server("TS1")
-                .build();
 
-        StringWriter writer = new StringWriter();
-
-        try {
-            Marshaller marshaller = createMarshaller();
-            marshaller.marshal(log,writer);
-            xmlLogEvent(
-                    LogXml.builder()
-                            .userId(log.getUsername())
-                            .xmlLogEntry(writer.toString())
-                            .build()
-            );
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    @Async
     public void logErrorEvent(ErrorEventLog log) {
         log.toBuilder()
                 .server("TS1")
                 .build();
 
-        StringWriter writer = new StringWriter();
-        try {
-            Marshaller marshaller = createMarshaller();
-            marshaller.marshal(log,writer);
-            xmlLogEvent(
-                    LogXml.builder()
-                            .userId(log.getUsername())
-                            .xmlLogEntry(writer.toString())
-                            .build()
-            );
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void logDebugEvent(DebugEventLog log) {
-        log.toBuilder()
-                .server("TS1")
-                .build();
         StringWriter writer = new StringWriter();
         try {
             Marshaller marshaller = createMarshaller();
@@ -181,4 +149,44 @@ public class LoggingService {
         }
         return null;
     }
+
+//    public void logSystemEvent(SystemEventLog log) {
+//        log.toBuilder()
+//                .server("TS1")
+//                .build();
+//
+//        StringWriter writer = new StringWriter();
+//
+//        try {
+//            Marshaller marshaller = createMarshaller();
+//            marshaller.marshal(log,writer);
+//            xmlLogEvent(
+//                    LogXml.builder()
+//                            .userId(log.getUsername())
+//                            .xmlLogEntry(writer.toString())
+//                            .build()
+//            );
+//        } catch(Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    public void logDebugEvent(DebugEventLog log) {
+//        log.toBuilder()
+//                .server("TS1")
+//                .build();
+//        StringWriter writer = new StringWriter();
+//        try {
+//            Marshaller marshaller = createMarshaller();
+//            marshaller.marshal(log,writer);
+//            xmlLogEvent(
+//                    LogXml.builder()
+//                            .userId(log.getUsername())
+//                            .xmlLogEntry(writer.toString())
+//                            .build()
+//            );
+//        } catch(Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
