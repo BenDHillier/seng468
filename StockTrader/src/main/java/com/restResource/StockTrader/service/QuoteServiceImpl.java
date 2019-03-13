@@ -100,7 +100,7 @@ public class QuoteServiceImpl implements QuoteService {
                 Socket socket = acquireConnection();
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out.println(stockSymbol + "," + userId);
+                out.println(stockSymbol + "," + userId + "\r");
                 response = in.readLine();
                 out.close();
                 in.close();
