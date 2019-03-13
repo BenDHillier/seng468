@@ -22,8 +22,7 @@ import redis.clients.jedis.JedisPool;
 
 import java.time.ZoneId;
 import java.time.temporal.TemporalUnit;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -40,23 +39,60 @@ public class QuoteServiceImpl implements QuoteService {
             .initialCapacity(1000)
             .build();
 
-    public QuoteServiceImpl(LoggingService loggingService, JedisPool jedisPool) {
+    private static final Queue<Socket> quoteConnections = new LinkedList<>();
+    private static final int CONNECTION_COUNT = 5;
+
+    public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
+        createConnections();
         this.jedisPool = jedisPool;
     }
 
-    private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
+    private void createConnections() {
+        for (int i = 0; i < CONNECTION_COUNT; ++i) {
+            Socket s = createConnection();
+            if (s != null) {
+                quoteConnections.add(s);
+            }
+        }
+    }
+
+    private Socket createConnection() {
         String quoteServerHost = "quoteserve.seng.uvic.ca";
         int quoteServerPort = 4452;
+        try {
+            return new Socket(quoteServerHost, quoteServerPort);
+        } catch(Exception e) {
+            return null;
+        }
+    }
 
+    private Socket acquireConnection() {
+        Socket s;
+        synchronized (quoteConnections) {
+            if (quoteConnections.size() > 0) {
+                s = quoteConnections.poll();
+            } else {
+                s = createConnection();
+            }
+        }
+        return s;
+    }
+
+    private void returnConnection(Socket s) {
+        synchronized (quoteConnections) {
+            quoteConnections.add(s);
+        }
+    }
+
+    private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
         //create and aquire a lock for the stock symbol
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
         Jedis jedis = jedisPool.getResource();
-	JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
+	      JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
         lock.acquire();
         try {
-
             //check redis
             String response = jedis.get(stockSymbol);
             boolean isNew = false;
@@ -64,14 +100,14 @@ public class QuoteServiceImpl implements QuoteService {
             //if redis doesnt have the response, grab it from the quote server
             if (response == null) {
                 isNew = true;
-                Socket socket = new Socket(quoteServerHost, quoteServerPort);
+                Socket socket = acquireConnection();
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out.println(stockSymbol + "," + userId);
+                out.println(stockSymbol + "," + userId + "\r");
                 response = in.readLine();
                 out.close();
                 in.close();
-                socket.close();
+                returnConnection(socket);
                 if (response == null || response.equals("")) {
                     throw new IllegalStateException("response not valid");
                 }
