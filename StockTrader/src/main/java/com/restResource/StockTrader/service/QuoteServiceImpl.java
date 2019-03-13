@@ -55,7 +55,6 @@ public class QuoteServiceImpl implements QuoteService {
         Jedis jedis = jedisPool.getResource();
 	JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
         lock.acquire();
-	System.out.print(" Output ->");
         try {
 
             //check redis
@@ -80,6 +79,9 @@ public class QuoteServiceImpl implements QuoteService {
                 jedis.set(stockSymbol, response);
                 //give it a lifespan of 50 seconds
                 jedis.expire(stockSymbol, 50);
+            }
+            else {
+                System.out.print("\nREDIS RESULT GOTTEN: " + response);
             }
 
 

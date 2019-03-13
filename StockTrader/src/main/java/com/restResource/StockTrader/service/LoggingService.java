@@ -39,13 +39,13 @@ public class LoggingService {
         return marshaller;
     }
 
-//    @Async
+    @Async
     public void xmlLogEvent(LogXml log) {
         logXmlRepository.save(
                 log.toBuilder().build());
     }
 
-//    @Async
+    @Async
     public void logUserCommand(UserCommandLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -67,7 +67,7 @@ public class LoggingService {
         }
     }
 
-//    @Async
+    @Async
     public void logQuoteServer(QuoteServerLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -90,7 +90,7 @@ public class LoggingService {
     }
 
 
-//    @Async
+    @Async
     public void logErrorEvent(ErrorEventLog log) {
         log.toBuilder()
                 .server("TS1")
