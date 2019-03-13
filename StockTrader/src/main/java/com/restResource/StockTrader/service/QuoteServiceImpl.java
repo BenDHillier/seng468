@@ -120,6 +120,7 @@ public class QuoteServiceImpl implements QuoteService {
             return null;
         } finally {
             lock.release();
+            jedis.close();
         }
     }
 
