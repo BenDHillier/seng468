@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.time.ZoneId;
 import java.time.temporal.TemporalUnit;
@@ -29,7 +30,8 @@ import java.util.concurrent.TimeUnit;
 public class QuoteServiceImpl implements QuoteService {
 
     private LoggingService loggingService;
-    private Jedis jedis;
+    private JedisPool jedisPool;
+
 
     private static Cache<String,Quote> quoteCache = CacheBuilder.newBuilder()
             .expireAfterWrite(50, TimeUnit.SECONDS)
@@ -43,7 +45,7 @@ public class QuoteServiceImpl implements QuoteService {
     public QuoteServiceImpl(LoggingService loggingService) {
         this.loggingService = loggingService;
         createConnections();
-        this.jedis = jedis;
+        this.jedisPool = jedisPool;
     }
 
     private void createConnections() {
@@ -87,7 +89,8 @@ public class QuoteServiceImpl implements QuoteService {
         //create and aquire a lock for the stock symbol
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
-        JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
+        Jedis jedis = jedisPool.getResource();
+	      JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
         lock.acquire();
         try {
             //check redis
@@ -112,6 +115,9 @@ public class QuoteServiceImpl implements QuoteService {
                 jedis.set(stockSymbol, response);
                 //give it a lifespan of 50 seconds
                 jedis.expire(stockSymbol, 50);
+            }
+            else {
+                System.out.print("\nREDIS RESULT GOTTEN: " + response);
             }
 
 
@@ -146,8 +152,13 @@ public class QuoteServiceImpl implements QuoteService {
                                 .build());
             }
             return quote;
+        } catch (Exception e) {
+            System.out.print("\n" + e.getMessage());
+            e.printStackTrace();
+            return null;
         } finally {
             lock.release();
+            jedis.close();
         }
     }
 
