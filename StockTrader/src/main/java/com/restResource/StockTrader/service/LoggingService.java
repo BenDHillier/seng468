@@ -2,6 +2,7 @@ package com.restResource.StockTrader.service;
 
 import com.restResource.StockTrader.entity.logging.*;
 import com.restResource.StockTrader.repository.logging.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
@@ -42,6 +43,7 @@ public class LoggingService {
                 log.toBuilder().build());
     }
 
+    @Async
     public void logUserCommand(UserCommandLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -63,6 +65,7 @@ public class LoggingService {
         }
     }
 
+    @Async
     public void logQuoteServer(QuoteServerLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -84,6 +87,7 @@ public class LoggingService {
         }
     }
 
+    @Async
     public void logSystemEvent(SystemEventLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -105,6 +109,7 @@ public class LoggingService {
         }
     }
 
+    @Async
     public void logErrorEvent(ErrorEventLog log) {
         log.toBuilder()
                 .server("TS1")
@@ -125,6 +130,7 @@ public class LoggingService {
         }
     }
 
+    @Async
     public void logDebugEvent(DebugEventLog log) {
         log.toBuilder()
                 .server("TS1")
