@@ -276,32 +276,39 @@ def extractParamDict(file):
         paramDict[params[0]].append((command,params))
     return paramDict
 
+def dump(ip,port,filename,transactionNum):
+    get_params = urllib.urlencode({'filename':filename,'transactionNum':transactionNum})
+    get_request = urllib2.urlopen('http://{}:{}/dumplog/all?'.format(ip,port) + get_params)
+    return get_request.read()
+
 def runThread(ip, port, paramsList):
     client = WorkloadGenerator(ip, port, paramsList)
     client.run()
 
 def run(args):
     file = open(args[3], "r")
-    ip = args[1]
+    ip_list = args[1].split(',')
+    print ip_list
     port = args[2]
+    transactionNum = args[4]
     paramDict = extractParamDict(file)
+    i = 0
     for key in paramDict:
-        t = threading.Thread(target=runThread,args=(ip, port, paramDict[key],))
+        t = threading.Thread(target=runThread,args=(ip_list[i], port, paramDict[key],))
+        i = (i+1) % len(ip_list)
         t.start()
     while threading.active_count() > 1:
         time.sleep(5)
     try:
         filename = './dumpLOG'
-        get_params = urllib.urlencode({'filename':filename,'transactionNum':args[4]})
-        get_request = urllib2.urlopen('http://{}:{}/dumplog/all?'.format(ip,port) + get_params)
-        response = get_request.read()
         logfile = open(filename, "w+")
-        logfile.write(response)
-        logfile.close
-        #print("Log written to {}".format(params[0]))
-        #print(response)
+        for j in range(len(ip_list)):
+            response = dump(ip_list[j],port,filename,transactionNum)
+            logfile.write(response)
+        logfile.close()
+        print("Log written to {}".format(filename))
     except Exception as e:
-        print "DUMPLOG failed due to exception {}".format(e)
+        print 'DUMPLOG failed {}'.format(e)
 
 if __name__ == "__main__":
     run(sys.argv)
