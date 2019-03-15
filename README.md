@@ -30,6 +30,8 @@ To run on lab machine add file ~/.m2/settings.xml with contents
 ```
 git clone https://github.com/BenDHillier/SENG468/
 cd SENG468/StockTrader
+git fetch
+git checkout prod-stuff-ben
 sudo docker swarm init
 sudo docker stack deploy -c docker-compose.yml stock-trader
 ifconfig
