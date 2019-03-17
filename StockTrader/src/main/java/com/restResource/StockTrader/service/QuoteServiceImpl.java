@@ -104,7 +104,7 @@ public class QuoteServiceImpl implements QuoteService {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out.println(stockSymbol + "," + userId + "\r");
-                response = in.readLine();
+                response = in.readLine() + "\r";
                 out.close();
                 in.close();
                 returnConnection(socket);
@@ -115,6 +115,7 @@ public class QuoteServiceImpl implements QuoteService {
                 jedis.set(stockSymbol, response);
                 //give it a lifespan of 50 seconds
                 jedis.expire(stockSymbol, 50);
+                System.out.print("\nNew QuoteServer Response: " + response);
             }
             else {
                 System.out.print("\nREDIS RESULT GOTTEN: " + response);
@@ -143,7 +144,7 @@ public class QuoteServiceImpl implements QuoteService {
                 loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],"S",userId,Long.toString(quoteServerTime),quote.getCryptoKey());
             }
             return quote;
-        } catch (Exception e) {
+        } catch (Exception e) {g
             System.out.print("\n" + e.getMessage());
             e.printStackTrace();
             return null;
