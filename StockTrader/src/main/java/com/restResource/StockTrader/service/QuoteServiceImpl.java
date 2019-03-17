@@ -86,6 +86,7 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
+
         //create and aquire a lock for the stock symbol
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
@@ -140,9 +141,10 @@ public class QuoteServiceImpl implements QuoteService {
                     .timestamp(LocalDateTime.now())
                     .cryptoKey(cryptoKey)
                     .build();
-            if (isNew) {
-                loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],"S",userId,Long.toString(quoteServerTime),quote.getCryptoKey());
-            }
+            loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],stockSymbol,userId,Long.toString(quoteServerTime),quote.getCryptoKey());
+//            if (isNew) {
+//                loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],stockSymbol,userId,Long.toString(quoteServerTime),quote.getCryptoKey());
+//            }
             return quote;
         } catch (Exception e) {
             System.out.print("\n" + e.getMessage());
