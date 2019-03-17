@@ -87,6 +87,7 @@ public class QuoteServiceImpl implements QuoteService {
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
 
+        System.out.println("Attempting to get quote from server...");
         //create and aquire a lock for the stock symbol
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
@@ -157,6 +158,7 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
+        System.out.println("Attempting to get quote...");
         try {
             Quote quote = quoteCache.get(stockSymbol, () -> getQuoteFromServer(stockSymbol,userId,transactionNum));
             return Optional.of(quote);
