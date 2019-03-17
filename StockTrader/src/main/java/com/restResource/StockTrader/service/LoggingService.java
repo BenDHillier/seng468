@@ -142,15 +142,32 @@ public class LoggingService {
             writer.write("<log>");
             for(CentralLog s : logFrags) {
                 if( s.getLogtype().equals("UserCommandType") ) {
+
+                    String usernameString = s.getUsername();
+                    String usernameTag = "";
+                    if( !usernameString.equals("NULL") ) usernameTag = "<username>" + usernameString + "</username>";
+
+                    String stockSymbolString = s.getStock_symbol();
+                    String stockSymbolTag = "";
+                    if( !stockSymbolString.equals("NULL") ) stockSymbolTag = "<stockSymbol>" + stockSymbolString + "</stockSymbol>";
+
+                    String filenameString = s.getFilename();
+                    String filenameTag = "";
+                    if( !filenameString.equals("NULL") ) filenameTag = "<filename>" + filenameString + "</filename>";
+
+                    String fundsString = s.getFunds();
+                    String fundsTag = "";
+                    if( !fundsString.equals("NULL") ) fundsTag = "<funds>" + fundsString + "</funds>";
+
                     writer.write("<userCommand>"+
                             "<command>" + s.getCommand() + "</command>" +
                             "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
-                            "<username>" + s.getUsername() + "</username>" +
-                            "<stockSymbol>" + s.getStock_symbol() + "</stockSymbol>" +
-                            "<filename>" + s.getFilename() + "</filename>" +
-                            "<funds>" + s.getFunds() + "</funds>" +
+                            usernameTag +
+                            stockSymbolTag +
+                            filenameTag +
+                            fundsTag+
                             "</userCommand>");
                 }
                 else if( s.getLogtype().equals("QuoteServerType")) {
@@ -168,16 +185,32 @@ public class LoggingService {
                     );
                 }
                 else if( s.getLogtype().equals("SystemEventType")) {
+                    String usernameString = s.getUsername();
+                    String usernameTag = "";
+                    if( !usernameString.equals("NULL") ) usernameTag = "<username>" + usernameString + "</username>";
+
+                    String stockSymbolString = s.getStock_symbol();
+                    String stockSymbolTag = "";
+                    if( !stockSymbolString.equals("NULL") ) stockSymbolTag = "<stockSymbol>" + stockSymbolString + "</stockSymbol>";
+
+                    String filenameString = s.getFilename();
+                    String filenameTag = "";
+                    if( !filenameString.equals("NULL") ) filenameTag = "<filename>" + filenameString + "</filename>";
+
+                    String fundsString = s.getFunds();
+                    String fundsTag = "";
+                    if( !fundsString.equals("NULL") ) fundsTag = "<funds>" + fundsString + "</funds>";
+
                     writer.write(
                             "<systemEvent>" +
                             "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
                             "<command>" + s.getCommand() + "</command>" +
-                            "<username>" + s.getUsername() + "</username>" +
-                            "<stockSymbol>" + s.getStock_symbol() + "</stockSymbol>" +
-                            "<filename>" + s.getFilename() + "</filename>" +
-                            "<funds>" + s.getFunds() + "</funds>" +
+                            usernameTag +
+                            stockSymbolTag +
+                            filenameTag +
+                            fundsTag +
                             "</systemEvent>"
                     );
                 }
