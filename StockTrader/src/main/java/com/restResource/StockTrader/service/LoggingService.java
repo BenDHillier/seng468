@@ -220,10 +220,8 @@ public class LoggingService {
                             "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
-                            "<command>" + s.getCommand() + "</command>" +
+                            "<action>" + s.getAction() + "</action>" +
                             "<username>" + s.getUsername() + "</username>" +
-                            "<stockSymbol>" + s.getStock_symbol() + "</stockSymbol>" +
-                            "<filename>" + s.getFilename() + "</filename>" +
                             "<funds>" + s.getFunds() + "</funds>" +
                             "</accountTransaction>"
                     );
