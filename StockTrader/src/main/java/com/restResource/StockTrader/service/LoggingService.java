@@ -177,8 +177,7 @@ public class LoggingService {
                             "<username>" + s.getUsername() + "</username>" +
                             "<quoteServerTime>" + s.getQuote_server_time() + "</quoteServerTime>" +
                             "<cryptokey>" + s.getCryptokey() + "</cryptokey>" +
-                            "</quoteServer>"
-                    );
+                            "</quoteServer>");
                 }
                 else if( s.getLogtype().equals("SystemEventType")) {
                     String usernameString = s.getUsername();

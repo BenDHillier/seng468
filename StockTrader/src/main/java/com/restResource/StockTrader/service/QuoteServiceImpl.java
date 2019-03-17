@@ -138,7 +138,7 @@ public class QuoteServiceImpl implements QuoteService {
                     .userId(userId)
                     .price(price)
                     .timestamp(LocalDateTime.now())
-                    .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
+                    .cryptoKey(cryptoKey)
                     .build();
             if (isNew) {
                 loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],"S",userId,Long.toString(quoteServerTime),quote.getCryptoKey());
