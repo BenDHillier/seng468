@@ -139,12 +139,12 @@ public class LoggingService {
         try {
             Iterable<CentralLog> logFrags = logsRepo.findAllLogs();
             FileWriter writer = new FileWriter("./"+filename);
-            writer.write("</log>");
+            writer.write("<log>");
             for(CentralLog s : logFrags) {
                 if( s.getLogtype().equals("UserCommandType") ) {
                     writer.write("<userCommand>"+
-                            "<command>" + s.getCommand() + "<command>" +
-                            "<timeStamp>" + s.getTimestamp() + "</timeStamp>" +
+                            "<command>" + s.getCommand() + "</command>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
                             "<username>" + s.getUsername() + "</username>" +
@@ -156,7 +156,7 @@ public class LoggingService {
                 else if( s.getLogtype().equals("QuoteServerType")) {
                     writer.write(
                             "<quoteServer>" +
-                            "<timeStamp>" + s.getTimestamp() + "</timeStamp>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
                             "<price>" + s.getPrice() + "</price>" +
@@ -170,7 +170,7 @@ public class LoggingService {
                 else if( s.getLogtype().equals("SystemEventType")) {
                     writer.write(
                             "<systemEvent>" +
-                            "<timeStamp>" + s.getTimestamp() + "</timeStamp>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
                             "<command>" + s.getCommand() + "</command>" +
@@ -184,7 +184,7 @@ public class LoggingService {
                 else if( s.getLogtype().equals("AccountTransactionType")) {
                     writer.write(
                             "<accountTransaction>" +
-                            "<timeStamp>" + s.getTimestamp() + "</timeStamp>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
                             "<server>" + s.getServer() + "</server>" +
                             "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
                             "<command>" + s.getCommand() + "</command>" +
