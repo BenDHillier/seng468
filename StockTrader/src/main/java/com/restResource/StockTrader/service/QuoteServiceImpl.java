@@ -140,16 +140,16 @@ public class QuoteServiceImpl implements QuoteService {
                     .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
                     .build();
             if (isNew) {
-                loggingService.logQuoteServer(
-                        QuoteServerLog.builder()
-                                .price(responseList[0])
-                                .username(userId)
-                                .quoteServerTime(quoteServerTime)
-                                .timestamp(System.currentTimeMillis())
-                                .transactionNum(transactionNum)
-                                .stockSymbol(stockSymbol)
-                                .cryptokey(quote.getCryptoKey())
-                                .build());
+//                loggingService.logQuoteServer(
+//                        QuoteServerLog.builder()
+//                                .price(responseList[0])
+//                                .username(userId)
+//                                .quoteServerTime(quoteServerTime)
+//                                .timestamp(System.currentTimeMillis())
+//                                .transactionNum(transactionNum)
+//                                .stockSymbol(stockSymbol)
+//                                .cryptokey(quote.getCryptoKey())
+//                                .build());
             }
             return quote;
         } catch (Exception e) {

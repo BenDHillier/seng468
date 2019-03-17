@@ -53,12 +53,12 @@ public class DisplaySummaryController {
             @RequestParam String userId,
             @RequestParam  Integer transactionNum) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.DISPLAY_SUMMARY)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .command(CommandType.DISPLAY_SUMMARY)
+//                        .username(userId)
+//                        .transactionNum(transactionNum)
+//                        .build());
         return accountRepository.findById(userId).map(account ->
                 new ResponseEntity<>(DisplaySummary.builder()
                         .userId(userId)
