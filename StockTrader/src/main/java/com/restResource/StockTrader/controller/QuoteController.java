@@ -38,16 +38,16 @@ public class QuoteController {
 
         try {
             Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
-            loggingService.logQuoteServer(
-                    QuoteServerLog.builder()
-                        .timestamp(System.currentTimeMillis())
-                        .server("QS1")
-                        .transactionNum(transactionNum)
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .price(quote.getPrice())
-                        .cryptokey("made_up_cryptokey")
-            .build());
+//            loggingService.logQuoteServer(
+//                    QuoteServerLog.builder()
+//                        .timestamp(System.currentTimeMillis())
+//                        .server("QS1")
+//                        .transactionNum(transactionNum)
+//                        .username(userId)
+//                        .stockSymbol(stockSymbol)
+//                        .price(quote.getPrice())
+//                        .cryptokey("made_up_cryptokey")
+//            .build());
 
 //            loggingService.logUserCommand(
 //                    UserCommandLog.builder()

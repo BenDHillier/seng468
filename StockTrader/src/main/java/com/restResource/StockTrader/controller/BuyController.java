@@ -53,15 +53,15 @@ public class BuyController {
             @RequestParam int amount,
             @RequestParam int transactionNum) {
 
-        loggingService.logUserCommand(
-                UserCommandLog.builder()
-                        .command(CommandType.BUY)
-                        .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
-                        .username(userId)
-                        .stockSymbol(stockSymbol)
-                        .funds(amount)
-                        .transactionNum(transactionNum)
-                        .build());
+//        loggingService.logUserCommand(
+//                UserCommandLog.builder()
+//                        .command(CommandType.BUY)
+//                        .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
+//                        .username(userId)
+//                        .stockSymbol(stockSymbol)
+//                        .funds(amount)
+//                        .transactionNum(transactionNum)
+//                        .build());
         try {
 
             //Can't buy nothing or a negative amount
@@ -120,12 +120,12 @@ public class BuyController {
             int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
             investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
         } catch(Exception e) {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.COMMIT_BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.COMMIT_BUY)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .build());
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.COMMIT_BUY)
@@ -149,12 +149,12 @@ public class BuyController {
             accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
         } catch( Exception e) {
             //command was made during an invalid account state, but we still need to log the activity
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.CANCEL_BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.CANCEL_BUY)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .build());
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.CANCEL_BUY)
@@ -201,14 +201,14 @@ public class BuyController {
                 continue;
             }
             //command is allowed (ie there was a valid buy prior to this, etc)
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(commandType)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(pendingBuy.getStockSymbol())
-                            .funds(pendingBuy.getAmount())
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(commandType)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .stockSymbol(pendingBuy.getStockSymbol())
+//                            .funds(pendingBuy.getAmount())
+//                            .build());
             return pendingBuy;
         }
     }

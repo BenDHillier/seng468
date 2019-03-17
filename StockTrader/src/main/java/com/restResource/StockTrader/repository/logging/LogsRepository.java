@@ -10,12 +10,12 @@ import javax.xml.bind.annotation.XmlElement;
 @Repository
 public interface LogsRepository extends CrudRepository<CentralLog,Integer> {
     @Query(value =
-            "SELECT * FROM logs WHERE user_id = ?1",
+            "SELECT * FROM logs WHERE username = ?1",
             nativeQuery = true)
-    Iterable<String> findAllLogsForUser(String userId);
+    Iterable<CentralLog> findAllLogsForUser(String username);
 
     @Query(value =
-            "SELECT xml_log_entry FROM log_xml",
+            "SELECT * FROM logs",
             nativeQuery = true)
-    Iterable<String> findAllLogs();
+    Iterable<CentralLog> findAllLogs();
 }

@@ -9,36 +9,30 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
 
-//TODO Make the logging work remainder of log types
-//FIXME: part of the problem here is that the DBAppender is initialized with one prepared statement,
-//FIXME: I dont believe that the preparedStatement can be altered dynamically, so it's possible that
-//FIXME: we might just have to create a custom DatabaseAppender for each log type.
-
-//FIXME it is possible that multiple declarations of "<appender name="db" class="com.restResource.StockTrader.service.DatabaseAppender"> .."
-// within the logback.xml file can just utilize the same DatabaseAppender class here..
-// if that's true, then we MIGHT be able to resolve the name of the TABLE on initialization...not sure if that's possible tho
-
-//FIXME if all else fails, we can put all logs into a single table, then just query the rows at dump, using some kind of custom xml query with postgresql
-// which is very possible
 public class DatabaseAppender extends DBAppender {
     protected String insertSQL;
 
-    private DatabaseNameResolver databaseNameResolver;
+    private String command = null;
     private String timestamp = null;
+    private String quoteServerTime = null;
     private String server = null;
     private String transactionNum = null;
-    private String command = null;
     private String username = null;
     private String stockSymbol = null;
     private String filename = null;
     private String funds = null;
+    private String price = null;
+    private String cryptokey = null;
+    private String errorMessage = null;
+    private String debugMessage = null;
+    private String logtype = null;
+    private String action = null;
 
 
     protected static final Method GET_GENERATED_KEYS_METHOD;
     static {
         Method getGeneratedKeysMethod;
         try {
-            // the
             getGeneratedKeysMethod = PreparedStatement.class.getMethod(
                     "getGeneratedKeys", (Class[]) null);
         } catch (Exception ex) {
@@ -54,8 +48,8 @@ public class DatabaseAppender extends DBAppender {
     @Override
     public void start() {
         super.start();
-        if (databaseNameResolver == null)
-            databaseNameResolver = new DatabaseNameResolver();
+//        if (databaseNameResolver == null)
+//            databaseNameResolver = new DatabaseNameResolver();
         insertSQL = DatabaseSQLBuilder.buildInsertSQL();
         //insertSQL = DatabaseSQLBuilder.buildInsertSQL(databaseNameResolver);
 
@@ -89,44 +83,62 @@ public class DatabaseAppender extends DBAppender {
         try {
             String[] entries = logdata.split(",");
             if (entries.length > 0) {
-                timestamp = entries[0];
-                server = entries[1];
-                transactionNum = entries[2];
-                command = entries[3];
-                username = entries[4];
-                stockSymbol = entries[5];
-                filename = entries[6];
-                funds = entries[7];
+                command = entries[0];
+                timestamp = entries[1];
+                quoteServerTime = entries[2];
+                server = entries[3];
+                transactionNum = entries[4];
+                username = entries[5];
+                stockSymbol = entries[6];
+                filename = entries[7];
+                funds = entries[8];
+                price = entries[9];
+                cryptokey = entries[10];
+                errorMessage = entries[11];
+                debugMessage = entries[12];
+                logtype = entries[13];
+                action = entries[14];
             }
 
-            stmt.setString(1, timestamp);
-            stmt.setString(2, server);
-            stmt.setString(3, transactionNum);
-            stmt.setString(4, command);
-            stmt.setString(5, username);
-            stmt.setString(6, stockSymbol);
-            stmt.setString(7, filename);
-            stmt.setString(8, funds);
+            stmt.setString(1, command);
+            stmt.setString(2, timestamp);
+            stmt.setString(3, quoteServerTime);
+            stmt.setString(4, server);
+            stmt.setString(5, transactionNum);
+            stmt.setString(6, username);
+            stmt.setString(7, stockSymbol);
+            stmt.setString(8, filename);
+            stmt.setString(9, funds);
+            stmt.setString(10, price);
+            stmt.setString(11, cryptokey);
+            stmt.setString(12, errorMessage);
+            stmt.setString(13, debugMessage);
+            stmt.setString(14, logtype);
+            stmt.setString(15, action);
 
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            setNulls();
         }
-
     }
 
     public void setNulls() {
+        command = null;
         timestamp = null;
+        quoteServerTime = null;
         server = null;
         transactionNum = null;
-        command = null;
         username = null;
         stockSymbol = null;
         filename = null;
         funds = null;
+        price = null;
+        cryptokey = null;
+        errorMessage = null;
+        debugMessage = null;
+        logtype = null;
+        action = null;
     }
 
     @Override
@@ -141,6 +153,5 @@ public class DatabaseAppender extends DBAppender {
 
     protected void insertProperties(Map<String, String> mergedMap,
                                     Connection connection, long eventId) throws SQLException {
-
     }
 }

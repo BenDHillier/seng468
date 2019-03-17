@@ -1,7 +1,7 @@
 <configuration>
 
     <turboFilter class="com.restResource.StockTrader.service.LoggingTurboFilter">
-        <Marker>userCommand</Marker>
+        <Marker>logMarker</Marker>
     </turboFilter>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

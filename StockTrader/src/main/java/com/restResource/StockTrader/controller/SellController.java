@@ -51,14 +51,14 @@ public class SellController {
             @RequestParam int amount,
             @RequestParam int transactionNum) {
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.SELL)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .stockSymbol(stockSymbol)
+//                            .funds(amount)
+//                            .build());
 
             //Don't hit the quote server if the user account doesn't exist
             if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
@@ -122,12 +122,12 @@ public class SellController {
                     pendingSell.getStockPrice() * pendingSell.getStockCount(),
                     transactionNum,"TS1");
         } catch( Exception e ) {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.COMMIT_SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.COMMIT_SELL)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .build());
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.COMMIT_SELL)
@@ -153,12 +153,12 @@ public class SellController {
                     pendingSell.getStockCount());
         } catch( Exception e ) {
             //command was made during an invalid account state, but we still need to log the activity
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.CANCEL_SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.CANCEL_SELL)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .build());
             loggingService.logErrorEvent(
                     ErrorEventLog.builder()
                             .command(CommandType.CANCEL_BUY)
@@ -204,14 +204,14 @@ public class SellController {
                 continue;
             }
             //command is allowed (ie there was a valid sell prior to this, etc)
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(commandType)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(pendingSell.getStockSymbol())
-                            .funds(pendingSell.getStockPrice())
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(commandType)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .stockSymbol(pendingSell.getStockSymbol())
+//                            .funds(pendingSell.getStockPrice())
+//                            .build());
             return pendingSell;
         }
     }

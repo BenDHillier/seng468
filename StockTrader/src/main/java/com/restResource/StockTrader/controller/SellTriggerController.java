@@ -47,13 +47,13 @@ public class SellTriggerController {
             @RequestParam int stockAmount,
             @RequestParam int transactionNum) {
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SET_SELL_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.SET_SELL_AMOUNT)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .build());
             if (stockAmount <= 0) {
                 throw new IllegalArgumentException(
                         "The amount parameter must be greater than zero.");
@@ -100,13 +100,13 @@ public class SellTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SET_SELL_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.SET_SELL_TRIGGER)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .build());
 
             if (stockCost <= 0) {
                 throw new IllegalArgumentException(
@@ -136,13 +136,13 @@ public class SellTriggerController {
             @RequestParam int transactionNum) {
         try {
             //log regardless of outcome
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.CANCEL_SET_SELL)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.CANCEL_SET_SELL)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .build());
 
             Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
             if(!stockSellTriggerStatus.isPresent()) {

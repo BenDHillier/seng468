@@ -49,13 +49,13 @@ public class BuyTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SET_BUY_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.SET_BUY_AMOUNT)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .build());
 
             if (stockAmount <= 0) {
                 //invalid request parameter
@@ -103,13 +103,13 @@ public class BuyTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SET_BUY_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.SET_BUY_TRIGGER)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .build());
             if (stockCost <= 0) {
                 throw new IllegalArgumentException(
                         "The amount parameter must be greater than zero.");
@@ -136,13 +136,13 @@ public class BuyTriggerController {
             @RequestParam String stockSymbol,
             @RequestParam int transactionNum) {
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.CANCEL_SET_BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+//            loggingService.logUserCommand(
+//                    UserCommandLog.builder()
+//                            .command(CommandType.CANCEL_SET_BUY)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .build());
 
             Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 

@@ -17,22 +17,17 @@ public class MockQuoteService implements QuoteService {
     @Override
     public Quote getQuote(String stockSymbol, String userId, int transactionNum) {
 
-        loggingService.logQuoteServer(
-                QuoteServerLog.builder()
-                        .price(50)
-                        .transactionNum(transactionNum)
-                        .stockSymbol(stockSymbol)
-                        .cryptokey("made_up_cryptokey")
-                        .build());
+        loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),"50","S",userId,Long.toString(System.currentTimeMillis()),"made_up_cryptokey");
 
-/*        loggingService.logSystemEvent(
-                SystemEventLog.builder()
-                        .command(CommandType.QUOTE)
-                        .username(userId)
-                        .transactionNum(transactionNum)
-                        .stockSymbol(stockSymbol)
-                        .build()
-        );*/
+//        loggingService.logQuoteServer(
+//                QuoteServerLog.builder()
+//                        .price(50)
+//                        .transactionNum(transactionNum)
+//                        .stockSymbol(stockSymbol)
+//                        .cryptokey("made_up_cryptokey")
+//                        .build());
+
+        loggingService.logSystemEvent(Long.toString(System.currentTimeMillis()),"QS1",Integer.toString(transactionNum),CommandType.QUOTE.toString(),userId,"S","NULL","NULL");
 
         return Quote.builder()
                 .userId(userId)
