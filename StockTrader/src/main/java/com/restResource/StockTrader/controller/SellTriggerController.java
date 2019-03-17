@@ -88,7 +88,7 @@ public class SellTriggerController {
                 sellTriggerRepository.save(sellTrigger);
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in SellTriggerController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.SET_SELL_AMOUNT)
@@ -140,7 +140,7 @@ public class SellTriggerController {
         sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
         } catch( Exception e ) {
-            e.printStackTrace();
+            System.out.println("Exception in SellTriggerController: " + e.getMessage());
 //                loggingService.logErrorEvent(
 //                        ErrorEventLog.builder()
 //                                .command(CommandType.SET_SELL_TRIGGER)
@@ -188,7 +188,7 @@ public class SellTriggerController {
                     .build();
             sellTriggerRepository.deleteById(triggerKey);
         } catch( Exception e ) {
-            e.printStackTrace();
+            System.out.println("Exception in SellTriggerController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.CANCEL_SET_SELL)

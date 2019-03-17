@@ -39,8 +39,7 @@ public class AddController {
             }
             return HttpStatus.OK;
         } catch (Exception e) {
-            System.out.println("Exception in AddController: " + e.toString());
-            e.printStackTrace();
+            System.out.println("Exception in AddController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.ADD)

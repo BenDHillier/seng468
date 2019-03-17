@@ -81,7 +81,7 @@ public class BuyTriggerController {
                 buyTriggerRepository.save(buyTrigger);
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in BuyTriggerController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.SET_BUY_AMOUNT)
@@ -125,7 +125,7 @@ public class BuyTriggerController {
             }
             buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
         } catch( Exception e ) {
-            e.printStackTrace();
+            System.out.println("Exception in BuyTrigger: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.SET_BUY_TRIGGER)
@@ -170,7 +170,7 @@ public class BuyTriggerController {
                     .build();
             buyTriggerRepository.deleteById(triggerKey);
         } catch( Exception e ) {
-            e.printStackTrace();
+            System.out.println("Exception in BuyTriggerController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.CANCEL_SET_BUY)

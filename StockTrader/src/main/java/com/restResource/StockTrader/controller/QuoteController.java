@@ -48,6 +48,7 @@ public class QuoteController {
             Quote quote = optionalQuote.get();
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } catch( Exception e ) {
+            System.out.println("Exception in QuoteController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.QUOTE)
@@ -55,7 +56,6 @@ public class QuoteController {
 //                            .transactionNum(transactionNum)
 //                            .errorMessage("Error during quote request")
 //                            .build());
-            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

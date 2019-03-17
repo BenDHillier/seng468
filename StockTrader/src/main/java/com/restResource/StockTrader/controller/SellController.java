@@ -104,7 +104,7 @@ public class SellController {
             sellRepository.save(pendingSell);
 
         } catch( Exception e ) {
-            e.printStackTrace();
+            System.out.println("Exception in SellController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.SELL)
@@ -132,6 +132,7 @@ public class SellController {
                     pendingSell.getStockPrice() * pendingSell.getStockCount(),
                     transactionNum,"TS1");
         } catch( Exception e ) {
+            System.out.println("Exception in SellController: " + e.getMessage());
 //            loggingService.logUserCommand(
 //                    UserCommandLog.builder()
 //                            .command(CommandType.COMMIT_SELL)
@@ -145,7 +146,6 @@ public class SellController {
 //                            .transactionNum(transactionNum)
 //                            .errorMessage(e.getMessage())
 //                            .build());
-            e.printStackTrace();
             return new ResponseEntity<>("COMMIT_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("COMMIT_SELL success", HttpStatus.OK);
@@ -177,7 +177,7 @@ public class SellController {
 //                            .transactionNum(transactionNum)
 //                            .errorMessage(e.getMessage())
 //                            .build());
-            e.printStackTrace();
+            System.out.println("Exception in SellController: " + e.getMessage());
             return new ResponseEntity<>("CANCEL_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("CANCEL_SELL success", HttpStatus.OK);
@@ -204,7 +204,7 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Exception in SellController: " + e.getMessage());
 //                loggingService.logErrorEvent(
 //                        ErrorEventLog.builder()
 //                                .command(CommandType.CANCEL_BUY)

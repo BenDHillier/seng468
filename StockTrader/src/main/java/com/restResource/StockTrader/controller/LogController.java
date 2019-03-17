@@ -45,7 +45,7 @@ public class LogController {
                     .contentLength(f.length())
                     .body(resource);
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in LogController: " + e.getMessage());
         }
         return null;
     }
@@ -73,7 +73,7 @@ public class LogController {
                     .contentLength(f.length())
                     .body(resource);
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in LogController: " + e.getMessage());
         }
         return null;
     }

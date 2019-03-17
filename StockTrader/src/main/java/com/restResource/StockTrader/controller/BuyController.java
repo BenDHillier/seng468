@@ -104,7 +104,7 @@ public class BuyController {
             buyRepository.save(pendingBuy);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in BuyController: " + e.getMessage());
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.BUY)
@@ -128,6 +128,7 @@ public class BuyController {
             int amountToBuy = pendingBuy.getAmount() / pendingBuy.getPrice();
             investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
         } catch(Exception e) {
+            System.out.println("Exception in BuyController: " + e.getMessage());
 //            loggingService.logUserCommand(
 //                    UserCommandLog.builder()
 //                            .command(CommandType.COMMIT_BUY)
@@ -141,7 +142,6 @@ public class BuyController {
 //                            .transactionNum(transactionNum)
 //                            .errorMessage(e.getMessage())
 //                            .build());
-            e.printStackTrace();
             return new ResponseEntity<>("COMMIT_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
@@ -157,6 +157,7 @@ public class BuyController {
             PendingBuy pendingBuy = claimMostRecentPendingBuy(userId,transactionNum, CommandType.CANCEL_BUY);
             accountRepository.updateAccountBalance(userId, pendingBuy.getAmount(), transactionNum,"TS1");
         } catch( Exception e) {
+            System.out.println("Exception in BuyController: " + e.getMessage());
             //command was made during an invalid account state, but we still need to log the activity
 //            loggingService.logUserCommand(
 //                    UserCommandLog.builder()
@@ -171,7 +172,6 @@ public class BuyController {
 //                            .transactionNum(transactionNum)
 //                            .errorMessage(e.getMessage())
 //                            .build());
-            e.printStackTrace();
             return new ResponseEntity<>("CANCEL_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("CANCEL_BUY success", HttpStatus.OK);
@@ -199,7 +199,7 @@ public class BuyController {
             try {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Exception in BuyController: " + e.getMessage());
 //                loggingService.logErrorEvent(
 //                        ErrorEventLog.builder()
 //                                .command(CommandType.CANCEL_BUY)
