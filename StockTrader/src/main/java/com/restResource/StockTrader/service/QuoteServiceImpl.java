@@ -144,7 +144,7 @@ public class QuoteServiceImpl implements QuoteService {
                 loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],"S",userId,Long.toString(quoteServerTime),quote.getCryptoKey());
             }
             return quote;
-        } catch (Exception e) {g
+        } catch (Exception e) {
             System.out.print("\n" + e.getMessage());
             e.printStackTrace();
             return null;
