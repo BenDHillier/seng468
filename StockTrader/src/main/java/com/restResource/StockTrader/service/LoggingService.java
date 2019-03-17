@@ -10,13 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.StringWriter;
-import java.util.LinkedList;
-import java.util.Queue;
 
 @Service
 public class LoggingService {
-
 
     private LogsRepository logsRepo;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -128,8 +124,8 @@ public class LoggingService {
         logger.debug(logMarker,logBuilder.toString());
     }
 
-
     public void logErrorEvent(ErrorEventLog log) {
+        System.out.println("Tried to log an error event but its not implemented yet...");
     }
 
     public void logDebugEvent(DebugEventLog log) {

@@ -3,9 +3,6 @@ package com.restResource.StockTrader.controller;
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.logging.ErrorEventLog;
-import com.restResource.StockTrader.entity.logging.QuoteServerLog;
-import com.restResource.StockTrader.entity.logging.SystemEventLog;
-import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.service.LoggingService;
 import com.restResource.StockTrader.service.QuoteService;
 import org.springframework.http.HttpStatus;
@@ -13,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 public class QuoteController {
@@ -35,37 +34,28 @@ public class QuoteController {
                                         @RequestParam int transactionNum) {
 
         //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
-
+//        loggingService.logUserCommand(UserCommandLog.builder()
+//                .command(CommandType.QUOTE)
+//                .stockSymbol(stockSymbol)
+//                .username(userId)
+//                .transactionNum(transactionNum)
+//                .build());
         try {
-            Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
-//            loggingService.logQuoteServer(
-//                    QuoteServerLog.builder()
-//                        .timestamp(System.currentTimeMillis())
-//                        .server("QS1")
-//                        .transactionNum(transactionNum)
-//                        .username(userId)
-//                        .stockSymbol(stockSymbol)
-//                        .price(quote.getPrice())
-//                        .cryptokey("made_up_cryptokey")
-//            .build());
-
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            if (!optionalQuote.isPresent()) {
+                return null;
+            }
+            Quote quote = optionalQuote.get();
+            return new ResponseEntity<>(quote, HttpStatus.OK);
+        } catch( IllegalArgumentException e ) {
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
 //                            .command(CommandType.QUOTE)
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
-//                            .funds(quote.getPrice())
+//                            .errorMessage("Error during quote request")
 //                            .build());
-            return new ResponseEntity<>(quote, HttpStatus.OK);
-        } catch( IllegalArgumentException e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.QUOTE)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage("Error during quote request")
-                            .build());
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

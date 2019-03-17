@@ -44,7 +44,7 @@ public class SellTriggerController {
     HttpStatus createTriggerAmount(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockAmount,
+            @RequestParam(value = "amount") int stockAmount,
             @RequestParam int transactionNum) {
         try {
 //            loggingService.logUserCommand(
@@ -59,15 +59,25 @@ public class SellTriggerController {
                         "The amount parameter must be greater than zero.");
             }
 
-            //we check to see if we have sufficient stock to sell. We dont care about how much we are selling it for though.
-            if (investmentRepository.removeStocks(userId, stockAmount) == 0) { //TODO logging?
-                throw new IllegalArgumentException("Insufficient Stock for the Transaction - requesting to remove: ");
-            }
-
             Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-            if ( stockSellTriggerStatus.isPresent()) { //FIXME do an insert or increment here instead of getting the trigger
-                sellTriggerRepository.incrementStockAmount(userId, stockAmount);
+            if ( stockSellTriggerStatus.isPresent()) {
+                SellTrigger sellTrigger = stockSellTriggerStatus.get();
+                if (sellTrigger.getStockCost() == null) {
+                    int updateCount =
+                            sellTriggerRepository.incrementAmountBeforeSetCost(userId, stockSymbol, stockAmount);
+                    // If updateCount is zero then cost was already set.
+                    if (updateCount == 0) {
+                        sellTriggerRepository.incrementAmountAfterSetCost(userId, stockSymbol, stockAmount);
+                    }
+                } else {
+                    try {
+                        sellTriggerRepository.incrementAmountAfterSetCost(
+                                userId, stockSymbol, stockAmount);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             } else {
                 SellTrigger sellTrigger = SellTrigger.builder()
                         .userId(userId)
@@ -96,7 +106,7 @@ public class SellTriggerController {
     HttpStatus createTriggerCost(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockCost,
+            @RequestParam(value = "amount") int stockCost,
             @RequestParam int transactionNum) {
 
         try {
@@ -108,24 +118,38 @@ public class SellTriggerController {
 //                            .transactionNum(transactionNum)
 //                            .build());
 
-            if (stockCost <= 0) {
-                throw new IllegalArgumentException(
-                        "The amount parameter must be greater than zero.");
-            }
+        Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
-            sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
-        } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_SELL_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
-            return HttpStatus.NOT_ACCEPTABLE;
+        if (!sellStockSnapshot.isPresent()) {
+            throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
+        } else if (sellStockSnapshot.get().getStockCost() != null) {
+            throw new Exception("A trigger has already been set");
         }
-        return HttpStatus.ACCEPTED; //we do accepted since we cant be sure it worked but we can be sure we passed it to a thread
+
+        SellTrigger sellTrigger = sellStockSnapshot.get();
+
+        if (investmentRepository.removeStocks(userId, sellTrigger.getStockAmount() / stockCost, stockSymbol) == 0) {
+            throw new Exception("Insufficient Stock for the Transaction - requesting to remove: " + sellTrigger.getStockAmount() / stockCost);
+        }
+
+        if (sellTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+            throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
+        }
+
+        sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
+
+        } catch( Exception e ) {
+                loggingService.logErrorEvent(
+                        ErrorEventLog.builder()
+                                .command(CommandType.SET_SELL_TRIGGER)
+                                .username(userId)
+                                .stockSymbol(stockSymbol)
+                                .transactionNum(transactionNum)
+                                .errorMessage(e.getMessage())
+                                .build());
+                return HttpStatus.NOT_ACCEPTABLE;
+        }
+        return HttpStatus.ACCEPTED;
     }
 
     @PostMapping(path = "/cancel")
@@ -135,7 +159,6 @@ public class SellTriggerController {
             @RequestParam String stockSymbol,
             @RequestParam int transactionNum) {
         try {
-            //log regardless of outcome
 //            loggingService.logUserCommand(
 //                    UserCommandLog.builder()
 //                            .command(CommandType.CANCEL_SET_SELL)
@@ -148,8 +171,15 @@ public class SellTriggerController {
             if(!stockSellTriggerStatus.isPresent()) {
                 throw new IllegalArgumentException("Sell trigger does not exist");
             }
+            // Stocks have only been removed from a users account if the stockCost has been set.
+            // TODO: Remove race condition where stockAmount changed before the delete query below executes.
+            if (stockSellTriggerStatus.get().getStockCost() != null) {
+                investmentRepository.insertOrIncrement(
+                        userId,
+                        stockSymbol,
+                        stockSellTriggerStatus.get().getStockAmount() / stockSellTriggerStatus.get().getStockCost());
+            }
 
-            investmentRepository.insertOrIncrement(userId, stockSymbol, stockSellTriggerStatus.get().getStockAmount()); //TODO logging?
             TriggerKey triggerKey = TriggerKey.builder()
                     .userId(userId)
                     .stockSymbol(stockSymbol)

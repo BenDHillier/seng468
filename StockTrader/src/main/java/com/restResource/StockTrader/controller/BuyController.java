@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import com.restResource.StockTrader.repository.BuyRepository;
 import com.restResource.StockTrader.service.QuoteService;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping(value = "/buy")
@@ -56,10 +59,10 @@ public class BuyController {
 //        loggingService.logUserCommand(
 //                UserCommandLog.builder()
 //                        .command(CommandType.BUY)
-//                        .server("CLT1_todo_pass_clientServerName_from_loadbalancer")
+//                        .server("TS1")
 //                        .username(userId)
 //                        .stockSymbol(stockSymbol)
-//                        .funds(amount)
+//                        .funds(String.format("%.2f",(amount*1.0)/100))
 //                        .transactionNum(transactionNum)
 //                        .build());
         try {
@@ -71,7 +74,11 @@ public class BuyController {
             if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
 
             //Get the quote
-            Quote quote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            if (!optionalQuote.isPresent()) {
+                return null;
+            }
+            Quote quote = optionalQuote.get();
 
             //User can't afford the stock at this price
             if (quote.getPrice() > amount) { throw new IllegalArgumentException(userId + " can't afford to buy " + amount + " worth of " + quote.getStockSymbol()); }
@@ -90,6 +97,7 @@ public class BuyController {
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .amount(roundedAmount)
+                    .timeCreated(LocalDateTime.now())
                     .timestamp(quote.getTimestamp())
                     .price(quote.getPrice())
                     .build();
@@ -107,7 +115,6 @@ public class BuyController {
                             .build());
             return new ResponseEntity<>("BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
         return new ResponseEntity<>("BUY success", HttpStatus.OK);
     }
 
@@ -207,7 +214,7 @@ public class BuyController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .stockSymbol(pendingBuy.getStockSymbol())
-//                            .funds(pendingBuy.getAmount())
+//                            .funds(String.format("%.2f",(1.0*pendingBuy.getAmount())/100))
 //                            .build());
             return pendingBuy;
         }

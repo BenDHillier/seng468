@@ -4,13 +4,8 @@ import com.restResource.StockTrader.entity.logging.ErrorEventLog;
 import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.AccountRepository;
 import com.restResource.StockTrader.service.LoggingService;
-import org.slf4j.Logger;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import org.slf4j.LoggerFactory;
 
 @RestController
 public class AddController {

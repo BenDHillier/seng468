@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, TriggerKey> {
@@ -15,12 +16,24 @@ public interface BuyTriggerRepository extends CrudRepository<BuyTrigger, Trigger
             nativeQuery = true)
     Optional<BuyTrigger> findByUserIdAndStockSymbol(String userId, String stockSymbol);
 
+    @Query(value= "SELECT * FROM buy_trigger WHERE user_id = ?1", nativeQuery = true)
+    List<BuyTrigger> findByUserId(String userId);
+
     @Transactional
     @Modifying
     @Query(value =
             "UPDATE buy_trigger " +
             "SET stock_amount = buy_trigger.stock_amount + ?2 " +
-            "WHERE user_id = ?1 ",
+            "WHERE buy_trigger.user_id = ?1 AND buy_trigger.stock_symbol = ?3 ",
             nativeQuery = true)
-    Integer incrementStockAmount(String userId, Integer amount);
+    Integer incrementStockAmount(String userId, Integer amount, String stockSymbol);
+
+    @Transactional
+    @Modifying
+    @Query(value =
+            "UPDATE buy_trigger " +
+             "SET stock_cost = ?2 " +
+             "WHERE buy_trigger.user_id = ?1 AND buy_trigger.stock_symbol = ?3 AND buy_trigger.stock_cost IS NULL ",
+            nativeQuery = true)
+    Integer addCostAmount(String userId, Integer amount, String stockSymbol);
 }

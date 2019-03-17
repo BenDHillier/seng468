@@ -45,7 +45,7 @@ public class BuyTriggerController {
     HttpStatus createTriggerAmount(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockAmount,
+            @RequestParam(value = "amount") int stockAmount,
             @RequestParam int transactionNum) {
 
         try {
@@ -70,7 +70,7 @@ public class BuyTriggerController {
             }
 
             if (stockBuyTriggerStatus.isPresent()) {
-                buyTriggerRepository.incrementStockAmount(userId, stockAmount);
+                buyTriggerRepository.incrementStockAmount(userId, stockAmount,stockSymbol);
             } else {
                 BuyTrigger buyTrigger = BuyTrigger.builder()
                         .userId(userId)
@@ -99,7 +99,7 @@ public class BuyTriggerController {
     HttpStatus createTriggerCost(
             @RequestParam String userId,
             @RequestParam String stockSymbol,
-            @RequestParam int stockCost,
+            @RequestParam(value = "amount") int stockCost,
             @RequestParam int transactionNum) {
 
         try {
@@ -110,9 +110,17 @@ public class BuyTriggerController {
 //                            .stockSymbol(stockSymbol)
 //                            .transactionNum(transactionNum)
 //                            .build());
-            if (stockCost <= 0) {
-                throw new IllegalArgumentException(
-                        "The amount parameter must be greater than zero.");
+
+            Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
+
+            if (!buyStockSnapshot.isPresent()) {
+                throw new Exception("A trigger amount has not been set for the stock symbol: " + stockSymbol + " for the user: " + userId);
+            } else if (buyStockSnapshot.get().getStockCost() != null) { //we already have a working buy trigger
+                throw new Exception("A trigger has already been set");
+            } else {
+                if (buyTriggerRepository.addCostAmount(userId, stockCost, stockSymbol) == 0) {
+                    throw new Exception("A trigger cost is already set for the stock symbol: " + stockSymbol + " for the user: " + userId);
+                }
             }
             buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
         } catch( Exception e ) {
@@ -126,6 +134,7 @@ public class BuyTriggerController {
                             .build());
             return HttpStatus.NOT_ACCEPTABLE;
         }
+
         return HttpStatus.ACCEPTED; //we do accepted since we cant be sure it worked but we can be sure we passed it to a thread
     }
 

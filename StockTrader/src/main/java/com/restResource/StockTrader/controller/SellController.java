@@ -12,7 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.InvalidParameterException;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 @RestController
@@ -50,6 +51,7 @@ public class SellController {
             @RequestParam String stockSymbol,
             @RequestParam int amount,
             @RequestParam int transactionNum) {
+
         try {
 //            loggingService.logUserCommand(
 //                    UserCommandLog.builder()
@@ -57,13 +59,19 @@ public class SellController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .stockSymbol(stockSymbol)
-//                            .funds(amount)
+//                            .funds(String.format("%.2f",(amount*1.0)/100))
 //                            .build());
+
+            Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
+            if (!optionalQuote.isPresent()) {
+                throw new Exception("Quote was null");
+            }
+            Quote quote = optionalQuote.get();
 
             //Don't hit the quote server if the user account doesn't exist
             if( !accountRepository.accountExists(userId) ) throw new IllegalArgumentException("User account \"" + userId + "\" does not exist!");
 
-            Quote quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
+            //quote = quoteService.getQuote(stockSymbol, userId,transactionNum);
 
             if (amount <= 0) {
                 throw new IllegalArgumentException(
@@ -83,12 +91,13 @@ public class SellController {
                     investment.getStockCount());
 
             // Set aside stocks to avoid duplicate sells.
-            investmentRepository.removeStocks(userId, stockCount);
+            investmentRepository.removeStocks(userId, stockCount, stockSymbol);
 
             PendingSell pendingSell = PendingSell.builder()
                     .userId(userId)
                     .stockSymbol(stockSymbol)
                     .timestamp(quote.getTimestamp())
+                    .timeCreated(LocalDateTime.now())
                     .stockCount(stockCount)
                     .stockPrice(quote.getPrice())
                     .build();
@@ -210,7 +219,7 @@ public class SellController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .stockSymbol(pendingSell.getStockSymbol())
-//                            .funds(pendingSell.getStockPrice())
+//                            .funds(String.format("%.2f",(1.0*pendingSell.getStockPrice())/100))
 //                            .build());
             return pendingSell;
         }

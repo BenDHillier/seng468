@@ -1,7 +1,19 @@
 # seng468
 
+<<<<<<< HEAD
 this is subbranch of database_to_xml in order to create an improved
 logging system from gen1 logging
+=======
+## Clone project
+`git clone https://github.com/BenDHillier/SENG468/`
+
+## Postgres needed (10.6):
+`sudo apt install postgresql postgresql-contrib`
+`sudo -i -u postgres`
+`psql`
+`postgres=# create database stocktraderdb;`
+`postgres=# password` -> `postgres`
+>>>>>>> master
 
 To run on lab machine add file ~/.m2/settings.xml with contents
 ```
@@ -16,3 +28,17 @@ To run on lab machine add file ~/.m2/settings.xml with contents
     </proxies>
 </settings>
 ```
+
+`mvn spring-boot:run -Dspring.profiles.active=prod -Dhttp.proxyHost=192.168.1.1 -Dhttp.proxyPort=3128`
+
+## setup 
+```
+git clone https://github.com/BenDHillier/SENG468/
+cd SENG468/StockTrader
+git fetch
+git checkout prod-stuff-ben
+sudo docker swarm init
+sudo docker stack deploy -c docker-compose.yml stock-trader
+ifconfig
+```
+get ip address that starts with 192.168
