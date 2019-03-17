@@ -40,14 +40,15 @@ public class AddController {
             return HttpStatus.OK;
         } catch (Exception e) {
             System.out.println("Exception in AddController: " + e.toString());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.ADD)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .funds(amount)
-                            .errorMessage("Amount added must be less than or equal to zero")
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.ADD)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .funds(amount)
+//                            .errorMessage("Amount added must be less than or equal to zero")
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
     }

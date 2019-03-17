@@ -104,15 +104,16 @@ public class SellController {
             sellRepository.save(pendingSell);
 
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SELL)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .funds(amount)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SELL)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .funds(amount)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return new ResponseEntity<>("SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 
         }
@@ -137,13 +138,14 @@ public class SellController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .build());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.COMMIT_SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.COMMIT_SELL)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
+            e.printStackTrace();
             return new ResponseEntity<>("COMMIT_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("COMMIT_SELL success", HttpStatus.OK);
@@ -168,13 +170,14 @@ public class SellController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .build());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.CANCEL_BUY)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
+            e.printStackTrace();
             return new ResponseEntity<>("CANCEL_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("CANCEL_SELL success", HttpStatus.OK);
@@ -201,15 +204,16 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.CANCEL_BUY)
-                                .username(userId)
-                                .stockSymbol(pendingSell.getStockSymbol())
-                                .transactionNum(transactionNum)
-                                .funds(pendingSell.getStockPrice())
-                                .errorMessage("COMMIT_SELL or CANCEL_SELL error: " + e.getMessage())
-                                .build());
+                e.printStackTrace();
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command(CommandType.CANCEL_BUY)
+//                                .username(userId)
+//                                .stockSymbol(pendingSell.getStockSymbol())
+//                                .transactionNum(transactionNum)
+//                                .funds(pendingSell.getStockPrice())
+//                                .errorMessage("COMMIT_SELL or CANCEL_SELL error: " + e.getMessage())
+//                                .build());
                 continue;
             }
             //command is allowed (ie there was a valid sell prior to this, etc)

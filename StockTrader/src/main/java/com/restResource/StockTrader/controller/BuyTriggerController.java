@@ -81,14 +81,15 @@ public class BuyTriggerController {
                 buyTriggerRepository.save(buyTrigger);
             }
         } catch(Exception e) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_BUY_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SET_BUY_AMOUNT)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
         return HttpStatus.OK;
@@ -124,14 +125,15 @@ public class BuyTriggerController {
             }
             buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_BUY_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SET_BUY_TRIGGER)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.NOT_ACCEPTABLE;
         }
 
@@ -168,14 +170,15 @@ public class BuyTriggerController {
                     .build();
             buyTriggerRepository.deleteById(triggerKey);
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_SET_BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.CANCEL_SET_BUY)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
         return HttpStatus.OK;

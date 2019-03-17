@@ -88,14 +88,15 @@ public class SellTriggerController {
                 sellTriggerRepository.save(sellTrigger);
             }
         } catch(Exception e) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_SELL_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SET_SELL_AMOUNT)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
         return HttpStatus.OK;
@@ -139,14 +140,15 @@ public class SellTriggerController {
         sellTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
 
         } catch( Exception e ) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.SET_SELL_TRIGGER)
-                                .username(userId)
-                                .stockSymbol(stockSymbol)
-                                .transactionNum(transactionNum)
-                                .errorMessage(e.getMessage())
-                                .build());
+            e.printStackTrace();
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command(CommandType.SET_SELL_TRIGGER)
+//                                .username(userId)
+//                                .stockSymbol(stockSymbol)
+//                                .transactionNum(transactionNum)
+//                                .errorMessage(e.getMessage())
+//                                .build());
                 return HttpStatus.NOT_ACCEPTABLE;
         }
         return HttpStatus.ACCEPTED;
@@ -186,14 +188,15 @@ public class SellTriggerController {
                     .build();
             sellTriggerRepository.deleteById(triggerKey);
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_SET_SELL)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.CANCEL_SET_SELL)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
         return HttpStatus.OK;

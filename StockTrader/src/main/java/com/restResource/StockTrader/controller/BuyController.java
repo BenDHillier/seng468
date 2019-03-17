@@ -104,15 +104,16 @@ public class BuyController {
             buyRepository.save(pendingBuy);
 
         } catch (Exception e) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .funds(amount)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            e.printStackTrace();
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.BUY)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .funds(amount)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return new ResponseEntity<>("BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("BUY success", HttpStatus.OK);
@@ -133,13 +134,14 @@ public class BuyController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .build());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.COMMIT_BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.COMMIT_BUY)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
+            e.printStackTrace();
             return new ResponseEntity<>("COMMIT_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
@@ -162,13 +164,14 @@ public class BuyController {
 //                            .username(userId)
 //                            .transactionNum(transactionNum)
 //                            .build());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.CANCEL_BUY)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
+            e.printStackTrace();
             return new ResponseEntity<>("CANCEL_BUY error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("CANCEL_BUY success", HttpStatus.OK);
@@ -196,15 +199,16 @@ public class BuyController {
             try {
                 buyRepository.deleteById(pendingBuy.getId());
             } catch (Exception e) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.CANCEL_BUY)
-                                .username(userId)
-                                .stockSymbol(pendingBuy.getStockSymbol())
-                                .transactionNum(transactionNum)
-                                .funds(pendingBuy.getAmount())
-                                .errorMessage("COMMIT_BUY or CANCEL_BUY error: " + e.getMessage())
-                                .build());
+                e.printStackTrace();
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command(CommandType.CANCEL_BUY)
+//                                .username(userId)
+//                                .stockSymbol(pendingBuy.getStockSymbol())
+//                                .transactionNum(transactionNum)
+//                                .funds(pendingBuy.getAmount())
+//                                .errorMessage("COMMIT_BUY or CANCEL_BUY error: " + e.getMessage())
+//                                .build());
                 continue;
             }
             //command is allowed (ie there was a valid buy prior to this, etc)
