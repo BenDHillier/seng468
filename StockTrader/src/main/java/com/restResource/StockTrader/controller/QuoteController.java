@@ -43,11 +43,11 @@ public class QuoteController {
         try {
             Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
             if (!optionalQuote.isPresent()) {
-                return null;
+                throw new Exception("QuoteController: Quote was null");
             }
             Quote quote = optionalQuote.get();
             return new ResponseEntity<>(quote, HttpStatus.OK);
-        } catch( IllegalArgumentException e ) {
+        } catch( Exception e ) {
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.QUOTE)
@@ -55,6 +55,7 @@ public class QuoteController {
 //                            .transactionNum(transactionNum)
 //                            .errorMessage("Error during quote request")
 //                            .build());
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
