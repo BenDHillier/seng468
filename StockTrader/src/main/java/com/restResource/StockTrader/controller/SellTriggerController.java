@@ -2,8 +2,6 @@ package com.restResource.StockTrader.controller;
 
 import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.SellTrigger;
-import com.restResource.StockTrader.entity.logging.ErrorEventLog;
-import com.restResource.StockTrader.entity.logging.UserCommandLog;
 import com.restResource.StockTrader.repository.InvestmentRepository;
 import com.restResource.StockTrader.entity.TriggerKey;
 import com.restResource.StockTrader.repository.SellTriggerRepository;
@@ -47,13 +45,7 @@ public class SellTriggerController {
             @RequestParam(value = "amount") int stockAmount,
             @RequestParam int transactionNum) {
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.SET_SELL_AMOUNT)
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.SET_SELL_AMOUNT.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL",Integer.toString(stockAmount));
             if (stockAmount <= 0) {
                 throw new IllegalArgumentException(
                         "The amount parameter must be greater than zero.");
@@ -111,13 +103,7 @@ public class SellTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.SET_SELL_TRIGGER)
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.SET_SELL_TRIGGER.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
         Optional<SellTrigger> sellStockSnapshot = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
@@ -161,13 +147,7 @@ public class SellTriggerController {
             @RequestParam String stockSymbol,
             @RequestParam int transactionNum) {
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.CANCEL_SET_SELL)
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.CANCEL_SET_SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             Optional<SellTrigger> stockSellTriggerStatus = sellTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
             if(!stockSellTriggerStatus.isPresent()) {

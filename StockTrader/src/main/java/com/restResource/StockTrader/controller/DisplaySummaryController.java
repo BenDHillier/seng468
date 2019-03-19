@@ -52,13 +52,7 @@ public class DisplaySummaryController {
     public ResponseEntity<DisplaySummary> displaySummary(
             @RequestParam String userId,
             @RequestParam  Integer transactionNum) {
-
-//        loggingService.logUserCommand(
-//                UserCommandLog.builder()
-//                        .command(CommandType.DISPLAY_SUMMARY)
-//                        .username(userId)
-//                        .transactionNum(transactionNum)
-//                        .build());
+        loggingService.logUserCommand(CommandType.DISPLAY_SUMMARY.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
         return accountRepository.findById(userId).map(account ->
                 new ResponseEntity<>(DisplaySummary.builder()
                         .userId(userId)

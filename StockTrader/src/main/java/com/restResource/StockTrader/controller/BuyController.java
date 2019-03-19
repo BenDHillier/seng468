@@ -56,15 +56,7 @@ public class BuyController {
             @RequestParam int amount,
             @RequestParam int transactionNum) {
 
-//        loggingService.logUserCommand(
-//                UserCommandLog.builder()
-//                        .command(CommandType.BUY)
-//                        .server("TS1")
-//                        .username(userId)
-//                        .stockSymbol(stockSymbol)
-//                        .funds(String.format("%.2f",(amount*1.0)/100))
-//                        .transactionNum(transactionNum)
-//                        .build());
+        loggingService.logUserCommand(CommandType.BUY.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL",String.format("%.2f",(amount*1.0)/100));
         try {
 
             //Can't buy nothing or a negative amount
@@ -129,12 +121,7 @@ public class BuyController {
             investmentRepository.insertOrIncrement(userId, pendingBuy.getStockSymbol(), amountToBuy);
         } catch(Exception e) {
             System.out.println("Exception in BuyController: " + e.getMessage());
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.COMMIT_BUY)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.COMMIT_BUY.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.COMMIT_BUY)
@@ -159,12 +146,7 @@ public class BuyController {
         } catch( Exception e) {
             System.out.println("Exception in BuyController: " + e.getMessage());
             //command was made during an invalid account state, but we still need to log the activity
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.CANCEL_BUY)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.CANCEL_BUY.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.CANCEL_BUY)
@@ -212,14 +194,7 @@ public class BuyController {
                 continue;
             }
             //command is allowed (ie there was a valid buy prior to this, etc)
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(commandType)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .stockSymbol(pendingBuy.getStockSymbol())
-//                            .funds(String.format("%.2f",(1.0*pendingBuy.getAmount())/100))
-//                            .build());
+            loggingService.logUserCommand(commandType.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,pendingBuy.getStockSymbol(),"NULL",String.format("%.2f",(1.0*pendingBuy.getAmount())/100));
             return pendingBuy;
         }
     }

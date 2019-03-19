@@ -98,13 +98,7 @@ public class BuyTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.SET_BUY_TRIGGER)
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.SET_BUY_TRIGGER.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
@@ -141,13 +135,7 @@ public class BuyTriggerController {
             @RequestParam String stockSymbol,
             @RequestParam int transactionNum) {
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.CANCEL_SET_BUY)
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.CANCEL_SET_BUY.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 

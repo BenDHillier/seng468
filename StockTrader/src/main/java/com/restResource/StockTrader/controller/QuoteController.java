@@ -32,14 +32,8 @@ public class QuoteController {
     ResponseEntity<Quote> getQuotePrice(@RequestParam String stockSymbol,
                                         @RequestParam String userId,
                                         @RequestParam int transactionNum) {
+        loggingService.logUserCommand(CommandType.QUOTE.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
-        //loggingService.logUserCommand(CommandType.QUOTE,userId,stockSymbol,null,null);
-//        loggingService.logUserCommand(UserCommandLog.builder()
-//                .command(CommandType.QUOTE)
-//                .stockSymbol(stockSymbol)
-//                .username(userId)
-//                .transactionNum(transactionNum)
-//                .build());
         try {
             Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
             if (!optionalQuote.isPresent()) {

@@ -53,14 +53,7 @@ public class SellController {
             @RequestParam int transactionNum) {
 
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.SELL)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .stockSymbol(stockSymbol)
-//                            .funds(String.format("%.2f",(amount*1.0)/100))
-//                            .build());
+            loggingService.logUserCommand(CommandType.SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL",String.format("%.2f",(amount*1.0)/100));
 
             Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
             if (!optionalQuote.isPresent()) {
@@ -133,12 +126,8 @@ public class SellController {
                     transactionNum,"TS1");
         } catch( Exception e ) {
             System.out.println("Exception in SellController: " + e.getMessage());
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.COMMIT_SELL)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.COMMIT_SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
+//
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.COMMIT_SELL)
@@ -164,12 +153,7 @@ public class SellController {
                     pendingSell.getStockCount());
         } catch( Exception e ) {
             //command was made during an invalid account state, but we still need to log the activity
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.CANCEL_SELL)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.CANCEL_SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
 //            loggingService.logErrorEvent(
 //                    ErrorEventLog.builder()
 //                            .command(CommandType.CANCEL_BUY)
@@ -217,14 +201,7 @@ public class SellController {
                 continue;
             }
             //command is allowed (ie there was a valid sell prior to this, etc)
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(commandType)
-//                            .username(userId)
-//                            .transactionNum(transactionNum)
-//                            .stockSymbol(pendingSell.getStockSymbol())
-//                            .funds(String.format("%.2f",(1.0*pendingSell.getStockPrice())/100))
-//                            .build());
+            loggingService.logUserCommand(commandType.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL",String.format("%.2f",(1.0*pendingSell.getStockPrice())/100));
             return pendingSell;
         }
     }
