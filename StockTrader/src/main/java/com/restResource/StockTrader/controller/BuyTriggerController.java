@@ -49,13 +49,7 @@ public class BuyTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-//            loggingService.logUserCommand(
-//                    UserCommandLog.builder()
-//                            .command(CommandType.SET_BUY_AMOUNT)
-//                            .username(userId)
-//                            .stockSymbol(stockSymbol)
-//                            .transactionNum(transactionNum)
-//                            .build());
+            loggingService.logUserCommand(CommandType.SET_BUY_AMOUNT.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             if (stockAmount <= 0) {
                 //invalid request parameter
