@@ -27,12 +27,7 @@ public class LogController {
     public ResponseEntity<Resource> dumpLogs(@RequestParam String filename,
                                              @RequestParam int transactionNum) {
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.DUMPLOG)
-                            .server("TS1")
-                            .transactionNum(transactionNum)
-                            .build());
+            loggingService.logUserCommand(CommandType.DUMPLOG.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),"NULL","NULL",filename,"NULL");
             loggingService.dumpLogToXmlFile(filename);
             File f = new File(filename);
             HttpHeaders headers = new HttpHeaders();
@@ -45,7 +40,7 @@ public class LogController {
                     .contentLength(f.length())
                     .body(resource);
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in LogController: " + e.getMessage());
         }
         return null;
     }
@@ -55,13 +50,8 @@ public class LogController {
                                                  @RequestParam String userId,
                                                  @RequestParam int transactionNum) {
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.DUMPLOG)
-                            .server("TS1")
-                            .transactionNum(transactionNum)
-                            .build());
-            loggingService.dumpUserLogToXmlFile(filename,userId);
+            loggingService.logUserCommand(CommandType.DUMPLOG.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL",filename,"NULL");
+            //loggingService.dumpUserLogToXmlFile(filename,userId);
             File f = new File(filename);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
@@ -73,7 +63,7 @@ public class LogController {
                     .contentLength(f.length())
                     .body(resource);
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception in LogController: " + e.getMessage());
         }
         return null;
     }

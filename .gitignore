@@ -7,6 +7,10 @@ dumpLOG*
 testLOG*
 testlog.xml
 validate.xsd
+DUMPlog
+final_workload*
+dumplog
+logfile.xsd
 
 # BlueJ files
 *.ctxt

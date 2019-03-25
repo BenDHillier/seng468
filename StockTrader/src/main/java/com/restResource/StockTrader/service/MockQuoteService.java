@@ -17,17 +17,7 @@ public class MockQuoteService implements QuoteService {
     }
     @Override
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
-        loggingService.logQuoteServer(
-                QuoteServerLog.builder()
-                        .price("50")
-                        .quoteServerTime(System.currentTimeMillis())
-                        .timestamp(System.currentTimeMillis())
-                        .transactionNum(transactionNum)
-                        .stockSymbol(stockSymbol)
-                        .cryptokey("made_up_cryptokey...")
-                        .build());
-
-
+        loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),"50","S",userId,Long.toString(System.currentTimeMillis()),"made_up_cryptokey");
         return Optional.of(Quote.builder()
                 .userId(userId)
                 .stockSymbol(stockSymbol)

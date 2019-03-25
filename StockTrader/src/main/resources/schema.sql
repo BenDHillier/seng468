@@ -7,6 +7,10 @@ DROP TABLE IF EXISTS account_transaction_log;
 DROP TABLE IF EXISTS buy_trigger;
 DROP TABLE IF EXISTS sell_trigger;
 DROP TABLE IF EXISTS log_xml;
+DROP TABLE IF EXISTS logs;
+DROP TABLE IF EXISTS logging_event_exception;
+DROP TABLE IF EXISTS logging_event_property;
+DROP TABLE IF EXISTS logging_event;
 
 CREATE TABLE pending_buy (
     id integer PRIMARY KEY,
@@ -79,6 +83,25 @@ CREATE TABLE log_xml (
     user_id varchar(255)
 );
 
+CREATE TABLE logs
+(
+  event_id          SERIAL PRIMARY KEY,
+  logtype character varying(255),
+  command character varying(255),
+  timestamp character varying(255),
+  quote_server_time character varying(255),
+  server character varying(255),
+  transaction_num character varying(255),
+  action character varying(255),
+  username character varying(255),
+  stock_symbol character varying(255),
+  filename character varying(255),
+  funds character varying(255),
+  price character varying(255),
+  cryptokey character varying(255),
+  error_message character varying(255),
+  debug_message character varying(255)
+);
 
 -- FIX ME need to make accountTransaction log transaction_num flow with the parent command
 -- (ie buy, add, sell, commit_sell, etc)
@@ -103,15 +126,19 @@ BEGIN
       ELSE
         RETURN NULL;
       END IF;
---       INSERT INTO account_transaction_log (action, funds, timestamp, username)
-      INSERT INTO account_transaction_log (action, funds, timestamp, username, server, "transactionNum")
-      VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number);
-      WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, TRUNC((SELECT CAST(funds AS NUMERIC(12,2))/100.00),2), trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
-      INSERT INTO log_xml (id, xml_log_entry,user_id)
-      VALUES(
-        (select nextval(''hibernate_sequence'')),
-        (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username, temp.server, temp."transactionNum")) from temp),
-        (select temp.username from temp));
+      INSERT INTO logs (event_id, logtype, command, timestamp, quote_server_time, server, transaction_num, action, username, stock_symbol, filename, funds, price, cryptokey, error_message, debug_message)
+      VALUES ((select nextval(''logs_event_id_seq'')),''AccountTransactionType'', ''NULL'', (trunc(extract(epoch from now()) * 1000))::varchar(255), ''NULL'', NEW.last_server, (NEW.last_transaction_number)::varchar(255), action, NEW.user_id, ''NULL'', ''NULL'',  funds::varchar(255), ''NULL'', ''NULL'' ,''NULL'', ''NULL'');
+-- =======
+-- --       INSERT INTO account_transaction_log (action, funds, timestamp, username)
+--       INSERT INTO account_transaction_log (action, funds, timestamp, username, server, "transactionNum")
+--       VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number);
+--       WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, TRUNC((SELECT CAST(funds AS NUMERIC(12,2))/100.00),2), trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
+--       INSERT INTO log_xml (id, xml_log_entry,user_id)
+--       VALUES(
+--         (select nextval(''hibernate_sequence'')),
+--         (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username, temp.server, temp."transactionNum")) from temp),
+--         (select temp.username from temp));
+-- >>>>>>> master
       RETURN NULL;
 END;
 ' LANGUAGE plpgsql;

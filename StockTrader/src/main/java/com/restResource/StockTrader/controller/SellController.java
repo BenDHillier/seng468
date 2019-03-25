@@ -53,14 +53,7 @@ public class SellController {
             @RequestParam int transactionNum) {
 
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(stockSymbol)
-                            .funds(String.format("%.2f",(amount*1.0)/100))
-                            .build());
+            loggingService.logUserCommand(CommandType.SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL",String.format("%.2f",(amount*1.0)/100));
 
             Optional<Quote> optionalQuote = quoteService.getQuote(stockSymbol, userId, transactionNum);
             if (!optionalQuote.isPresent()) {
@@ -104,15 +97,16 @@ public class SellController {
             sellRepository.save(pendingSell);
 
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SELL)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .funds(amount)
-                            .errorMessage(e.getMessage())
-                            .build());
+            System.out.println("Exception in SellController: " + e.getMessage());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SELL)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .funds(amount)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return new ResponseEntity<>("SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 
         }
@@ -131,19 +125,16 @@ public class SellController {
                     pendingSell.getStockPrice() * pendingSell.getStockCount(),
                     transactionNum,"TS1");
         } catch( Exception e ) {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.COMMIT_SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .build());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.COMMIT_SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            System.out.println("Exception in SellController: " + e.getMessage());
+            loggingService.logUserCommand(CommandType.COMMIT_SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
+//
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.COMMIT_SELL)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return new ResponseEntity<>("COMMIT_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("COMMIT_SELL success", HttpStatus.OK);
@@ -162,19 +153,15 @@ public class SellController {
                     pendingSell.getStockCount());
         } catch( Exception e ) {
             //command was made during an invalid account state, but we still need to log the activity
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.CANCEL_SELL)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .build());
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_BUY)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            loggingService.logUserCommand(CommandType.CANCEL_SELL.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL","NULL");
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.CANCEL_BUY)
+//                            .username(userId)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
+            System.out.println("Exception in SellController: " + e.getMessage());
             return new ResponseEntity<>("CANCEL_SELL error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("CANCEL_SELL success", HttpStatus.OK);
@@ -201,26 +188,20 @@ public class SellController {
             try {
                 sellRepository.deleteById(pendingSell.getId());
             } catch (Exception e) {
-                loggingService.logErrorEvent(
-                        ErrorEventLog.builder()
-                                .command(CommandType.CANCEL_BUY)
-                                .username(userId)
-                                .stockSymbol(pendingSell.getStockSymbol())
-                                .transactionNum(transactionNum)
-                                .funds(pendingSell.getStockPrice())
-                                .errorMessage("COMMIT_SELL or CANCEL_SELL error: " + e.getMessage())
-                                .build());
+                System.out.println("Exception in SellController: " + e.getMessage());
+//                loggingService.logErrorEvent(
+//                        ErrorEventLog.builder()
+//                                .command(CommandType.CANCEL_BUY)
+//                                .username(userId)
+//                                .stockSymbol(pendingSell.getStockSymbol())
+//                                .transactionNum(transactionNum)
+//                                .funds(pendingSell.getStockPrice())
+//                                .errorMessage("COMMIT_SELL or CANCEL_SELL error: " + e.getMessage())
+//                                .build());
                 continue;
             }
             //command is allowed (ie there was a valid sell prior to this, etc)
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(commandType)
-                            .username(userId)
-                            .transactionNum(transactionNum)
-                            .stockSymbol(pendingSell.getStockSymbol())
-                            .funds(String.format("%.2f",(1.0*pendingSell.getStockPrice())/100))
-                            .build());
+            loggingService.logUserCommand(commandType.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL","NULL",String.format("%.2f",(1.0*pendingSell.getStockPrice())/100));
             return pendingSell;
         }
     }

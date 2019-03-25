@@ -15,9 +15,7 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class StockTraderApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(StockTraderApplication.class, args);
-	}
+	public static void main(String[] args) { SpringApplication.run(StockTraderApplication.class, args); }
 
 	//technically we dont need this but i decided to add it anyway.
 	@Bean
@@ -56,9 +54,5 @@ public class StockTraderApplication {
 //	public JedisPoolConfig buildPoolConfig() {
 //
 //	}
-
-
-
-
 }
 

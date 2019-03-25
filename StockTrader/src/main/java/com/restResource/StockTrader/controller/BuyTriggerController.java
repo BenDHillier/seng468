@@ -49,13 +49,7 @@ public class BuyTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SET_BUY_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+            loggingService.logUserCommand(CommandType.SET_BUY_AMOUNT.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             if (stockAmount <= 0) {
                 //invalid request parameter
@@ -81,14 +75,15 @@ public class BuyTriggerController {
                 buyTriggerRepository.save(buyTrigger);
             }
         } catch(Exception e) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_BUY_AMOUNT)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            System.out.println("Exception in BuyTriggerController: " + e.getMessage());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SET_BUY_AMOUNT)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
         return HttpStatus.OK;
@@ -103,13 +98,7 @@ public class BuyTriggerController {
             @RequestParam int transactionNum) {
 
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.SET_BUY_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+            loggingService.logUserCommand(CommandType.SET_BUY_TRIGGER.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             Optional<BuyTrigger> buyStockSnapshot = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
@@ -124,14 +113,15 @@ public class BuyTriggerController {
             }
             buyTriggerService.start(userId, stockSymbol, stockCost, transactionNum);
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.SET_BUY_TRIGGER)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            System.out.println("Exception in BuyTrigger: " + e.getMessage());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.SET_BUY_TRIGGER)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.NOT_ACCEPTABLE;
         }
 
@@ -145,13 +135,7 @@ public class BuyTriggerController {
             @RequestParam String stockSymbol,
             @RequestParam int transactionNum) {
         try {
-            loggingService.logUserCommand(
-                    UserCommandLog.builder()
-                            .command(CommandType.CANCEL_SET_BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .build());
+            loggingService.logUserCommand(CommandType.CANCEL_SET_BUY.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,stockSymbol,"NULL","NULL");
 
             Optional<BuyTrigger> stockBuyTriggerStatus = buyTriggerRepository.findByUserIdAndStockSymbol(userId, stockSymbol);
 
@@ -168,14 +152,15 @@ public class BuyTriggerController {
                     .build();
             buyTriggerRepository.deleteById(triggerKey);
         } catch( Exception e ) {
-            loggingService.logErrorEvent(
-                    ErrorEventLog.builder()
-                            .command(CommandType.CANCEL_SET_BUY)
-                            .username(userId)
-                            .stockSymbol(stockSymbol)
-                            .transactionNum(transactionNum)
-                            .errorMessage(e.getMessage())
-                            .build());
+            System.out.println("Exception in BuyTriggerController: " + e.getMessage());
+//            loggingService.logErrorEvent(
+//                    ErrorEventLog.builder()
+//                            .command(CommandType.CANCEL_SET_BUY)
+//                            .username(userId)
+//                            .stockSymbol(stockSymbol)
+//                            .transactionNum(transactionNum)
+//                            .errorMessage(e.getMessage())
+//                            .build());
             return HttpStatus.BAD_REQUEST;
         }
         return HttpStatus.OK;

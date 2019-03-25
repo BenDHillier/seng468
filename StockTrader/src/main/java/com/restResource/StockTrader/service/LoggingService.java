@@ -2,191 +2,254 @@ package com.restResource.StockTrader.service;
 
 import com.restResource.StockTrader.entity.logging.*;
 import com.restResource.StockTrader.repository.logging.*;
-import org.springframework.scheduling.annotation.Async;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.StringWriter;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class LoggingService {
 
-    private LogXmlRepository logXmlRepository;
-    private JAXBContext jaxbContext;
+    private LogsRepository logsRepo;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected Marker logMarker = MarkerFactory.getMarker("logMarker");
 
-    public LoggingService(
-                          LogXmlRepository logXmlRepository
-    ) {
-        this.logXmlRepository = logXmlRepository;
-        try {
-            this.jaxbContext = JAXBContext.newInstance(UserCommandLog.class,QuoteServerLog.class,SystemEventLog.class,ErrorEventLog.class,DebugEventLog.class, Long.class);
-
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
+    public LoggingService(LogsRepository logsRepo) {
+        this.logsRepo = logsRepo;
     }
 
-    private Marshaller createMarshaller() throws JAXBException {
-        Marshaller marshaller = this.jaxbContext.createMarshaller();
-        // TODO: make this false which will save space in database
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
-        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-        marshaller.setProperty(Marshaller.JAXB_ENCODING,"UTF-8");
-        return marshaller;
+    public void logUserCommand(String command, String timestamp, String server, String transactionNum, String username, String stockSymbol, String filename, String funds) {
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append(command)//command
+                .append(",")
+                .append(timestamp)//timestamp
+                .append(",")
+                .append("NULL")//quoteServerTime
+                .append(",")
+                .append(server)//server
+                .append(",")
+                .append(transactionNum)//transactionNum
+                .append(",")
+                .append(username)//username
+                .append(",")
+                .append(stockSymbol)//stocksymbol
+                .append(",")
+                .append(filename)//filename
+                .append(",")
+                .append(funds)//funds
+                .append(",")
+                .append("NULL")//price
+                .append(",")
+                .append("NULL")//cryptokey
+                .append(",")
+                .append("NULL")//errorMessage
+                .append(",")
+                .append("NULL")//debugMessage
+                .append(",")
+                .append("UserCommandType")//logtype
+                .append(",")
+                .append("NULL");//action
+        logger.debug(logMarker,logBuilder.toString());
     }
 
-    @Async
-    public void xmlLogEvent(LogXml log) {
-        logXmlRepository.save(
-                log.toBuilder().build());
+    public void logQuoteServer(String timestamp, String server, String transactionNum, String price, String stockSymbol, String username, String quoteServerTime, String cryptokey) {
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append("NULL")//command
+                .append(",")
+                .append(timestamp)//timestamp
+                .append(",")
+                .append(quoteServerTime)//quoteServerTime
+                .append(",")
+                .append(server)//server
+                .append(",")
+                .append(transactionNum)//transactionNum
+                .append(",")
+                .append(username)//username
+                .append(",")
+                .append(stockSymbol)//stocksymbol
+                .append(",")
+                .append("NULL")//filename
+                .append(",")
+                .append("NULL")//funds
+                .append(",")
+                .append(price)//price
+                .append(",")
+                .append(cryptokey)//cryptokey
+                .append(",")
+                .append("NULL")//errorMessage
+                .append(",")
+                .append("NULL")//debugMessage
+                .append(",")
+                .append("QuoteServerType")//logtype
+                .append(",")
+                .append("NULL");//action
+        logger.debug(logMarker,logBuilder.toString());
     }
 
-    @Async
-    public void logUserCommand(UserCommandLog log) {
-        log.toBuilder()
-                .server("TS1")
-                .build();
-
-        StringWriter writer = new StringWriter();
-
-        try {
-            Marshaller marshaller = createMarshaller();
-            marshaller.marshal(log,writer);
-            xmlLogEvent(
-                    LogXml.builder()
-                            .userId(log.getUsername())
-                            .xmlLogEntry(writer.toString())
-                            .build()
-            );
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+    public void logSystemEvent(String timestamp, String server, String transactionNum, String command, String username, String stockSymbol, String filename, String funds) {
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append(command)//command
+                .append(",")
+                .append(timestamp)//timestamp
+                .append(",")
+                .append("NULL")//quoteServerTime
+                .append(",")
+                .append(server)//server
+                .append(",")
+                .append(transactionNum)//transactionNum
+                .append(",")
+                .append(username)//username
+                .append(",")
+                .append(stockSymbol)//stocksymbol
+                .append(",")
+                .append(filename)//filename
+                .append(",")
+                .append(funds)//funds
+                .append(",")
+                .append("NULL")//price
+                .append(",")
+                .append("NULL")//cryptokey
+                .append(",")
+                .append("NULL")//errorMessage
+                .append(",")
+                .append("NULL")//debugMessage
+                .append(",")
+                .append("SystemEventType")//logtype
+                .append(",")
+                .append("NULL");//action
+        logger.debug(logMarker,logBuilder.toString());
     }
 
-    @Async
-    public void logQuoteServer(QuoteServerLog log) {
-        log.toBuilder()
-                .server("TS1")
-                .build();
-
-        StringWriter writer = new StringWriter();
-
-        try {
-            Marshaller marshaller = createMarshaller();
-            marshaller.marshal(log,writer);
-            xmlLogEvent(
-                    LogXml.builder()
-                            .userId(log.getUsername())
-                            .xmlLogEntry(writer.toString())
-                            .build()
-            );
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    @Async
     public void logErrorEvent(ErrorEventLog log) {
-        log.toBuilder()
-                .server("TS1")
-                .build();
+        System.out.println("Tried to log an error event but its not implemented yet...");
+    }
 
-        StringWriter writer = new StringWriter();
-        try {
-            Marshaller marshaller = createMarshaller();
-            marshaller.marshal(log,writer);
-            xmlLogEvent(
-                    LogXml.builder()
-                            .userId(log.getUsername())
-                            .xmlLogEntry(writer.toString())
-                            .build()
-            );
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+    public void logDebugEvent(DebugEventLog log) {
     }
 
     public File dumpLogToXmlFile(String filename) {
         try {
-            Iterable<String> logFragments = logXmlRepository.findAllLogs();
+            Iterable<CentralLog> logFrags = logsRepo.findAllLogs();
             FileWriter writer = new FileWriter("./"+filename);
             writer.write("<log>");
-            for(String s : logFragments) {
-                writer.write(s);
+            for(CentralLog s : logFrags) {
+                if( s.getLogtype().equals("UserCommandType") ) {
+
+                    String usernameString = s.getUsername();
+                    String usernameTag = "";
+                    if( !usernameString.equals("NULL") ) usernameTag = "<username>" + usernameString + "</username>";
+
+                    String stockSymbolString = s.getStock_symbol();
+                    String stockSymbolTag = "";
+                    if( !stockSymbolString.equals("NULL") ) stockSymbolTag = "<stockSymbol>" + stockSymbolString + "</stockSymbol>";
+
+                    String filenameString = s.getFilename();
+                    String filenameTag = "";
+                    if( !filenameString.equals("NULL") ) filenameTag = "<filename>" + filenameString + "</filename>";
+
+                    String fundsString = s.getFunds();
+                    String fundsTag = "";
+                    if( !fundsString.equals("NULL") ) fundsTag = "<funds>" + fundsString + "</funds>";
+
+                    writer.write("<userCommand>"+
+                            "<command>" + s.getCommand() + "</command>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                            "<server>" + s.getServer() + "</server>" +
+                            "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                            usernameTag +
+                            stockSymbolTag +
+                            filenameTag +
+                            fundsTag+
+                            "</userCommand>");
+                }
+                else if( s.getLogtype().equals("QuoteServerType")) {
+                    writer.write(
+                            "<quoteServer>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                            "<server>" + s.getServer() + "</server>" +
+                            "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                            "<price>" + s.getPrice() + "</price>" +
+                            "<stockSymbol>" + s.getStock_symbol() + "</stockSymbol>" +
+                            "<username>" + s.getUsername() + "</username>" +
+                            "<quoteServerTime>" + s.getQuote_server_time() + "</quoteServerTime>" +
+                            "<cryptokey>" + s.getCryptokey() + "</cryptokey>" +
+                            "</quoteServer>");
+                }
+                else if( s.getLogtype().equals("SystemEventType")) {
+                    String usernameString = s.getUsername();
+                    String usernameTag = "";
+                    if( !usernameString.equals("NULL") ) usernameTag = "<username>" + usernameString + "</username>";
+
+                    String stockSymbolString = s.getStock_symbol();
+                    String stockSymbolTag = "";
+                    if( !stockSymbolString.equals("NULL") ) stockSymbolTag = "<stockSymbol>" + stockSymbolString + "</stockSymbol>";
+
+                    String filenameString = s.getFilename();
+                    String filenameTag = "";
+                    if( !filenameString.equals("NULL") ) filenameTag = "<filename>" + filenameString + "</filename>";
+
+                    String fundsString = s.getFunds();
+                    String fundsTag = "";
+                    if( !fundsString.equals("NULL") ) fundsTag = "<funds>" + fundsString + "</funds>";
+
+                    writer.write(
+                            "<systemEvent>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                            "<server>" + s.getServer() + "</server>" +
+                            "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                            "<command>" + s.getCommand() + "</command>" +
+                            usernameTag +
+                            stockSymbolTag +
+                            filenameTag +
+                            fundsTag +
+                            "</systemEvent>"
+                    );
+                }
+                else if( s.getLogtype().equals("AccountTransactionType")) {
+                    writer.write(
+                            "<accountTransaction>" +
+                            "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                            "<server>" + s.getServer() + "</server>" +
+                            "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                            "<action>" + s.getAction() + "</action>" +
+                            "<username>" + s.getUsername() + "</username>" +
+                            "<funds>" + s.getFunds() + "</funds>" +
+                            "</accountTransaction>"
+                    );
+                }
             }
             writer.write("</log>");
-            File file = new File("./"+filename);
             writer.close();
+            File file = new File("./"+filename);
             return file;
-
-        } catch(Exception e) {
-            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
+        } catch( Exception e ) {
+            System.out.println("Exception in dumpLogToXmlFile: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
 
-    public File dumpUserLogToXmlFile(String filename, String userId) {
-        try {
-            Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
-            FileWriter writer = new FileWriter("./"+filename);
-            writer.write("<log>");
-            for(String s : logFragments) {
-                writer.write(s);
-            }
-            writer.write("</log>");
-            File file = new File("./"+filename);
-            writer.close();
-            return file;
-
-        } catch(Exception e) {
-            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
-        }
-        return null;
-    }
-
-//    public void logSystemEvent(SystemEventLog log) {
-//        log.toBuilder()
-//                .server("TS1")
-//                .build();
-//
-//        StringWriter writer = new StringWriter();
-//
+//    public File dumpUserLogToXmlFile(String filename, String userId) {
 //        try {
-//            Marshaller marshaller = createMarshaller();
-//            marshaller.marshal(log,writer);
-//            xmlLogEvent(
-//                    LogXml.builder()
-//                            .userId(log.getUsername())
-//                            .xmlLogEntry(writer.toString())
-//                            .build()
-//            );
+//            Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
+//            FileWriter writer = new FileWriter("./"+filename);
+//            writer.write("<log>");
+//            for(String s : logFragments) {
+//                writer.write(s);
+//            }
+//            writer.write("</log>");
+//            File file = new File("./"+filename);
+//            writer.close();
+//            return file;
+//
 //        } catch(Exception e) {
-//            e.printStackTrace();
+//            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
 //        }
-//    }
-
-//    public void logDebugEvent(DebugEventLog log) {
-//        log.toBuilder()
-//                .server("TS1")
-//                .build();
-//        StringWriter writer = new StringWriter();
-//        try {
-//            Marshaller marshaller = createMarshaller();
-//            marshaller.marshal(log,writer);
-//            xmlLogEvent(
-//                    LogXml.builder()
-//                            .userId(log.getUsername())
-//                            .xmlLogEntry(writer.toString())
-//                            .build()
-//            );
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        }
+//        return null;
 //    }
 }
+

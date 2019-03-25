@@ -86,25 +86,27 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     private Quote getQuoteFromServer(String stockSymbol, String userId, int transactionNum) throws Exception {
+
+        System.out.println("Attempting to get quote from server...");
         //create and aquire a lock for the stock symbol
         String lockkey = stockSymbol+"_lock";
         //lock will time out after 10 seconds and expire after 50
-        Jedis jedis = jedisPool.getResource();
-	      JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
-        lock.acquire();
+//        Jedis jedis = jedisPool.getResource();
+//	      JedisLock lock = new JedisLock(jedis, lockkey, 10000, 50000);
+//        lock.acquire();
         try {
             //check redis
-            String response = jedis.get(stockSymbol);
-            boolean isNew = false;
+            //String response = jedis.get(stockSymbol);
+            //boolean isNew = false;
 
             //if redis doesnt have the response, grab it from the quote server
-            if (response == null) {
-                isNew = true;
+            //if (response == null) {
+                //isNew = true;
                 Socket socket = acquireConnection();
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out.println(stockSymbol + "," + userId + "\r");
-                response = in.readLine();
+                String response = in.readLine() + "\r";
                 out.close();
                 in.close();
                 returnConnection(socket);
@@ -112,13 +114,14 @@ public class QuoteServiceImpl implements QuoteService {
                     throw new IllegalStateException("response not valid");
                 }
                 //assign the stock symbol the unparsed response
-                jedis.set(stockSymbol, response);
+                //jedis.set(stockSymbol, response);
                 //give it a lifespan of 50 seconds
-                jedis.expire(stockSymbol, 50);
-            }
-            else {
-                System.out.print("\nREDIS RESULT GOTTEN: " + response);
-            }
+                //jedis.expire(stockSymbol, 50);
+                System.out.print("\nNew QuoteServer Response: " + response);
+//            }
+//            else {
+//                System.out.print("\nREDIS RESULT GOTTEN: " + response);
+//            }
 
 
             String[] responseList = response.split(",");
@@ -137,32 +140,26 @@ public class QuoteServiceImpl implements QuoteService {
                     .userId(userId)
                     .price(price)
                     .timestamp(LocalDateTime.now())
-                    .cryptoKey(cryptoKey.replaceAll("\\s+$", ""))
+                    .cryptoKey(cryptoKey)
                     .build();
-            if (isNew) {
-                loggingService.logQuoteServer(
-                        QuoteServerLog.builder()
-                                .price(responseList[0])
-                                .username(userId)
-                                .quoteServerTime(quoteServerTime)
-                                .timestamp(System.currentTimeMillis())
-                                .transactionNum(transactionNum)
-                                .stockSymbol(stockSymbol)
-                                .cryptokey(quote.getCryptoKey())
-                                .build());
-            }
+            loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],stockSymbol,userId,Long.toString(quoteServerTime),quote.getCryptoKey());
+//            if (isNew) {
+//                loggingService.logQuoteServer(Long.toString(System.currentTimeMillis()), "QS1",Integer.toString(transactionNum),responseList[0],stockSymbol,userId,Long.toString(quoteServerTime),quote.getCryptoKey());
+//            }
             return quote;
         } catch (Exception e) {
             System.out.print("\n" + e.getMessage());
             e.printStackTrace();
             return null;
-        } finally {
-            lock.release();
-            jedis.close();
         }
+//        finally {
+//            lock.release();
+//            jedis.close();
+//        }
     }
 
     public Optional<Quote> getQuote(String stockSymbol, String userId, int transactionNum) {
+        System.out.println("Attempting to get quote...");
         try {
             Quote quote = quoteCache.get(stockSymbol, () -> getQuoteFromServer(stockSymbol,userId,transactionNum));
             return Optional.of(quote);
