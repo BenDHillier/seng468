@@ -67,6 +67,7 @@ public class BuyTriggerService {
                         }
                         investmentRepository.insertOrIncrement(userId, stockSymbol, amount);
                         buyTriggerRepository.delete(buyStockSnapshot.get());
+                        loggingService.logSystemEvent(Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),CommandType.SET_BUY_TRIGGER.toString(),userId,stockSymbol,"NULL",String.format("%.2f",(quote.getPrice()*1.0)/100));
                         return;
                     }
                     try {
