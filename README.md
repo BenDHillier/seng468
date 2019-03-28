@@ -1,9 +1,4 @@
 # seng468
-
-<<<<<<< HEAD
-this is subbranch of database_to_xml in order to create an improved
-logging system from gen1 logging
-=======
 ## Clone project
 `git clone https://github.com/BenDHillier/SENG468/`
 
@@ -13,7 +8,6 @@ logging system from gen1 logging
 `psql`
 `postgres=# create database stocktraderdb;`
 `postgres=# password` -> `postgres`
->>>>>>> master
 
 To run on lab machine add file ~/.m2/settings.xml with contents
 ```
