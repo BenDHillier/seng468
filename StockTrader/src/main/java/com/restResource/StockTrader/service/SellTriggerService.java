@@ -1,5 +1,6 @@
 package com.restResource.StockTrader.service;
 
+import com.restResource.StockTrader.entity.CommandType;
 import com.restResource.StockTrader.entity.Quote;
 import com.restResource.StockTrader.entity.SellTrigger;
 import com.restResource.StockTrader.repository.AccountRepository;
@@ -65,6 +66,7 @@ public class SellTriggerService {
                         }
                         accountRepository.updateAccountBalance(userId, profit, transactionNum, "TS1");
                         sellTriggerRepository.delete(sellStockSnapshot.get());
+                        loggingService.logSystemEvent(Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum), CommandType.SET_SELL_TRIGGER.toString(),userId,stockSymbol,"NULL",String.format("%.2f",(quote.getPrice()*1.0)/100));
                         return;
                     }
                     try {
