@@ -20,7 +20,7 @@
             <dataSource
                     class="com.mchange.v2.c3p0.ComboPooledDataSource">
                 <driverClass>org.postgresql.Driver</driverClass>
-                <jdbcUrl>jdbc:postgresql://localhost:5432/stocktraderdb</jdbcUrl>
+                <jdbcUrl>jdbc:postgresql://db:5432/stocktraderdb</jdbcUrl>
                 <user>postgres</user>
                 <password>postgres</password>
             </dataSource>
