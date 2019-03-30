@@ -1,17 +1,12 @@
 version: "3"
 services:
-  web:
-    # replace username/repo:tag with your name and image details
-    image: benhillier/stock-trader:latest
-    deploy:
-      replicas: 5
-      resources:
-        limits:
-          cpus: "0.1"
-          memory: 600M
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: stocktraderdb
+  transaction:
+    image: benhillier/realstocktrader
     ports:
       - 0.0.0.0:8080:8080/tcp
-    networks:
-      - webnet
-networks:
-  webnet:
