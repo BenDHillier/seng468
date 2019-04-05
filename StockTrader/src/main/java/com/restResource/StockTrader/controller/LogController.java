@@ -51,7 +51,7 @@ public class LogController {
                                                  @RequestParam int transactionNum) {
         try {
             loggingService.logUserCommand(CommandType.DUMPLOG.toString(), Long.toString(System.currentTimeMillis()),"TS1",Integer.toString(transactionNum),userId,"NULL",filename,"NULL");
-            //loggingService.dumpUserLogToXmlFile(filename,userId);
+            loggingService.dumpUserLogToXmlFile(filename,userId);
             File f = new File(filename);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");

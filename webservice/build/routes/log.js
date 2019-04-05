@@ -15,6 +15,7 @@ module.exports = (app) => {
     });
 
     app.get('/dumplog/user/', (req, res) => {
+        let host = config.url + loadBalancer.getDomain(req.query.userId) + config.port;
         request({uri: host + "dumplog/user/", qs: req.query, method: "POST", json: true }, (err, res2, body) => {
             if (err) {
                 res.status(500).send(err);

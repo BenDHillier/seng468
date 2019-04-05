@@ -233,23 +233,106 @@ public class LoggingService {
         return null;
     }
 
-//    public File dumpUserLogToXmlFile(String filename, String userId) {
-//        try {
-//            Iterable<String> logFragments = logXmlRepository.findAllLogsForUser(userId);
-//            FileWriter writer = new FileWriter("./"+filename);
-//            writer.write("<log>");
-//            for(String s : logFragments) {
-//                writer.write(s);
-//            }
-//            writer.write("</log>");
-//            File file = new File("./"+filename);
-//            writer.close();
-//            return file;
-//
-//        } catch(Exception e) {
-//            System.out.println("Exception in LoggingService.dumpLogToXmlFile. See dumplog for more info");
-//        }
-//        return null;
-//    }
+    public File dumpUserLogToXmlFile(String filename, String userId) {
+    try {
+        Iterable<CentralLog> logFrags = logsRepo.findAllLogsForUser(userId);
+        FileWriter writer = new FileWriter("./"+filename);
+        writer.write("<log>");
+        for(CentralLog s : logFrags) {
+            if( s.getLogtype().equals("UserCommandType") ) {
+
+                String usernameString = s.getUsername();
+                String usernameTag = "";
+                if( !usernameString.equals("NULL") ) usernameTag = "<username>" + usernameString + "</username>";
+
+                String stockSymbolString = s.getStock_symbol();
+                String stockSymbolTag = "";
+                if( !stockSymbolString.equals("NULL") ) stockSymbolTag = "<stockSymbol>" + stockSymbolString + "</stockSymbol>";
+
+                String filenameString = s.getFilename();
+                String filenameTag = "";
+                if( !filenameString.equals("NULL") ) filenameTag = "<filename>" + filenameString + "</filename>";
+
+                String fundsString = s.getFunds();
+                String fundsTag = "";
+                if( !fundsString.equals("NULL") ) fundsTag = "<funds>" + fundsString + "</funds>";
+
+                writer.write("<userCommand>"+
+                        "<command>" + s.getCommand() + "</command>" +
+                        "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                        "<server>" + s.getServer() + "</server>" +
+                        "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                        usernameTag +
+                        stockSymbolTag +
+                        filenameTag +
+                        fundsTag+
+                        "</userCommand>");
+            }
+            else if( s.getLogtype().equals("QuoteServerType")) {
+                writer.write(
+                        "<quoteServer>" +
+                                "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                                "<server>" + s.getServer() + "</server>" +
+                                "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                                "<price>" + s.getPrice() + "</price>" +
+                                "<stockSymbol>" + s.getStock_symbol() + "</stockSymbol>" +
+                                "<username>" + s.getUsername() + "</username>" +
+                                "<quoteServerTime>" + s.getQuote_server_time() + "</quoteServerTime>" +
+                                "<cryptokey>" + s.getCryptokey() + "</cryptokey>" +
+                                "</quoteServer>");
+            }
+            else if( s.getLogtype().equals("SystemEventType")) {
+                String usernameString = s.getUsername();
+                String usernameTag = "";
+                if( !usernameString.equals("NULL") ) usernameTag = "<username>" + usernameString + "</username>";
+
+                String stockSymbolString = s.getStock_symbol();
+                String stockSymbolTag = "";
+                if( !stockSymbolString.equals("NULL") ) stockSymbolTag = "<stockSymbol>" + stockSymbolString + "</stockSymbol>";
+
+                String filenameString = s.getFilename();
+                String filenameTag = "";
+                if( !filenameString.equals("NULL") ) filenameTag = "<filename>" + filenameString + "</filename>";
+
+                String fundsString = s.getFunds();
+                String fundsTag = "";
+                if( !fundsString.equals("NULL") ) fundsTag = "<funds>" + fundsString + "</funds>";
+
+                writer.write(
+                        "<systemEvent>" +
+                                "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                                "<server>" + s.getServer() + "</server>" +
+                                "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                                "<command>" + s.getCommand() + "</command>" +
+                                usernameTag +
+                                stockSymbolTag +
+                                filenameTag +
+                                fundsTag +
+                                "</systemEvent>"
+                );
+            }
+            else if( s.getLogtype().equals("AccountTransactionType")) {
+                writer.write(
+                        "<accountTransaction>" +
+                                "<timestamp>" + s.getTimestamp() + "</timestamp>" +
+                                "<server>" + s.getServer() + "</server>" +
+                                "<transactionNum>" + s.getTransaction_num() + "</transactionNum>" +
+                                "<action>" + s.getAction() + "</action>" +
+                                "<username>" + s.getUsername() + "</username>" +
+                                "<funds>" + s.getFunds() + "</funds>" +
+                                "</accountTransaction>"
+                );
+            }
+        }
+        writer.write("</log>");
+        writer.close();
+        File file = new File("./"+filename);
+        return file;
+    } catch( Exception e ) {
+        System.out.println("Exception in dumpLogToXmlFile: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return null;
+}
 }
 
