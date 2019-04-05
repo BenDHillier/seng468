@@ -1,0 +1,333 @@
+<iframe width="1000" height="100" border="100" name="dummyframe" src="" id="dummyframe"></iframe>
+
+<!--add money-->
+<div><b>Add Money To Account</b></div>
+<form action="http://localhost:8181/add" method="get" target="dummyframe">
+  <div>
+    <label for="amount">how much money would you like to deposit?</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Add Money</button>
+  </div>
+</form>
+
+<!-- Display -->
+<div><b>Display</b></div>
+<form action="http://localhost:8181/display" method="get" target="dummyframe">
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Display account summary</button>
+  </div>
+</form>
+<!-- Buy stock-->
+<div><b>Buy Create</b></div>
+<form action="http://localhost:8181/buy/create" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which stock would you like to buy (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="amount">how much money would you like to spend on the stock?</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Request Buy of Stock</button>
+  </div>
+</form>
+
+<div><b>Buy Commit</b></div>
+<form action="http://localhost:8181/buy/commit" method="get" target="dummyframe">
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Commit Most Recent Buy Request</button>
+  </div>
+</form>
+
+<div><b>Buy Cancel</b></div>
+<form action="http://localhost:8181/buy/cancel" method="get" target="dummyframe">
+  <div>
+    <label for="userId">What is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">What is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Cancel Most Recent Buy Request</button>
+  </div>
+</form>
+
+<!--Sell stock-->
+<div><b>Sell Create</b></div>
+<form action="http://localhost:8181/sell/create" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which stock would you like to sell (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="amount">stock would you like to sell</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Request Sell of Stock</button>
+  </div>
+</form>
+
+<div><b>Sell Commit</b></div>
+<form action="http://localhost:8181/sell/commit" method="get" target="dummyframe">
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Commit Most Recent Sell</button>
+  </div>
+</form>
+
+<div><b>Sell Cancel</b></div>
+<form action="http://localhost:8181/sell/cancel" method="get" target="dummyframe">
+  <div>
+    <label for="userId">What is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">What is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Cancel Most Recent Sell</button>
+  </div>
+</form>
+
+<!-- dumplog -->
+<div><b>DumpLog All Users</b></div>
+<form action="http://localhost:8181/dumplog/all" method="get" target="dummyframe">
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+	<div>
+		<label for="filename">what is the file name</label>
+		<input type="text" name="filename" id="filename">
+	</div>
+  <div>
+    <button>Collect DumpLog For All Users</button>
+  </div>
+</form>
+
+<div><b>DumpLog Single User</b></div>
+<form action="http://localhost:8181/dumplog/user" method="get" target="dummyframe">
+  <div>
+    <label for="userId">What is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">What is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+	<div>
+		<label for="filename">what is the file name</label>
+		<input type="text" name="filename" id="filename">
+	</div>
+  <div>
+    <button>Collect DumpLog For One User</button>
+  </div>
+</form>
+
+<!-- Get Quote -->
+<div><b>Get Quote From Server</b></div>
+<form action="http://localhost:8181/quote" method="get" target="dummyframe">
+	<div>
+	    <label for="stockSymbol">Which stock do you want to quote (stockSymbol)</label>
+	    <input type="text" name="stockSymbol" id="stockSymbol">
+	</div>
+  <div>
+    <label for="userId">What is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">What is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Get the Stock Quote</button>
+  </div>
+</form>
+<!-- maybe add something to show the quote -->
+
+<!--Sell stock Trigger-->
+<div><b>Sell Trigger Amount</b></div>
+<form action="http://localhost:8181/sellTrigger/amount" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which stock would you like to sell (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="amount">how many stocks would you like to sell</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Request Sell Trigger</button>
+  </div>
+</form>
+
+<div><b>Sell Trigger Cost</b></div>
+<form action="http://localhost:8181/sellTrigger/trigger" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which stock would you like to sell (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="amount">how much do you want to sell the stock for</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Request Sell Trigger trigger</button>
+  </div>
+</form>
+
+<div><b>Cancel Sell Trigger</b></div>
+<form action="http://localhost:8181/sellTrigger/cancel" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which sell trigger symbol would you like to cancel (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Cancel Most Recent Sell</button>
+  </div>
+</form>
+
+<!--Buy stock Trigger-->
+<div><b>Buy Trigger Amount</b></div>
+<form action="http://localhost:8181/buyTrigger/amount" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which stock would you like to buy (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="amount">how many stocks would you like to buy</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Request Buy Trigger</button>
+  </div>
+</form>
+
+<div><b>Buy Trigger Budget</b></div>
+<form action="http://localhost:8181/buyTrigger/trigger" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which stock would you like to buy (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="amount">how much do you want to buy the stock for</label>
+    <input type="text" name="amount" id="amount">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Request buy Trigger trigger</button>
+  </div>
+</form>
+
+<div><b>Cancel Buy Trigger</b></div>
+<form action="http://localhost:8181/buyTrigger/cancel" method="get" target="dummyframe">
+  <div>
+    <label for="stockSymbol">Which sell trigger symbol would you like to cancel (stock symbol)?</label>
+    <input type="text" name="stockSymbol" id="stockSymbol">
+  </div>
+  <div>
+    <label for="userId">what is your userId</label>
+    <input type="text" name="userId" id="userId">
+  </div>
+	<div>
+		<label for="transactionNum">what is the transaction num (placeholder)</label>
+		<input type="text" name="transactionNum" id="transactionNum">
+	</div>
+  <div>
+    <button>Cancel Most Recent Buy</button>
+  </div>
+</form>
+
