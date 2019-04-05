@@ -9,6 +9,12 @@ module.exports = (app) => {
             if (err) {
                 res.status(500).send(err);
             } else {
+                const fs = require('fs');
+                fs.writeFile("../"+req.query.fileName, body, function(err2) {
+                    if(err) {
+                        res.status(500).send(err2);
+                    }
+                }); 
                 res.status(res2.statusCode).send(body);
             }
         });
@@ -20,6 +26,12 @@ module.exports = (app) => {
             if (err) {
                 res.status(500).send(err);
             } else {
+                const fs = require('fs');
+                fs.writeFile("../"+req.query.fileName, body, function(err2) {
+                    if(err) {
+                        res.status(500).send(err2);
+                    }
+                }); 
                 res.status(res2.statusCode).send(body);
             }
         });
