@@ -128,17 +128,14 @@ BEGIN
       END IF;
       INSERT INTO logs (event_id, logtype, command, timestamp, quote_server_time, server, transaction_num, action, username, stock_symbol, filename, funds, price, cryptokey, error_message, debug_message)
       VALUES ((select nextval(''logs_event_id_seq'')),''AccountTransactionType'', ''NULL'', (trunc(extract(epoch from now()) * 1000))::varchar(255), ''NULL'', NEW.last_server, (NEW.last_transaction_number)::varchar(255), action, NEW.user_id, ''NULL'', ''NULL'',  funds::varchar(255), ''NULL'', ''NULL'' ,''NULL'', ''NULL'');
--- =======
--- --       INSERT INTO account_transaction_log (action, funds, timestamp, username)
---       INSERT INTO account_transaction_log (action, funds, timestamp, username, server, "transactionNum")
---       VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number);
---       WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, TRUNC((SELECT CAST(funds AS NUMERIC(12,2))/100.00),2), trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
---       INSERT INTO log_xml (id, xml_log_entry,user_id)
---       VALUES(
---         (select nextval(''hibernate_sequence'')),
---         (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username, temp.server, temp."transactionNum")) from temp),
---         (select temp.username from temp));
--- >>>>>>> master
+       INSERT INTO account_transaction_log (action, funds, timestamp, username, server, "transactionNum")
+       VALUES (action, funds, trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number);
+       WITH temp (action,funds,timestamp,username, server, "transactionNum") AS (values (action, TRUNC((SELECT CAST(funds AS NUMERIC(12,2))/100.00),2), trunc(extract(epoch from now()) * 1000), NEW.user_id, NEW.last_server, NEW.last_transaction_number))
+       INSERT INTO log_xml (id, xml_log_entry,user_id)
+       VALUES(
+         (select nextval(''hibernate_sequence'')),
+         (select xmlelement(name "accountTransaction", xmlforest(temp.action,temp.funds,temp.timestamp,temp.username, temp.server, temp."transactionNum")) from temp),
+         (select temp.username from temp));
       RETURN NULL;
 END;
 ' LANGUAGE plpgsql;
